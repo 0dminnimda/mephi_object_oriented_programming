@@ -1,12 +1,14 @@
-#include <iostream>
 #include <cstddef>
-#include <vector>
-#include <unordered_map>
-#include <optional>
 #include <functional>
+#include <iostream>
+#include <optional>
+#include <unordered_map>
+#include <vector>
 
-template < class T >
-T getNum(std::istream& is, T min = std::numeric_limits<T>::min(), T max = std::numeric_limits<T>::max()) {
+template <class T>
+T getNum(
+    std::istream &is, T min = std::numeric_limits<T>::min(), T max = std::numeric_limits<T>::max()
+) {
     T a;
     while (true) {
         is >> a;
@@ -16,10 +18,9 @@ T getNum(std::istream& is, T min = std::numeric_limits<T>::min(), T max = std::n
             throw std::runtime_error(std::string("Failed to read number: ") + strerror(errno));
         else if (is.fail()) {
             is.clear();
-            is.ignore(std::numeric_limits < std::streamsize > ::max(), '\n');
+            is.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "You are wrong; repeat please!" << std::endl;
-        }
-        else if (a >= min && a <= max)
+        } else if (a >= min && a <= max)
             return a;
     }
 }
@@ -96,10 +97,10 @@ public:
             }
         }
 
-        std::sort(len_ids.begin(), len_ids.end(), [](const elem_type& a, const elem_type& b) -> bool
-        {
-            return a.first < b.first;
-        });
+        std::sort(
+            len_ids.begin(), len_ids.end(),
+            [](const elem_type &a, const elem_type &b) -> bool { return a.first < b.first; }
+        );
 
         matrix_type result;
         result.reserve(matrix.size());
@@ -115,7 +116,7 @@ public:
         matrix = result;
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const SparseMatrix<T>& mat) {
+    friend std::ostream &operator<<(std::ostream &os, const SparseMatrix<T> &mat) {
         for (std::size_t row = 0; row < mat.rows; ++row) {
             for (std::size_t col = 0; col < mat.cols; ++col) {
                 if (auto value = mat.get_value(row, col)) {
@@ -129,7 +130,7 @@ public:
         return os;
     }
 
-    friend std::istream& operator>>(std::istream& is, SparseMatrix<T>& mat) {
+    friend std::istream &operator>>(std::istream &is, SparseMatrix<T> &mat) {
         for (std::size_t row = 0; row < mat.rows; ++row) {
             for (std::size_t col = 0; col < mat.cols; ++col) {
                 T value = getNum<T>(is);
@@ -140,9 +141,7 @@ public:
     }
 };
 
-bool is_greater_than_zero(int value) {
-    return value > 0;
-}
+bool is_greater_than_zero(int value) { return value > 0; }
 
 void sub_main() {
     std::size_t rows = 3;
