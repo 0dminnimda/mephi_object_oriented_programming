@@ -4,4 +4,4 @@ task:
 
 .PHONY: run_task
 run_task:
-	bash exec.sh main.out
+	bash ../exec.sh main.out
