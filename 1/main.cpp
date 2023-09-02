@@ -16,7 +16,7 @@ T getNum(
         if (is.eof())
             throw std::runtime_error("Failed to read number: EOF");
         else if (is.bad())
-            throw std::runtime_error(std::string("Failed to read number: ") + strerror(errno));
+            throw std::runtime_error("Failed to read number due to error on I/O operation");
         else if (is.fail()) {
             is.clear();
             is.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
