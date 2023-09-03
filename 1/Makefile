@@ -13,3 +13,7 @@ $(OUT_DIR):
 .PHONY: run_task
 run_task:
 	bash ../exec.sh main.out
+
+.PHONY: clear
+clear:
+	rm -rf build
