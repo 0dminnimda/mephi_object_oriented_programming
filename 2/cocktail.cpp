@@ -11,12 +11,11 @@ private:
 
 public:
     Cocktail() noexcept = default;
-    Cocktail(float volume) {
+    Cocktail(float volume, float alcohol_fraction) {
         this->volume(volume);
-    }
-    Cocktail(float volume, float alcohol_fraction) : Cocktail(volume) {
         this->alcohol_fraction(alcohol_fraction);
     }
+    Cocktail(float volume) : Cocktail(volume, 0) {}
 
     Cocktail(const Cocktail &) noexcept = default;
     Cocktail& operator=(const Cocktail &) noexcept = default;
