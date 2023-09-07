@@ -29,3 +29,4 @@ run_task:
 .PHONY: clear
 clear:
 	rm -rf build
+	rm -f main.out
