@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 
 using std::to_string;
 
@@ -10,15 +11,22 @@ private:
     float alcohol_fraction_;
 
 public:
-    Cocktail() noexcept = default;
+    Cocktail() noexcept { empty(); };
     Cocktail(float volume, float alcohol_fraction) {
         this->volume(volume);
         this->alcohol_fraction(alcohol_fraction);
+        if (!volume) empty();
     }
     Cocktail(float volume) : Cocktail(volume, 0) {}
 
     Cocktail(const Cocktail &) noexcept = default;
     Cocktail &operator=(const Cocktail &) noexcept = default;
+
+    bool operator==(const Cocktail &other) const noexcept {
+        return std::tie(volume_, alcohol_fraction_) ==
+               std::tie(other.volume_, other.alcohol_fraction_);
+    }
+    bool operator!=(const Cocktail &other) const noexcept { return !(*this == other); }
 
     static float valid_volume(float value) {
         if (0 <= value) return value;
