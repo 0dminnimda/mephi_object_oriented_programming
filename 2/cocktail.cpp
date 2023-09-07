@@ -18,22 +18,18 @@ public:
     Cocktail(float volume) : Cocktail(volume, 0) {}
 
     Cocktail(const Cocktail &) noexcept = default;
-    Cocktail& operator=(const Cocktail &) noexcept = default;
+    Cocktail &operator=(const Cocktail &) noexcept = default;
 
     static float valid_volume(float value) {
-        if (0 <= value)
-            return value;
+        if (0 <= value) return value;
         throw std::runtime_error("Volume should be positive");
     }
 
     float volume() const noexcept { return volume_; }
-    float volume(float value) {
-        return volume_ = valid_volume(value);
-    }
+    float volume(float value) { return volume_ = valid_volume(value); }
 
     static float valid_alcohol_fraction(float value) {
-        if (0 <= value && value <= 1)
-            return value;
+        if (0 <= value && value <= 1) return value;
         throw std::runtime_error("Alcohol fraction should be in range [0, 1]");
     }
 
@@ -45,7 +41,7 @@ public:
     float alcohol_volume() const noexcept { return volume() * alcohol_fraction(); }
     float water_volume() const noexcept { return volume() - alcohol_volume(); }
 
-    Cocktail& operator+=(const Cocktail& other) noexcept {
+    Cocktail &operator+=(const Cocktail &other) noexcept {
         if (!other.is_empty()) {
             float total_alcohol_volume = alcohol_volume() + other.alcohol_volume();
             volume(volume() + other.volume());
@@ -61,7 +57,7 @@ public:
     }
 
     template <typename T>
-    Cocktail& operator*=(T other) noexcept {
+    Cocktail &operator*=(T other) noexcept {
         volume(volume() * other);
         return *this;
     }
@@ -73,9 +69,7 @@ public:
         return result;
     }
 
-    bool is_empty() const noexcept {
-        return volume() == 0;
-    }
+    bool is_empty() const noexcept { return volume() == 0; }
 
     void empty() noexcept {
         volume(0);
@@ -97,11 +91,9 @@ public:
         return part;
     }
 
-    void pour(Cocktail& other, float poured_volume) {
-        other += split(poured_volume);
-    }
+    void pour(Cocktail &other, float poured_volume) { other += split(poured_volume); }
 
-    Cocktail& operator>>(Cocktail &other) {
+    Cocktail &operator>>(Cocktail &other) {
         pour(other, 1);
         return *this;
     }
@@ -115,28 +107,32 @@ public:
         return result;
     }
 
-    friend std::ostream& operator<<(std::ostream &stream, const Cocktail &cock) {
+    friend std::ostream &operator<<(std::ostream &stream, const Cocktail &cock) {
         stream << to_string(cock);
         return stream;
     }
 
-    friend std::istream& operator>>(std::istream &stream, Cocktail &cock) {
+    friend std::istream &operator>>(std::istream &stream, Cocktail &cock) {
         float volume;
         stream >> volume;
 
-        if (!stream.good()) { goto bad; }
+        if (!stream.good()) {
+            goto bad;
+        }
 
         float alcohol_fraction;
         stream >> alcohol_fraction;
 
-        if (!stream.good()) { goto bad; }
+        if (!stream.good()) {
+            goto bad;
+        }
 
         cock.volume(volume);
         cock.alcohol_fraction(alcohol_fraction);
 
         return stream;
 
-bad:
+    bad:
         stream.setstate(std::ios::failbit);
         return stream;
     }
