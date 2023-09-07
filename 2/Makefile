@@ -32,7 +32,14 @@ anl_task: cmake_build $(OUT_DIR) $(ANAL_DIR)
 run_task:
 	$(RUN_EXECUTABLE) ./main.out
 
+.PHONY: do_tests
+do_tests:
+	mkdir -p tests/build
+	cd tests/build && cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER="$(CC)" -DCMAKE_CXX_COMPILER="$(CXX)" && cmake --build .
+	$(RUN_EXECUTABLE) ./tests/build/run_test.out
+
 .PHONY: clear
 clear:
 	rm -rf build
+	rm -rf tests/build
 	rm -f main.out
