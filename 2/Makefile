@@ -3,6 +3,12 @@ ANAL_DIR = tmp/analysis
 CC = clang
 CXX = clang++
 
+OSTYPE = $(shell echo $$OSTYPE)
+
+ifneq (,$(findstring android, $(OSTYPE)))
+	RUN_EXECUTABLE := "bash ../exec.sh"
+endif
+
 $(OUT_DIR):
 	mkdir -p $(OUT_DIR)
 
@@ -24,7 +30,7 @@ anl_task: cmake_build $(OUT_DIR) $(ANAL_DIR)
 
 .PHONY: run_task
 run_task:
-	bash ../exec.sh main.out
+	$(RUN_EXECUTABLE) ./main.out
 
 .PHONY: clear
 clear:
