@@ -8,5 +8,8 @@ file(DOWNLOAD "https://raw.githubusercontent.com/doctest/doctest/master/doctest/
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-add_executable(run_test test_cocktail.cpp)
-set_target_properties(run_test PROPERTIES SUFFIX ".out")
+add_compile_options(--coverage)
+add_link_options(--coverage)
+
+add_executable(run_tests test_cocktail.cpp)
+set_target_properties(run_tests PROPERTIES SUFFIX ".out")
