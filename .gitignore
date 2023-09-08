@@ -6,6 +6,7 @@
 *.ilk
 *.lib
 *.exp
+*.gcda
 
 build
 tmp
