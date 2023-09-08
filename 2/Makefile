@@ -5,8 +5,8 @@ CXX = clang++
 
 OSTYPE = $(shell echo $$OSTYPE)
 
-ifneq (,$(findstring android, $(OSTYPE)))
-	RUN_EXECUTABLE := "bash ../exec.sh"
+ifneq ($(findstring android, $(OSTYPE)), android)
+	RUN_EXECUTABLE := bash ../exec.sh
 endif
 
 $(OUT_DIR):
@@ -36,10 +36,12 @@ run_task:
 do_tests:
 	mkdir -p tests/build
 	cd tests/build && cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER="$(CC)" -DCMAKE_CXX_COMPILER="$(CXX)" && cmake --build .
-	$(RUN_EXECUTABLE) ./tests/build/run_test.out
+	cp ./tests/build/run_test.out run_test.out
+	$(RUN_EXECUTABLE) ./run_test.out
 
 .PHONY: clear
 clear:
 	rm -rf build
 	rm -rf tests/build
 	rm -f main.out
+	rm -f run_test.out
