@@ -1,4 +1,5 @@
 #include <charconv>
+#include <cstdlib>
 #include <iostream>
 #include <iterator>
 #include <stdexcept>
@@ -235,10 +236,11 @@ private:
     }
 
     floating eval_floating() {
-        floating result = 0;
         const std::string_view &lexeme = lexer.peek().lexeme;
-        auto conversion = std::from_chars(lexeme.data(), lexeme.data() + lexeme.size(), result);
-        if (conversion.ec == std::errc{}) {
+        char *end;
+        errno = 0;
+        floating result = std::strtof(lexeme.data(), &end);
+        if (end != lexeme.data() && end == lexeme.data() + lexeme.size() && errno != ERANGE) {
             lexer.consume();
             return result;
         }
@@ -468,6 +470,8 @@ fgdfgdf
 2 + 4 ~ 5
 948038453490580934850934
 32423424234234234234233432342.564563463453498537094530475347507348537459834057345038450
+0.34536456456456456498203470982370423705482347052734095870234750320485023
+341123123123123123123123123132123132123.34536456456456456498203470982370423705482347052734095870234750320485023
 Cocktail()
 Cocktail(10)
 Cocktail(10, 0.1)
@@ -495,21 +499,30 @@ Error: Unknown operator '~'
 Error: Invalid decimal
 ~> 32423424234234234234233432342.564563463453498537094530475347507348537459834057345038450
 3.24234e+28
+~> 0.34536456456456456498203470982370423705482347052734095870234750320485023
+0.345365
+~> 341123123123123123123123123132123132123.
+Error: Invalid floating
 ~> Cocktail()
 Cocktail(volume=0.000000, alcohol_fraction=0.000000)
 ~> Cocktail(10)
-Token(TokenKind::Bracket, ")")
 Cocktail(volume=10.000000, alcohol_fraction=0.000000)
 ~> Cocktail(10, 0.1)
-Token(TokenKind::Operator, ",")
-Token(TokenKind::Bracket, ")")
 Cocktail(volume=10.000000, alcohol_fraction=0.100000)
 ~> Cocktail(10, 0.1) + Cocktail(16, 0.1)
 Cocktail(volume=26.000000, alcohol_fraction=0.100000)
 ~> Cocktail(10, 0.1) >> Cocktail(16, 0.1)
+Cocktail(volume=17.000000, alcohol_fraction=0.100000)
+~> Cocktail(10, 0.1) >>! Cocktail(16, 0.1)
 Cocktail(volume=9.000000, alcohol_fraction=0.100000)
 ~> Cocktail(10, 0.1) << Cocktail(16, 0.1)
-Cocktail(volume=17.000000, alcohol_fraction=0.100000)
+Cocktail(volume=15.000000, alcohol_fraction=0.100000)
+~> Cocktail(10, 0.1) <<! Cocktail(16, 0.1)
+Cocktail(volume=11.000000, alcohol_fraction=0.100000)
 ~> Cocktail() + 3
 Error: Unsupported operation '+' between 'class Cocktail' and '__int64'
+~> Cocktail() * 3
+Cocktail(volume=0.000000, alcohol_fraction=0.000000)
+~> Cocktail(5, 0.3) * 3
+Cocktail(volume=15.000000, alcohol_fraction=0.300000)
 */
