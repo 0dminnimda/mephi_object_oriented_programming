@@ -3,13 +3,7 @@ ANAL_DIR = tmp/analysis
 CC = clang
 CXX = clang++
 
-OSTYPE = $(shell echo $$OSTYPE)
-
-ifneq ($(findstring android, $(OSTYPE)), android)
-	prep_executable = $(eval $(1) := $(shell bash ../prep_exec.sh $(2)))
-else
-	prep_executable = $(eval $(1) := $(2))
-endif
+prep_executable = $(eval $(1) := $(shell bash ../prep_exec.sh $(2)))
 
 call_cmake = cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER="$(CC)" -DCMAKE_CXX_COMPILER="$(CXX)"
 

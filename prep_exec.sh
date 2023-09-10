@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-cp -f $1 ~/$1
-chmod +x ~/$1
+if [[ $OSTYPE =~ "android" ]]; then
+    cp -f $1 ~/$1
+    chmod +x ~/$1
 
-echo "~/$1"
+    echo "~/$1"
+else
+    echo "$1"
+fi
