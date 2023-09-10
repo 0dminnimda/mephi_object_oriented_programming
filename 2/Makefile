@@ -3,6 +3,9 @@ ANAL_DIR = tmp/analysis
 CC = clang
 CXX = clang++
 
+PYTHON = "$(shell (which python3 2>/dev/null || which python 2>/dev/null) | head -1)"
+ANAL_BUILD_PATH = "$(shell which analyze-build)"
+
 prep_executable = $(eval $(1) := $(shell bash ../prep_exec.sh $(2)))
 
 call_cmake = cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER="$(CC)" -DCMAKE_CXX_COMPILER="$(CXX)"
@@ -24,7 +27,7 @@ com_task: cmake_build
 
 .PHONY: anl_task
 anl_task: cmake_build $(OUT_DIR) $(ANAL_DIR)
-	analyze-build --cdb $(OUT_DIR)/compile_commands.json --output $(ANAL_DIR) --use-analyzer clang
+	$(PYTHON) $(ANAL_BUILD_PATH) --cdb $(OUT_DIR)/compile_commands.json --output $(ANAL_DIR) --use-analyzer clang
 
 .PHONY: run_task
 run_task:
