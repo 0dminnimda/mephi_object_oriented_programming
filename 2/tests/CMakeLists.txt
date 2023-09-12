@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(TestCocktails)
+project(test_cocktails)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -11,5 +11,9 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 add_compile_options(--coverage)
 add_link_options(--coverage)
 
+add_subdirectory(../cocktail cocktail)
+
 add_executable(run_tests test_cocktail.cpp)
 set_target_properties(run_tests PROPERTIES SUFFIX ".out")
+
+target_link_libraries(run_tests PRIVATE cocktail_lib)

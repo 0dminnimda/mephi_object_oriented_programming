@@ -1,5 +1,5 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "../cocktail.cpp"
+#include "../cocktail/cocktail.hpp"
 #include "doctest.h"
 
 

@@ -1,0 +1,72 @@
+#ifndef COCKTAIL_HPP
+#define COCKTAIL_HPP
+
+#pragma once
+
+#include <iostream>
+#include <string>
+
+class Cocktail {
+private:
+    float volume_;
+    float alcohol_fraction_;
+
+public:
+    Cocktail() noexcept;
+
+    Cocktail(float volume, float alcohol_fraction);
+
+    Cocktail(float volume);
+
+    Cocktail(const Cocktail &) noexcept = default;
+
+    Cocktail &operator=(const Cocktail &) noexcept = default;
+
+    bool operator==(const Cocktail &other) const noexcept;
+
+    bool operator!=(const Cocktail &other) const noexcept;
+
+    static float valid_volume(float value);
+
+    float volume() const noexcept;
+
+    float volume(float value);
+
+    static float valid_alcohol_fraction(float value);
+
+    float alcohol_fraction() const noexcept;
+
+    float alcohol_fraction(float value);
+
+    float alcohol_volume() const noexcept;
+
+    float water_volume() const noexcept;
+
+    Cocktail &operator+=(const Cocktail &other) noexcept;
+
+    Cocktail operator+(const Cocktail &other) const noexcept;
+
+    template <typename T>
+    Cocktail &operator*=(T other) noexcept;
+
+    template <typename T>
+    Cocktail operator*(T other) const noexcept;
+
+    bool is_empty() const noexcept;
+
+    void empty() noexcept;
+
+    Cocktail split(float part_volume);
+
+    void pour(Cocktail &other, float poured_volume);
+
+    Cocktail &operator>>(Cocktail &other);
+
+    friend std::string to_string(const Cocktail &cock);
+
+    friend std::ostream &operator<<(std::ostream &stream, const Cocktail &cock);
+
+    friend std::istream &operator>>(std::istream &stream, Cocktail &cock);
+};
+
+#endif // COCKTAIL_HPP

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "EH.hpp"
-#include "cocktail.cpp"
+#include "cocktail.hpp"
 
 enum TokenKind {
     Identifier,
