@@ -87,20 +87,20 @@ bool isbracket(char c) {
 
 bool isoperator(char c) { return std::ispunct(c) && !isbracket(c); }
 
-class StringStream {
+class CharStream {
 private:
     std::string &code;
     std::size_t cursor;
 
 public:
-    StringStream(std::string &code) : code(code), cursor(0) {}
+    CharStream(std::string &code) : code(code), cursor(0) {}
 
-    char *peek_at(std::size_t position) {
+    const char *peek_at(std::size_t position) {
         if (position < code.size()) return &code[position];
         return nullptr;
     }
-    char *peek() { return peek_at(cursor); }
-    char *peek_prev() {
+    const char *peek() { return peek_at(cursor); }
+    const char *peek_prev() {
         if (cursor == 0) return nullptr;
         return peek_at(cursor - 1);
     }
@@ -116,8 +116,8 @@ public:
     Lexer() : tokens(), cursor(0) {}
 
 private:
-    Token get_number(StringStream &stream) {
-        char *start = stream.peek();
+    Token get_number(CharStream &stream) {
+        const char *start = stream.peek();
         while (stream.peek() && std::isdigit(*stream.peek())) stream.consume();
         if (stream.peek() && *stream.peek() == '.') {
             stream.consume();
@@ -128,25 +128,25 @@ private:
         }
     }
 
-    Token get_identifier(StringStream &stream) {
-        char *start = stream.peek();
+    Token get_identifier(CharStream &stream) {
+        const char *start = stream.peek();
         while (stream.peek() && std::isalnum(*stream.peek())) stream.consume();
         return Token(TokenKind::Identifier, start, stream.peek_prev());
     }
 
-    Token get_operator(StringStream &stream) {
-        char *start = stream.peek();
+    Token get_operator(CharStream &stream) {
+        const char *start = stream.peek();
         while (stream.peek() && isoperator(*stream.peek())) stream.consume();
         return Token(TokenKind::Operator, start, stream.peek_prev());
     }
 
-    Token get_bracket(StringStream &stream) {
-        char *start = stream.peek();
+    Token get_bracket(CharStream &stream) {
+        const char *start = stream.peek();
         if (stream.peek() && isbracket(*stream.peek())) stream.consume();
         return Token(TokenKind::Bracket, start, stream.peek_prev());
     }
 
-    bool get_next_token(StringStream &stream, Token &token) {
+    bool get_next_token(CharStream &stream, Token &token) {
         while (stream.peek()) {
             if (std::isdigit(*stream.peek())) {
                 token = get_number(stream);
@@ -176,7 +176,7 @@ public:
         tokens.clear();
         cursor = 0;
 
-        StringStream stream(code);
+        CharStream stream(code);
         Token token;
         while (get_next_token(stream, token)) {
             tokens.push_back(token);
