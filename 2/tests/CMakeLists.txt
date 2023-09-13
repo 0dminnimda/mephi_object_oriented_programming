@@ -10,8 +10,8 @@ file(DOWNLOAD "https://raw.githubusercontent.com/doctest/doctest/master/doctest/
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-add_compile_options(-ftest-coverage -fprofile-instr-generate -fcoverage-mapping)
-add_link_options(-ftest-coverage -fprofile-instr-generate -fcoverage-mapping)
+add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
+add_link_options(-fprofile-instr-generate -fcoverage-mapping)
 
 add_subdirectory(../cocktail cocktail)
 
