@@ -338,7 +338,7 @@ private:
     }
 
     Cocktail eval_identifier() {
-        if (lexer.peek().lexeme == "Cocktail") {
+        if (lexer.peek().lexeme == "Cocktail" || lexer.peek().lexeme == "Cock") {
             lexer.consume();
             return eval_cocktail();
         }
