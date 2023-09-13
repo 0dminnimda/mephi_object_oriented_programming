@@ -5,6 +5,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS YES)
 
 project(cocktail_lib)
 
+set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
 set(CMAKE_CXX_STANDARD 17)
 
 add_library(cocktail_lib STATIC cocktail.cpp)
