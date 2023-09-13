@@ -6,10 +6,17 @@
 #include <string>
 #include <string_view>
 #include <variant>
+#include <type_traits>
 #include <vector>
 
 #include "EH.hpp"
 #include "cocktail/cocktail.hpp"
+
+template <typename T, typename ...Ts>
+using is_one_of = std::disjunction<std::is_same<T, Ts>...>;
+
+template <typename T, typename... Ts>
+inline constexpr bool is_one_of_v = is_one_of<T, Ts...>::value;
 
 enum TokenKind {
     Identifier,
@@ -17,6 +24,7 @@ enum TokenKind {
     Bracket,
     Decimal,
     Floating,
+    String,
     End,
 };
 
@@ -30,6 +38,7 @@ const char *token_kind_name(TokenKind kind) {
         ENUM_TO_STR_CASE(Bracket);
         ENUM_TO_STR_CASE(Decimal);
         ENUM_TO_STR_CASE(Floating);
+        ENUM_TO_STR_CASE(String);
         ENUM_TO_STR_CASE(End);
         default: return "Unknown";
     }
@@ -85,7 +94,15 @@ bool isbracket(char c) {
     }
 }
 
-bool isoperator(char c) { return std::ispunct(c) && !isbracket(c); }
+bool isquote(char c) {
+    switch (c) {
+        case '\'':
+        case '"': return true;
+        default: return false;
+    }
+}
+
+bool isoperator(char c) { return std::ispunct(c) && !isbracket(c) && !isquote(c); }
 
 class CharStream {
 private:
@@ -146,6 +163,21 @@ private:
         return Token(TokenKind::Bracket, start, stream.peek_prev());
     }
 
+    Token get_string(CharStream &stream) {
+        const char *quote = stream.peek();
+        stream.consume();
+        const char *start = stream.peek();
+
+        while (stream.peek() && *stream.peek() != *quote) stream.consume();
+        const char *end = stream.peek_prev();
+
+        if (!stream.peek() || *stream.peek() != *quote)
+            throw std::runtime_error("String did not close correctly");
+
+        stream.consume();
+        return Token(TokenKind::String, start, end);
+    }
+
     bool get_next_token(CharStream &stream, Token &token) {
         while (stream.peek()) {
             if (std::isdigit(*stream.peek())) {
@@ -156,6 +188,9 @@ private:
                 return true;
             } else if (isoperator(*stream.peek())) {
                 token = get_operator(stream);
+                return true;
+            } else if (isquote(*stream.peek())) {
+                token = get_string(stream);
                 return true;
             } else if (isbracket(*stream.peek())) {
                 token = get_bracket(stream);
@@ -215,7 +250,8 @@ class Evaluator {
 public:
     using decimal = long long;
     using floating = float;
-    using value_type = std::variant<decimal, floating, Cocktail>;
+    using string = std::string;
+    using value_type = std::variant<decimal, floating, string, Cocktail>;
 
 private:
     Lexer lexer;
@@ -245,6 +281,12 @@ private:
             return result;
         }
         throw std::runtime_error("Invalid floating");
+    }
+
+    string eval_string() {
+        string result = string(lexer.peek().lexeme);
+        lexer.consume();
+        return result;
     }
 
     Cocktail eval_cocktail() {
@@ -294,9 +336,11 @@ private:
     value_type eval_add(value_type &lhs) {
         BINARY_OPERATION_IMPL(
             T1, lhs, T2, rhs,
-            if constexpr (!std::is_same_v<T1, Cocktail> && !std::is_same_v<T2, Cocktail>) {
+            if constexpr (is_one_of_v<T1, decimal, floating> && is_one_of_v<T2, decimal, floating>) {
                 return lhs + rhs;
             } else if constexpr (std::is_same_v<T1, Cocktail> && std::is_same_v<T2, Cocktail>) {
+                return lhs + rhs;
+            } else if constexpr (std::is_same_v<T1, string> && std::is_same_v<T2, string>) {
                 return lhs + rhs;
             }
         );
@@ -305,7 +349,7 @@ private:
     value_type eval_sub(value_type &lhs) {
         BINARY_OPERATION_IMPL(
             T1, lhs, T2, rhs,
-            if constexpr (!std::is_same_v<T1, Cocktail> && !std::is_same_v<T2, Cocktail>) {
+            if constexpr (is_one_of_v<T1, decimal, floating> && is_one_of_v<T2, decimal, floating>) {
                 return lhs - rhs;
             }
         );
@@ -314,9 +358,9 @@ private:
     value_type eval_mul(value_type &lhs) {
         BINARY_OPERATION_IMPL(
             T1, lhs, T2, rhs,
-            if constexpr (!std::is_same_v<T1, Cocktail> && !std::is_same_v<T2, Cocktail>) {
+            if constexpr (is_one_of_v<T1, decimal, floating> && is_one_of_v<T2, decimal, floating>) {
                 return lhs * rhs;
-            } else if constexpr (std::is_same_v<T1, Cocktail> && !std::is_same_v<T2, Cocktail>) {
+            } else if constexpr (std::is_same_v<T1, Cocktail> && is_one_of_v<T2, decimal, floating>) {
                 return lhs * rhs;
             }
         );
@@ -383,6 +427,8 @@ private:
                 prev = eval_decimal();
             } else if (lexer.peek().kind == TokenKind::Floating) {
                 prev = eval_floating();
+            } else if (lexer.peek().kind == TokenKind::String) {
+                prev = eval_string();
             } else if (lexer.peek().kind == TokenKind::Operator) {
                 prev = eval_operator(prev);
             } else {
@@ -483,6 +529,8 @@ Cocktail(10, 0.1) <<! Cocktail(16, 0.1)
 Cocktail() + 3
 Cocktail() * 3
 Cocktail(5, 0.3) * 3
+"it's a string!"
+"he" + "llo"
 
 $ ./main.out
 ~> 3 - 3 -
@@ -525,4 +573,8 @@ Error: Unsupported operation '+' between 'class Cocktail' and '__int64'
 Cocktail(volume=0.000000, alcohol_fraction=0.000000)
 ~> Cocktail(5, 0.3) * 3
 Cocktail(volume=15.000000, alcohol_fraction=0.300000)
+~> "it's a string!"
+it's a string!
+~> "he" + "llo"
+hello
 */
