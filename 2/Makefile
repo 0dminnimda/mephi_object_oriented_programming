@@ -18,11 +18,11 @@ $(ANAL_DIR):
 
 .PHONY: cmake_build
 cmake_build: $(OUT_DIR)
-	cd build && $(call call_cmake)
+	cd $(OUT_DIR) && $(call call_cmake)
 
 .PHONY: compile
 compile: cmake_build
-	cd build && cmake --build .
+	cd $(OUT_DIR) && cmake --build .
 
 .PHONY: analyze
 analyze: cmake_build $(OUT_DIR) $(ANAL_DIR)
