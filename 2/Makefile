@@ -49,3 +49,4 @@ clear:
 	rm -f main.out
 	rm -f run_tests.out
 	rm -f test_cocktail.cpp.gcda
+	rm -f cocktail.cpp.gcda

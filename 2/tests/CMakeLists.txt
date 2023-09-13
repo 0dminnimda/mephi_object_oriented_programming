@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
+cmake_policy(SET CMP0091 NEW)
 
 project(test_cocktails)
 
@@ -16,4 +17,11 @@ add_subdirectory(../cocktail cocktail)
 add_executable(run_tests test_cocktail.cpp)
 set_target_properties(run_tests PROPERTIES SUFFIX ".out")
 
-target_link_libraries(run_tests PRIVATE cocktail_lib)
+target_link_libraries(run_tests cocktail_lib)
+
+if (WIN32)
+    set_target_properties(run_tests PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    target_link_libraries(run_tests -static)
+else()
+    # target_link_libraries(run_tests stdc++)
+endif()

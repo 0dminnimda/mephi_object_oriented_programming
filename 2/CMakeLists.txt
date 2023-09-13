@@ -15,7 +15,7 @@ add_subdirectory(cocktail)
 add_executable(main main.cpp)
 set_target_properties(main PROPERTIES SUFFIX ".out")
 
-target_link_libraries(main PRIVATE cocktail_lib)
+target_link_libraries(main cocktail_lib)
 
 if (WIN32)
     set_target_properties(main PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
