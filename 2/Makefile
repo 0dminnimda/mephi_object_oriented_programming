@@ -20,30 +20,30 @@ $(ANAL_DIR):
 cmake_build: $(OUT_DIR)
 	cd build && $(call call_cmake)
 
-.PHONY: com_task
-com_task: cmake_build
+.PHONY: compile
+compile: cmake_build
 	cd build && cmake --build .
 	cp build/main.out main.out
 
-.PHONY: anl_task
-anl_task: cmake_build $(OUT_DIR) $(ANAL_DIR)
+.PHONY: analyze
+analyze: cmake_build $(OUT_DIR) $(ANAL_DIR)
 	$(PYTHON) $(ANAL_BUILD_PATH) --cdb $(OUT_DIR)/compile_commands.json --output $(ANAL_DIR) --use-analyzer clang
 
-.PHONY: run_task
-run_task:
+.PHONY: run
+run:
 	$(call prep_executable, EXEC, ./main.out)
 	$(EXEC)
 
-.PHONY: do_tests
-do_tests:
+.PHONY: test
+test:
 	mkdir -p tests/build
 	cd tests/build && $(call call_cmake) && cmake --build .
 	cp ./tests/build/run_tests.out run_tests.out
 	$(call prep_executable, EXEC, ./run_tests.out)
 	GCOV_PREFIX_STRIP=69 GCOV_PREFIX="./" $(EXEC)
 
-.PHONY: clear
-clear:
+.PHONY: clean
+clean:
 	rm -rf build
 	rm -rf tests/build
 	rm -f main.out
