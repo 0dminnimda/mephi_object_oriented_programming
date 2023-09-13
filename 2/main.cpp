@@ -290,7 +290,8 @@ private:
     }
 
     Cocktail eval_cocktail() {
-        floating arg1, arg2;
+        string arg1;
+        floating arg2, arg3;
 
         if (lexer.peek() != Token(TokenKind::Bracket, "("))
             goto bad;
@@ -302,10 +303,10 @@ private:
             return Cocktail();
         }
 
-        arg1 = eval_as<floating>("number");
+        arg1 = eval_as<string>("name");
         if (lexer.peek() == Token(TokenKind::Bracket, ")")) {
             lexer.consume();
-            return Cocktail("Vodka", arg1);
+            return Cocktail(arg1, 0);
         }
 
         if (lexer.peek() != Token(TokenKind::Operator, ","))
@@ -316,7 +317,18 @@ private:
         arg2 = eval_as<floating>("number");
         if (lexer.peek() == Token(TokenKind::Bracket, ")")) {
             lexer.consume();
-            return Cocktail("Vodka", arg1, arg2);
+            return Cocktail(arg1, arg2);
+        }
+
+        if (lexer.peek() != Token(TokenKind::Operator, ","))
+            goto bad;
+        else
+            lexer.consume();
+
+        arg3 = eval_as<floating>("number");
+        if (lexer.peek() == Token(TokenKind::Bracket, ")")) {
+            lexer.consume();
+            return Cocktail(arg1, arg2, arg3);
         }
 
     bad:
@@ -519,18 +531,20 @@ fgdfgdf
 0.34536456456456456498203470982370423705482347052734095870234750320485023
 341123123123123123123123123132123132123.34536456456456456498203470982370423705482347052734095870234750320485023
 Cocktail()
-Cocktail(10)
-Cocktail(10, 0.1)
-Cocktail(10, 0.1) + Cocktail(16, 0.1)
-Cocktail(10, 0.1) >> Cocktail(16, 0.1)
-Cocktail(10, 0.1) >>! Cocktail(16, 0.1)
-Cocktail(10, 0.1) << Cocktail(16, 0.1)
-Cocktail(10, 0.1) <<! Cocktail(16, 0.1)
+Cocktail("Vodka", 10)
+Cocktail("Vodka", 10, 0.1)
+Cocktail("Vodka", 10, 0.1) + Cocktail("Vine", 16, 0.1)
+Cocktail("Vodka", 10, 0.1) >> Cocktail("Vine", 16, 0.1)
+Cocktail("Vodka", 10, 0.1) >>! Cocktail("Vine", 16, 0.1)
+Cocktail("Vodka", 10, 0.1) << Cocktail("Vine", 16, 0.1)
+Cocktail("Vodka", 10, 0.1) <<! Cocktail("Vine", 16, 0.1)
 Cocktail() + 3
 Cocktail() * 3
-Cocktail(5, 0.3) * 3
+Cocktail("Beer", 5, 0.3) * 3
 "it's a string!"
 "he" + "llo"
+
+// TODO: update
 
 $ ./main.out
 ~> 3 - 3 -
