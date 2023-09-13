@@ -13,4 +13,5 @@
 
 build
 tmp
+coverage
 .cache

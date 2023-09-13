@@ -1,5 +1,8 @@
 OUT_DIR = build
 ANAL_DIR = tmp/analysis
+TEST_DIR = tests/build
+COV_DIR = tests/coverage
+
 CC = clang
 CXX = clang++
 
@@ -15,6 +18,12 @@ $(OUT_DIR):
 
 $(ANAL_DIR):
 	mkdir -p $(ANAL_DIR)
+
+$(COV_DIR):
+	mkdir -p $(COV_DIR)
+
+$(TEST_DIR):
+	mkdir -p $(TEST_DIR)
 
 .PHONY: cmake_build
 cmake_build: $(OUT_DIR)
@@ -33,16 +42,20 @@ run:
 	$(call prep_executable, EXEC, ./build/main.out)
 	$(EXEC)
 
+llvm_cov = llvm-cov $(1) $(2) -instr-profile=$(3) --ignore-filename-regex="tests/*"
+
 .PHONY: test
-test:
-	mkdir -p tests/build
-	cd tests/build && $(call call_cmake) && cmake --build .
-	$(call prep_executable, EXEC, ./tests/build/run_tests.out)
-	GCOV_PREFIX_STRIP=69 GCOV_PREFIX="./" $(EXEC)
+test: $(TEST_DIR) $(COV_DIR)
+	cd $(TEST_DIR) && $(call call_cmake) && cmake --build .
+	$(call prep_executable, EXEC, $(TEST_DIR)/run_tests.out)
+	LLVM_PROFILE_FILE="$(COV_DIR)/run_tests.profraw" $(EXEC)
+	llvm-profdata merge -sparse $(COV_DIR)/run_tests.profraw -o $(COV_DIR)/merged.profdata
+	$(call llvm_cov,report,$(EXEC),$(COV_DIR)/merged.profdata)
+	$(call llvm_cov,show,$(EXEC),$(COV_DIR)/merged.profdata) > $(COV_DIR)/report.txt
 
 .PHONY: clean
 clean:
-	rm -rf build
-	rm -rf tests/build
-	rm -f test_cocktail.cpp.gcda
-	rm -f cocktail.cpp.gcda
+	rm -rf $(OUT_DIR)
+	rm -rf $(ANAL_DIR)
+	rm -rf $(TEST_DIR)
+	rm -rf $(COV_DIR)
