@@ -23,7 +23,6 @@ cmake_build: $(OUT_DIR)
 .PHONY: compile
 compile: cmake_build
 	cd build && cmake --build .
-	cp build/main.out main.out
 
 .PHONY: analyze
 analyze: cmake_build $(OUT_DIR) $(ANAL_DIR)
@@ -31,22 +30,19 @@ analyze: cmake_build $(OUT_DIR) $(ANAL_DIR)
 
 .PHONY: run
 run:
-	$(call prep_executable, EXEC, ./main.out)
+	$(call prep_executable, EXEC, ./build/main.out)
 	$(EXEC)
 
 .PHONY: test
 test:
 	mkdir -p tests/build
 	cd tests/build && $(call call_cmake) && cmake --build .
-	cp ./tests/build/run_tests.out run_tests.out
-	$(call prep_executable, EXEC, ./run_tests.out)
+	$(call prep_executable, EXEC, ./tests/build/run_tests.out)
 	GCOV_PREFIX_STRIP=69 GCOV_PREFIX="./" $(EXEC)
 
 .PHONY: clean
 clean:
 	rm -rf build
 	rm -rf tests/build
-	rm -f main.out
-	rm -f run_tests.out
 	rm -f test_cocktail.cpp.gcda
 	rm -f cocktail.cpp.gcda
