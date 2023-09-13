@@ -8,15 +8,16 @@
 
 class Cocktail {
 private:
+    std::string name_;
     float volume_;
     float alcohol_fraction_;
 
 public:
     Cocktail() noexcept;
 
-    Cocktail(float volume, float alcohol_fraction);
+    Cocktail(const std::string &name, float volume, float alcohol_fraction);
 
-    Cocktail(float volume);
+    Cocktail(const std::string &name, float volume);
 
     Cocktail(const Cocktail &) noexcept = default;
 
@@ -25,6 +26,12 @@ public:
     bool operator==(const Cocktail &other) const noexcept;
 
     bool operator!=(const Cocktail &other) const noexcept;
+
+    static const std::string &valid_name(const std::string &value);
+
+    const std::string &name() const noexcept;
+
+    const std::string &name(const std::string &value);
 
     static float valid_volume(float value);
 

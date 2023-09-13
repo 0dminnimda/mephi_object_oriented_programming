@@ -263,7 +263,7 @@ private:
         arg1 = eval_as<floating>("number");
         if (lexer.peek() == Token(TokenKind::Bracket, ")")) {
             lexer.consume();
-            return Cocktail(arg1);
+            return Cocktail("Vodka", arg1);
         }
 
         if (lexer.peek() != Token(TokenKind::Operator, ","))
@@ -274,7 +274,7 @@ private:
         arg2 = eval_as<floating>("number");
         if (lexer.peek() == Token(TokenKind::Bracket, ")")) {
             lexer.consume();
-            return Cocktail(arg1, arg2);
+            return Cocktail("Vodka", arg1, arg2);
         }
 
     bad:

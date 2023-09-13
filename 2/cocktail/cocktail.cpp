@@ -12,21 +12,34 @@ Cocktail::Cocktail() noexcept {
     empty();
 }
 
-Cocktail::Cocktail(float volume, float alcohol_fraction) {
+Cocktail::Cocktail(const std::string &name, float volume, float alcohol_fraction) {
+    this->name(name);
     this->volume(volume);
     this->alcohol_fraction(alcohol_fraction);
     if (!volume) empty();
 }
 
-Cocktail::Cocktail(float volume) : Cocktail(volume, 0) {}
+Cocktail::Cocktail(const std::string &name, float volume) : Cocktail(name, volume, 0) {}
 
 bool Cocktail::operator==(const Cocktail &other) const noexcept {
-    return std::tie(volume_, alcohol_fraction_) ==
-           std::tie(other.volume_, other.alcohol_fraction_);
+    return std::tie(name_, volume_, alcohol_fraction_) ==
+           std::tie(other.name_, other.volume_, other.alcohol_fraction_);
 }
 
 bool Cocktail::operator!=(const Cocktail &other) const noexcept {
     return !(*this == other);
+}
+
+const std::string &Cocktail::valid_name(const std::string &value) {
+    return value;
+}
+
+const std::string &Cocktail::name() const noexcept {
+    return name_;
+}
+
+const std::string &Cocktail::name(const std::string &value) {
+    return name_ = valid_name(value);
 }
 
 float Cocktail::valid_volume(float value) {
@@ -69,6 +82,7 @@ Cocktail &Cocktail::operator+=(const Cocktail &other) noexcept {
         volume(volume() + other.volume());
         alcohol_fraction(total_alcohol_volume / volume());
     }
+    name(name() + other.name());
     return *this;
 }
 
@@ -150,6 +164,7 @@ Cocktail &Cocktail::operator>>(Cocktail &other) {
 std::string to_string(const Cocktail &cock) {
     std::string result;
     result += "Cocktail(";
+    result += "name=\"" + cock.name() + "\", ";
     result += "volume=" + to_string(cock.volume()) + ", ";
     result += "alcohol_fraction=" + to_string(cock.alcohol_fraction());
     result += ")";
@@ -162,6 +177,13 @@ std::ostream &operator<<(std::ostream &stream, const Cocktail &cock) {
 }
 
 std::istream &operator>>(std::istream &stream, Cocktail &cock) {
+    std::string name;
+    stream >> name;
+
+    if (!stream.good()) {
+        goto bad;
+    }
+
     float volume;
     stream >> volume;
 
@@ -176,6 +198,7 @@ std::istream &operator>>(std::istream &stream, Cocktail &cock) {
         goto bad;
     }
 
+    cock.name(name);
     cock.volume(volume);
     cock.alcohol_fraction(alcohol_fraction);
 
