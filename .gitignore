@@ -12,6 +12,6 @@
 *.profdata
 
 build
-tmp
+analysis
 coverage
 .cache

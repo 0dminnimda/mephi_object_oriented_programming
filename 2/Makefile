@@ -1,5 +1,5 @@
 OUT_DIR = build
-ANAL_DIR = tmp/analysis
+ANAL_DIR = analysis
 TEST_DIR = tests/build
 COV_DIR = tests/coverage
 
