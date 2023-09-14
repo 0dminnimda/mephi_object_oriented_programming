@@ -5,12 +5,9 @@
 #include <string>
 #include <tuple>
 
-
 using std::to_string;
 
-Cocktail::Cocktail() noexcept {
-    empty();
-}
+Cocktail::Cocktail() noexcept { empty(); }
 
 Cocktail::Cocktail(const std::string &name, float volume, float alcohol_fraction) {
     this->name(name);
@@ -26,55 +23,37 @@ bool Cocktail::operator==(const Cocktail &other) const noexcept {
            std::tie(other.name_, other.volume_, other.alcohol_fraction_);
 }
 
-bool Cocktail::operator!=(const Cocktail &other) const noexcept {
-    return !(*this == other);
-}
+bool Cocktail::operator!=(const Cocktail &other) const noexcept { return !(*this == other); }
 
-const std::string &Cocktail::valid_name(const std::string &value) {
-    return value;
-}
+const std::string &Cocktail::valid_name(const std::string &value) { return value; }
 
-const std::string &Cocktail::name() const noexcept {
-    return name_;
-}
+const std::string &Cocktail::name() const noexcept { return name_; }
 
-const std::string &Cocktail::name(const std::string &value) {
-    return name_ = valid_name(value);
-}
+const std::string &Cocktail::name(const std::string &value) { return name_ = valid_name(value); }
 
 float Cocktail::valid_volume(float value) {
     if (0 <= value) return value;
     throw std::runtime_error("Volume should be positive");
 }
 
-float Cocktail::volume() const noexcept {
-    return volume_;
-}
+float Cocktail::volume() const noexcept { return volume_; }
 
-float Cocktail::volume(float value) {
-    return volume_ = valid_volume(value);
-}
+float Cocktail::volume(float value) { return volume_ = valid_volume(value); }
 
 float Cocktail::valid_alcohol_fraction(float value) {
     if (0 <= value && value <= 1) return value;
     throw std::runtime_error("Alcohol fraction should be in range [0, 1]");
 }
 
-float Cocktail::alcohol_fraction() const noexcept {
-    return alcohol_fraction_;
-}
+float Cocktail::alcohol_fraction() const noexcept { return alcohol_fraction_; }
 
 float Cocktail::alcohol_fraction(float value) {
     return alcohol_fraction_ = valid_alcohol_fraction(value);
 }
 
-float Cocktail::alcohol_volume() const noexcept {
-    return volume() * alcohol_fraction();
-}
+float Cocktail::alcohol_volume() const noexcept { return volume() * alcohol_fraction(); }
 
-float Cocktail::water_volume() const noexcept {
-    return volume() - alcohol_volume();
-}
+float Cocktail::water_volume() const noexcept { return volume() - alcohol_volume(); }
 
 Cocktail &Cocktail::operator+=(const Cocktail &other) noexcept {
     if (!other.is_empty()) {
@@ -131,9 +110,7 @@ template Cocktail Cocktail::operator*(float other) const noexcept;
 template Cocktail Cocktail::operator*(double other) const noexcept;
 template Cocktail Cocktail::operator*(long double other) const noexcept;
 
-bool Cocktail::is_empty() const noexcept {
-    return volume() == 0;
-}
+bool Cocktail::is_empty() const noexcept { return volume() == 0; }
 
 void Cocktail::empty() noexcept {
     volume(0);
@@ -152,9 +129,7 @@ Cocktail Cocktail::split(float part_volume) {
     return part;
 }
 
-void Cocktail::pour(Cocktail &other, float poured_volume) {
-    other += split(poured_volume);
-}
+void Cocktail::pour(Cocktail &other, float poured_volume) { other += split(poured_volume); }
 
 Cocktail &Cocktail::operator>>(Cocktail &other) {
     pour(other, 1);
