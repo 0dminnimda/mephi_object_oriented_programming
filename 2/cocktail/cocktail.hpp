@@ -69,11 +69,15 @@ public:
 
     Cocktail &operator>>(Cocktail &other);
 
-    friend std::string to_string(const Cocktail &cock);
+    std::string to_string() const;
 
     friend std::ostream &operator<<(std::ostream &stream, const Cocktail &cock);
 
     friend std::istream &operator>>(std::istream &stream, Cocktail &cock);
 };
+
+namespace std {
+    std::string to_string(const Cocktail &cock);
+}
 
 #endif // COCKTAIL_HPP

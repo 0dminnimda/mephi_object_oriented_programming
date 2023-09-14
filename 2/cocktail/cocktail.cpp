@@ -161,15 +161,17 @@ Cocktail &Cocktail::operator>>(Cocktail &other) {
     return *this;
 }
 
-std::string to_string(const Cocktail &cock) {
+std::string Cocktail::to_string() const {
     std::string result;
     result += "Cocktail(";
-    result += "name=\"" + cock.name() + "\", ";
-    result += "volume=" + to_string(cock.volume()) + ", ";
-    result += "alcohol_fraction=" + to_string(cock.alcohol_fraction());
+    result += "name=\"" + name() + "\", ";
+    result += "volume=" + std::to_string(volume()) + ", ";
+    result += "alcohol_fraction=" + std::to_string(alcohol_fraction());
     result += ")";
     return result;
 }
+
+std::string std::to_string(const Cocktail &cock) { return cock.to_string(); }
 
 std::ostream &operator<<(std::ostream &stream, const Cocktail &cock) {
     stream << to_string(cock);
