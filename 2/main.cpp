@@ -5,14 +5,14 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <variant>
 #include <type_traits>
+#include <variant>
 #include <vector>
 
 #include "EH.hpp"
 #include "cocktail/cocktail.hpp"
 
-template <typename T, typename ...Ts>
+template <typename T, typename... Ts>
 using is_one_of = std::disjunction<std::is_same<T, Ts>...>;
 
 template <typename T, typename... Ts>
