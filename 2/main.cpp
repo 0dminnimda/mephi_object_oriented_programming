@@ -11,6 +11,8 @@
 
 #include "EH.hpp"
 #include "cocktail/cocktail.hpp"
+#include "cocktail/cocktail_map.cpp"
+
 
 template <typename T, typename... Ts>
 using is_one_of = std::disjunction<std::is_same<T, Ts>...>;
@@ -503,7 +505,32 @@ void evaluate() {
     std::visit([](auto value) { std::cout << value << std::endl; }, Evaluator().evaluate(line));
 }
 
+void test_hah() {
+    HashTable<std::string, Cocktail> map;
+
+    std::cout << map << std::endl;
+
+    Cocktail cock("Gi", 10);
+    map.insert(cock.name(), cock);
+
+    std::cout << map << std::endl;
+}
+
+namespace std {
+    std::string to_string(const std::string &value) { return value; }
+}  // namespace std
+
 int main() {
+    TRY_CATCH_WRAPPER({
+        try {
+            test_hah();
+        } catch (const std::exception &e) {
+            std::cout << "Error: " << e.what() << std::endl;
+        } catch (...) {
+            std::cout << "Unknwon error occured" << std::endl;
+        }
+    })
+
     while (1) {
         TRY_CATCH_WRAPPER({
             try {

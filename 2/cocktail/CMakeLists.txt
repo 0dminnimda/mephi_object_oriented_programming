@@ -8,7 +8,7 @@ project(cocktail_lib)
 set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
 set(CMAKE_CXX_STANDARD 17)
 
-add_library(cocktail_lib STATIC cocktail.cpp)
+add_library(cocktail_lib STATIC cocktail.cpp cocktail_map.cpp)
 target_include_directories(cocktail_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 if (WIN32)
