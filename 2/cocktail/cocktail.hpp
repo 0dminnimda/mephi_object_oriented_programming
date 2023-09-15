@@ -19,9 +19,9 @@ public:
 
     Cocktail(const std::string &name, float volume);
 
-    Cocktail(const Cocktail &) noexcept = default;
+    Cocktail(const Cocktail &) = default;
 
-    Cocktail &operator=(const Cocktail &) noexcept = default;
+    Cocktail &operator=(const Cocktail &) = default;
 
     bool operator==(const Cocktail &other) const noexcept;
 
