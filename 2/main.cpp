@@ -12,7 +12,6 @@
 #include "cocktail/cocktail.hpp"
 #include "cocktail/cocktail_map.cpp"
 
-
 template <typename T, typename... Ts>
 using is_one_of = std::disjunction<std::is_same<T, Ts>...>;
 
@@ -532,21 +531,50 @@ void evaluate() {
 
 void test_hah() {
     HashTable<std::string, Cocktail> map;
+    std::cout << map << std::endl;
+
+    {
+        Cocktail cock("Gi", 10);
+        map.insert(cock.name(), cock);
+        std::cout << map.at(cock.name()) << std::endl;
+    }
 
     std::cout << map << std::endl;
 
-    Cocktail cock("Gi", 10);
+    {
+        Cocktail cock("dfgd", 23, 0.1);
+        map.insert(cock.name(), cock);
+        std::cout << map.at(cock.name()) << std::endl;
+    }
 
-    std::cout << cock.name() << std::endl;
-    std::cout << std::to_string(cock) << std::endl;
+    std::cout << map << std::endl;
 
-    map.insert(cock.name(), cock);
+    {
+        Cocktail cock("jghjg", 23, 0.1);
+        map.insert(cock.name(), cock);
+        std::cout << map.at(cock.name()) << std::endl;
+    }
 
-    Cocktail lok = map.at(cock.name());
+    std::cout << map << std::endl;
 
-    std::cout << "lok:" << lok << std::endl;
+    {
+        if (map.erase("jghjg")) {
+            std::cout << "erased" << std::endl;
+        } else {
+            std::cout << "not erased" << std::endl;
+        }
+    }
 
-    std::cout << "map print" << std::endl;
+    std::cout << map << std::endl;
+
+    {
+        if (map.erase("nothing")) {
+            std::cout << "erased" << std::endl;
+        } else {
+            std::cout << "not erased" << std::endl;
+        }
+    }
+
     std::cout << map << std::endl;
 }
 
