@@ -231,20 +231,45 @@ public:
     void consume() { ++cursor; }
 };
 
-#define BINARY_OPERATION_IMPL(T1, lhs, T2, rhs, code)                             \
-    std::string_view lexeme = lexer.peek().lexeme;                                \
-    lexer.consume();                                                              \
-    return std::visit(                                                            \
-        [&](auto lhs, auto rhs) -> value_type {                                   \
-            using T1 = std::decay_t<decltype(lhs)>;                               \
-            using T2 = std::decay_t<decltype(rhs)>;                               \
-            code;                                                                 \
-            throw std::runtime_error(                                             \
-                "Unsupported operation '" + std::string(lexeme) + "' between '" + \
-                typeid(T1).name() + "' and '" + typeid(T2).name() + "'"           \
-            );                                                                    \
-        },                                                                        \
-        lhs, eval()                                                               \
+template <typename T>
+struct name_of_type {
+    static constexpr const char *value = "unknown";
+};
+
+template <>
+struct name_of_type<std::string> {
+    static constexpr const char *value = "string";
+};
+
+template <>
+struct name_of_type<long long> {
+    static constexpr const char *value = "decimal";
+};
+
+template <>
+struct name_of_type<float> {
+    static constexpr const char *value = "floating";
+};
+
+template <>
+struct name_of_type<Cocktail> {
+    static constexpr const char *value = "cocktail";
+};
+
+#define BINARY_OPERATION_IMPL(T1, lhs, T2, rhs, code)                               \
+    std::string_view lexeme = lexer.peek().lexeme;                                  \
+    lexer.consume();                                                                \
+    return std::visit(                                                              \
+        [&](auto lhs, auto rhs) -> value_type {                                     \
+            using T1 = std::decay_t<decltype(lhs)>;                                 \
+            using T2 = std::decay_t<decltype(rhs)>;                                 \
+            code;                                                                   \
+            throw std::runtime_error(                                               \
+                "Unsupported operation '" + std::string(lexeme) + "' between '" +   \
+                name_of_type<T1>::value + "' and '" + name_of_type<T2>::value + "'" \
+            );                                                                      \
+        },                                                                          \
+        lhs, eval()                                                                 \
     );
 
 class Evaluator {
