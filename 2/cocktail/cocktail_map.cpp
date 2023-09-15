@@ -1,4 +1,6 @@
+#include <cassert>
 #include <cstddef>
+#include <functional>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -12,15 +14,27 @@
 
 template <typename Key, typename Value>
 class HashTable {
-private:
-    struct Entry {
+public:
+    class Iterator;
+
+    class Entry {
+    private:
         Key key;
         Value value;
         bool busy;
 
-        Entry() : busy(false) {}
+        friend Iterator;
+        friend HashTable;
+
+    public:
+        Entry() : key(), value(), busy(false) {}
+
+        const Key &first() const { return key; }
+        Value &second() { return value; }
+        const Value &second() const { return value; }
     };
 
+private:
     Entry *table;
     std::size_t capacity;
     std::size_t size;
@@ -53,6 +67,8 @@ public:
             return;
         }
 
+        assert((index < capacity) && "Ur fucked! Rehashing didn't help");
+
         table[index].key = key;
         table[index].value = value;
         table[index].busy = true;
@@ -77,27 +93,18 @@ public:
         throw std::out_of_range("Key not found");
     }
 
-    std::string to_string() const {
-        std::string result;
-        // for (int i = 0; i < capacity; ++i) {
-        //     if (table[i].busy) {
-        //         if (result.size()) {
-        //             result += ", ";
-        //         }
-        //         result += std::to_string(table[i].key) + ": " + std::to_string(table[i].value);
-        //     }
-        // }
-        for (const auto &it : *this) {
-            if (result.size()) {
-                result += ", ";
-            }
-            result += std::to_string(it.first) + ": " + std::to_string(it.second);
-        }
-        return "{" + result + "}";
-    }
-
     friend std::ostream &operator<<(std::ostream &stream, const Self &table) {
-        stream << table.to_string();
+        stream << "{";
+        bool first = true;
+        for (const auto &it : table) {
+            if (!first) {
+                stream << ", ";
+            }
+            first = !first;
+
+            stream << it.first() << ": " << it.second();
+        }
+        stream << "}";
         return stream;
     }
 
@@ -122,14 +129,8 @@ private:
 
         Self new_table(new_capacity);
 
-        // for (std::size_t i = 0; i < capacity; ++i) {
-        //     if (table[i].busy) {
-        //         new_table.insert(table[i].key, table[i].value);
-        //     }
-        // }
-
         for (const auto &it : *this) {
-            new_table.insert(it.first, it.second);
+            new_table.insert(it.first(), it.second());
         }
 
         new_table.swap(*this);
@@ -165,9 +166,7 @@ public:
             return result;
         }
 
-        std::pair<const Key &, const Value &> operator*() const {
-            return std::make_pair(table.table[index].key, table.table[index].value);
-        }
+        const Entry &operator*() const { return table.table[index]; }
 
     private:
         void progress() {

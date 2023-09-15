@@ -536,14 +536,19 @@ void test_hah() {
     std::cout << map << std::endl;
 
     Cocktail cock("Gi", 10);
+
+    std::cout << cock.name() << std::endl;
+    std::cout << std::to_string(cock) << std::endl;
+
     map.insert(cock.name(), cock);
 
+    Cocktail lok = map.at(cock.name());
+
+    std::cout << "lok:" << lok << std::endl;
+
+    std::cout << "map print" << std::endl;
     std::cout << map << std::endl;
 }
-
-namespace std {
-    std::string to_string(const std::string &value) { return value; }
-}  // namespace std
 
 int main() {
     TRY_CATCH_WRAPPER({
