@@ -77,7 +77,7 @@ public:
 
     bool erase(const Key &key) {
         std::size_t index;
-        if (!find_index(key, index)) {
+        if (find_index(key, index)) {
             table[index].busy = false;
             --size;
             return true;
