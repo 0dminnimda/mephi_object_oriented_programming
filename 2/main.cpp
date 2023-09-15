@@ -602,8 +602,6 @@ Cocktail("Beer", 5, 0.3) * 3
 "it's a string!"
 "he" + "llo"
 
-// TODO: update
-
 $ ./main.out
 ~> 3 - 3 -
 0
@@ -626,27 +624,27 @@ Error: Invalid decimal
 ~> 341123123123123123123123123132123132123.
 Error: Invalid floating
 ~> Cocktail()
-Cocktail(volume=0.000000, alcohol_fraction=0.000000)
-~> Cocktail(10)
-Cocktail(volume=10.000000, alcohol_fraction=0.000000)
-~> Cocktail(10, 0.1)
-Cocktail(volume=10.000000, alcohol_fraction=0.100000)
-~> Cocktail(10, 0.1) + Cocktail(16, 0.1)
-Cocktail(volume=26.000000, alcohol_fraction=0.100000)
-~> Cocktail(10, 0.1) >> Cocktail(16, 0.1)
-Cocktail(volume=17.000000, alcohol_fraction=0.100000)
-~> Cocktail(10, 0.1) >>! Cocktail(16, 0.1)
-Cocktail(volume=9.000000, alcohol_fraction=0.100000)
-~> Cocktail(10, 0.1) << Cocktail(16, 0.1)
-Cocktail(volume=15.000000, alcohol_fraction=0.100000)
-~> Cocktail(10, 0.1) <<! Cocktail(16, 0.1)
-Cocktail(volume=11.000000, alcohol_fraction=0.100000)
+Cocktail(name="", volume=0.000000, alcohol_fraction=0.000000)
+~> Cocktail("Vodka", 10)
+Cocktail(name="Vodka", volume=10.000000, alcohol_fraction=0.000000)
+~> Cocktail("Vodka", 10, 0.1)
+Cocktail(name="Vodka", volume=10.000000, alcohol_fraction=0.100000)
+~> Cocktail("Vodka", 10, 0.1) + Cocktail("Vine", 16, 0.1)
+Cocktail(name="VodkaVine", volume=26.000000, alcohol_fraction=0.100000)
+~> Cocktail("Vodka", 10, 0.1) >> Cocktail("Vine", 16, 0.1)
+Cocktail(name="VineVodka", volume=17.000000, alcohol_fraction=0.100000)
+~> Cocktail("Vodka", 10, 0.1) >>! Cocktail("Vine", 16, 0.1)
+Cocktail(name="Vodka", volume=9.000000, alcohol_fraction=0.100000)
+~> Cocktail("Vodka", 10, 0.1) << Cocktail("Vine", 16, 0.1)
+Cocktail(name="Vine", volume=15.000000, alcohol_fraction=0.100000)
+~> Cocktail("Vodka", 10, 0.1) <<! Cocktail("Vine", 16, 0.1)
+Cocktail(name="VodkaVine", volume=11.000000, alcohol_fraction=0.100000)
 ~> Cocktail() + 3
-Error: Unsupported operation '+' between 'class Cocktail' and '__int64'
+Error: Unsupported operation '+' between 'cocktail' and 'decimal'
 ~> Cocktail() * 3
-Cocktail(volume=0.000000, alcohol_fraction=0.000000)
-~> Cocktail(5, 0.3) * 3
-Cocktail(volume=15.000000, alcohol_fraction=0.300000)
+Cocktail(name="", volume=0.000000, alcohol_fraction=0.000000)
+~> Cocktail("Beer", 5, 0.3) * 3
+Cocktail(name="Beer", volume=15.000000, alcohol_fraction=0.300000)
 ~> "it's a string!"
 it's a string!
 ~> "he" + "llo"
