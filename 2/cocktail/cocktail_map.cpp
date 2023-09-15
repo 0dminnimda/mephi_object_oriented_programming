@@ -100,7 +100,7 @@ public:
             if (!first) {
                 stream << ", ";
             }
-            first = !first;
+            first = false;
 
             stream << it.first() << ": " << it.second();
         }
