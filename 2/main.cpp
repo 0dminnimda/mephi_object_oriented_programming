@@ -1,4 +1,3 @@
-#include <charconv>
 #include <cstdlib>
 #include <iostream>
 #include <iterator>
@@ -263,10 +262,11 @@ public:
 
 private:
     decimal eval_decimal() {
-        decimal result = 0;
         const std::string_view &lexeme = lexer.peek().lexeme;
-        auto conversion = std::from_chars(lexeme.data(), lexeme.data() + lexeme.size(), result);
-        if (conversion.ec == std::errc{}) {
+        char *end;
+        errno = 0;
+        decimal result = std::strtoll(lexeme.data(), &end, 10);
+        if (end != lexeme.data() && end == lexeme.data() + lexeme.size() && errno != ERANGE) {
             lexer.consume();
             return result;
         }
