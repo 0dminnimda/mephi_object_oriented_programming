@@ -35,27 +35,28 @@ public:
     };
 
 private:
-    Entry *table;
-    std::size_t capacity;
-    std::size_t size;
+    Entry *entries_;
+    std::size_t capacity_;
+    std::size_t size_;
 
     using Self = HashTable<Key, Value>;
 
 public:
     HashTable() : HashTable(0) {}
-    HashTable(std::size_t capacity) : capacity(capacity), size(0) { table = new Entry[capacity]; }
+    HashTable(std::size_t capacity) : capacity_(capacity), size_(0) { entries_ = new Entry[capacity]; }
 
-    ~HashTable() { delete[] table; }
+    ~HashTable() { delete[] entries_; }
+
 
     bool operator==(const Self &other) const {
-        return std::tie(table, capacity, size) == std::tie(other.table, other.capacity, other.size);
+        return std::tie(entries_, capacity_, size_) == std::tie(other.entries_, other.capacity_, other.size_);
     }
     bool operator!=(const Self &other) const { return !(*this == other); }
 
     void swap(Self &other) {
-        std::swap(table, other.table);
-        std::swap(capacity, other.capacity);
-        std::swap(size, other.size);
+        std::swap(entries_, other.entries_);
+        std::swap(capacity_, other.capacity_);
+        std::swap(size_, other.size_);
     }
 
     void insert(const Key &key, const Value &value) {
@@ -63,23 +64,23 @@ public:
 
         std::size_t index;
         if (find_index(key, index)) {
-            table[index].value = value;
+            entries_[index].value = value;
             return;
         }
 
-        assert((index < capacity) && "Ur fucked! Rehashing didn't help");
+        assert((index < capacity_) && "Ur fucked! Rehashing didn't help");
 
-        table[index].key = key;
-        table[index].value = value;
-        table[index].busy = true;
-        ++size;
+        entries_[index].key = key;
+        entries_[index].value = value;
+        entries_[index].busy = true;
+        ++size_;
     }
 
     bool erase(const Key &key) {
         std::size_t index;
         if (find_index(key, index)) {
-            table[index].busy = false;
-            --size;
+            entries_[index].busy = false;
+            --size_;
             return true;
         }
         return false;
@@ -88,7 +89,7 @@ public:
     Value &at(const Key &key) {
         std::size_t index;
         if (find_index(key, index)) {
-            return table[index].value;
+            return entries_[index].value;
         }
         throw std::out_of_range("Key not found");
     }
@@ -109,12 +110,12 @@ public:
     }
 
 private:
-    std::size_t key_index(const Key &key) const { return std::hash<Key>{}(key) % capacity; }
+    std::size_t key_index(const Key &key) const { return std::hash<Key>{}(key) % capacity_; }
 
     bool find_index(const Key &key, std::size_t &index) const {
         std::size_t i = key_index(key);
-        HT_FOR(i, capacity, table[i].busy) {
-            if (table[i].key == key) {
+        HT_FOR(i, capacity_, entries_[i].busy) {
+            if (entries_[i].key == key) {
                 index = i;
                 return true;
             }
@@ -124,8 +125,8 @@ private:
     }
 
     void try_rehash() {
-        std::size_t new_capacity = (size + 1) * 2;
-        if (new_capacity <= capacity) return;
+        std::size_t new_capacity = (size_ + 1) * 2;
+        if (new_capacity <= capacity_) return;
 
         Self new_table(new_capacity);
 
@@ -166,27 +167,27 @@ public:
             return result;
         }
 
-        const Entry &operator*() const { return table.table[index]; }
+        const Entry &operator*() const { return table.entries_[index]; }
 
     private:
         void progress() {
-            if (index < table.capacity) {
+            if (index < table.capacity_) {
                 ++index;
             }
         }
 
         void skip_untill_busy() {
-            while (index < table.capacity && !table.table[index].busy) {
+            while (index < table.capacity_ && !table.entries_[index].busy) {
                 ++index;
             }
         }
     };
 
     Iterator begin() const { return Iterator(*this, 0); }
-    Iterator end() const { return Iterator(*this, capacity); }
+    Iterator end() const { return Iterator(*this, capacity_); }
 
     Iterator cbegin() const { return Iterator(*this, 0); }
-    Iterator cend() const { return Iterator(*this, capacity); }
+    Iterator cend() const { return Iterator(*this, capacity_); }
 };
 
 // template <typename Key, typename Value>
