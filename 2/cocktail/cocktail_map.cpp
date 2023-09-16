@@ -12,9 +12,13 @@
     for (std::size_t i_ = 0; (i_ < (capacity)) && (condition); \
          (++i_, index = HT_NEXT_INDEX(index, capacity)))
 
+template <bool is_const, typename T>
+using conditional_const_t = std::conditional_t<is_const, std::add_const_t<T>, T>;
+
 template <typename Key, typename Value>
 class HashTable {
 public:
+    template <bool is_const>
     class Iterator;
 
     class Entry {
@@ -23,7 +27,8 @@ public:
         Value value;
         bool busy;
 
-        friend Iterator;
+        friend Iterator<false>;
+        friend Iterator<true>;
         friend HashTable;
 
     public:
@@ -148,15 +153,15 @@ private:
     }
 
 public:
+    template <bool is_const>
     class Iterator {
     private:
-        const HashTable<Key, Value> &table;
+        using TableT = conditional_const_t<is_const, HashTable<Key, Value>>;
+        TableT &table;
         std::size_t index;
 
     public:
-        Iterator(const HashTable<Key, Value> &table, std::size_t i) : table(table), index(i) {
-            skip_untill_busy();
-        }
+        Iterator(TableT &table, std::size_t i) : table(table), index(i) { skip_untill_busy(); }
         Iterator(const Iterator &) = default;
 
         bool operator==(const Iterator &other) const {
@@ -177,7 +182,7 @@ public:
             return result;
         }
 
-        const Entry &operator*() const { return table.entries_[index]; }
+        conditional_const_t<is_const, Entry> &operator*() const { return table.entries_[index]; }
 
     private:
         void progress() {
@@ -193,10 +198,13 @@ public:
         }
     };
 
-    Iterator begin() const { return Iterator(*this, 0); }
-    Iterator end() const { return Iterator(*this, capacity_); }
+    Iterator<false> begin() { return Iterator<false>(*this, 0); }
+    Iterator<false> end() { return Iterator<false>(*this, capacity_); }
 
-    Iterator cbegin() const { return Iterator(*this, 0); }
-    Iterator cend() const { return Iterator(*this, capacity_); }
+    Iterator<true> begin() const { return Iterator<true>(*this, 0); }
+    Iterator<true> end() const { return Iterator<true>(*this, capacity_); }
+
+    Iterator<true> cbegin() const { return Iterator<true>(*this, 0); }
+    Iterator<true> cend() const { return Iterator<true>(*this, capacity_); }
 };
 
