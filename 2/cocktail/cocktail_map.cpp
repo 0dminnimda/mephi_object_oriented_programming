@@ -43,15 +43,25 @@ private:
 
 public:
     HashTable() : HashTable(0) {}
-    HashTable(std::size_t capacity) : capacity_(capacity), size_(0) { entries_ = new Entry[capacity]; }
+    HashTable(std::size_t capacity) : capacity_(capacity), size_(0) {
+        entries_ = new Entry[capacity];
+    }
+    HashTable(const Self &other) = default;
+    HashTable(Self &&other) = default;
 
     ~HashTable() { delete[] entries_; }
 
+    Self &operator=(const Self &) = default;
+    Self &operator=(Self &&) = default;
 
     bool operator==(const Self &other) const {
-        return std::tie(entries_, capacity_, size_) == std::tie(other.entries_, other.capacity_, other.size_);
+        return std::tie(entries_, capacity_, size_) ==
+               std::tie(other.entries_, other.capacity_, other.size_);
     }
     bool operator!=(const Self &other) const { return !(*this == other); }
+
+    std::size_t size() const { return size_; }
+    std::size_t capacity() const { return capacity_; }
 
     void swap(Self &other) {
         std::swap(entries_, other.entries_);
