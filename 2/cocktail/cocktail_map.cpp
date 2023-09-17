@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -158,6 +159,12 @@ public:
     template <bool is_const>
     class Iterator {
     private:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = conditional_const_t<is_const, Entry>;
+        using difference_type = std::ptrdiff_t;
+        using pointer = value_type *;
+        using reference = value_type &;
+
         using TableT = conditional_const_t<is_const, HashTable<Key, Value>>;
         TableT &table;
         std::size_t index;
@@ -165,6 +172,7 @@ public:
     public:
         Iterator(TableT &table, std::size_t i) : table(table), index(i) { skip_untill_busy(); }
         Iterator(const Iterator &) = default;
+        Iterator &operator=(const Iterator &) = default;
 
         bool operator==(const Iterator &other) const {
             return std::tie(table, index) == std::tie(other.table, other.index);
@@ -179,12 +187,11 @@ public:
 
         Iterator operator++(int) {
             Iterator result(*this);
-            progress();
-            skip_untill_busy();
+            ++(*this);
             return result;
         }
 
-        conditional_const_t<is_const, Entry> &operator*() const { return table.entries_[index]; }
+        reference operator*() const { return table.entries_[index]; }
 
     private:
         void progress() {
