@@ -3,6 +3,7 @@
 #include <functional>
 #include <iostream>
 #include <iterator>
+#include <list>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -240,6 +241,7 @@ class CocktailMap : public HashTable<std::string, Cocktail> {
 public:
     CocktailMap() : HashTable() {}
     CocktailMap(std::size_t capacity) : HashTable(capacity) {}
+
     CocktailMap(const CocktailMap &) = default;
     CocktailMap(CocktailMap &&) = default;
 
@@ -270,19 +272,6 @@ public:
     bool is_full() const { return size() >= capacity(); }
     bool is_partially_full() const { return !is_empty() && !is_full(); }
 
-    // Cocktail make_cocktail_with_alcohol_fraction_in_range(
-    //     float min_frac, float max_frac, float volume = 5
-    // ) {
-    //     Cocktail result;
-    //     for (auto &it : *this) {
-    //         float frac = it.second().alcohol_fraction();
-    //         if (min_frac <= frac && frac <= max_frac) {
-    //             it.second().pour(result, volume);
-    //             return result;
-    //         }
-    //     }
-    // }
-
     float volume_with_alcohol_fraction_in_quartile(Quartile quart) const {
         switch (quart) {
             case FIRST: return volume_with_alcohol_fraction_in_range(0, 0.25);
@@ -309,5 +298,84 @@ public:
         erase(old_name);
         cock.name(new_name);
         (*this) += cock;
+    }
+
+    // Cocktail make_cocktail_with_alcohol_fraction_in_range(
+    // {
+    //     Cocktail ready_cocktail;
+    //     for (auto &it : *this) {
+    //         float frac = it.second().alcohol_fraction();
+    //         if (min_frac <= frac && frac <= max_frac) {
+    //             it.second().pour(ready_cocktail, volume - ready_cocktail.volume());
+    //             if (volume == ready_cocktail.volume())  // feels wrong, maybe add epsilon?
+    //                 return ready_cocktail;
+    //         }
+    //     }
+
+    //     float remaining_volume = volume - ready_cocktail.volume();
+
+    //     // if two drinks have the same volume
+    //     // than combined fraction is arithmetic mean of fractions
+    //     // (frac1 + frac2) / 2
+
+    //     // you can go from smaller fraction to larger, but not vice versa
+    //     Cocktail in_process_cocktail;
+    //     bool found = false;
+    //     for (auto &it : *this) {
+    //         float frac = it.second().alcohol_fraction();
+    //         if (frac < min_frac) {
+    //             it.second().pour(in_process_cocktail, remaining_volume -
+    //             in_process_cocktail.volume()); found = true; if (ready_cocktail.volume() ==
+    //             volume)  // feels wrong, maybe add epsilon?
+    //                 return ready_cocktail + in_process_cocktail;
+    //         }
+    //     }
+
+    //     return ready_cocktail + in_process_cocktail;
+    // }
+
+    Cocktail mix_for_alcohol_fraction(float fraction, float volume = 5) {
+        CocktailMap temp;
+        this->copy_into(temp);
+
+        std::list<std::reference_wrapper<Cocktail>> cocktails;
+        for (auto &it : temp) {
+            cocktails.push_back(it.second());
+        }
+
+        cocktails.sort([](const Cocktail &a, const Cocktail &b) {
+            return a.alcohol_fraction() < b.alcohol_fraction();
+        });
+
+        Cocktail result;
+        if (!mix_for_alcohol_fraction_no_map_(fraction, volume, result, cocktails)) {
+            throw std::runtime_error("Could not make you such cocktail, sorry!");
+        }
+
+        temp.swap(*this);
+        return result;
+    }
+
+private:
+    static bool mix_for_alcohol_fraction_no_map_(
+        float fraction, float volume, Cocktail &result,
+        std::list<std::reference_wrapper<Cocktail>> &cocktails
+    ) {
+        while (cocktails.size() > 0 && cocktails.front().get().volume() == 0) cocktails.pop_front();
+        while (cocktails.size() > 0 && cocktails.back().get().volume() == 0) cocktails.pop_back();
+
+        if (cocktails.size() <= 0) return false;
+
+        Cocktail &min_frac = cocktails.front().get();
+        Cocktail &max_frac = cocktails.back().get();
+
+        float volume_to_add = volume - result.volume();
+        bool ok = Cocktail::mix_for_alcohol_fraction_sorted(
+            min_frac, max_frac, result, fraction, volume_to_add
+        );
+        if (!ok) {
+            ok = mix_for_alcohol_fraction_no_map_(fraction, volume, result, cocktails);
+        }
+        return ok;
     }
 };
