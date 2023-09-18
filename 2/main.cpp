@@ -578,10 +578,63 @@ void test_hah() {
     std::cout << map << std::endl;
 }
 
+void test_ch() {
+    CocktailMap map;
+    std::cout << map << std::endl;
+
+    {
+        Cocktail cock("Vo", 10, 0.2);
+        map += cock;
+        std::cout << map[cock.name()] << std::endl;
+    }
+
+    std::cout << map << std::endl;
+
+    {
+        Cocktail cock("Ar", 5, 0.8);
+        map += cock;
+        std::cout << map[cock.name()] << std::endl;
+    }
+
+    std::cout << map << std::endl;
+
+    std::cout << map.volume_with_alcohol_fraction_in_quartile(Quartile::FIRST) << std::endl;
+    std::cout << map.volume_with_alcohol_fraction_in_quartile(Quartile::SECOND) << std::endl;
+    std::cout << map.volume_with_alcohol_fraction_in_quartile(Quartile::THIRD) << std::endl;
+    std::cout << map.volume_with_alcohol_fraction_in_quartile(Quartile::FOURTH) << std::endl;
+
+    map.rename("Ar", "Og");
+    std::cout << map << std::endl;
+
+    {
+        Cocktail result = map.mix_for_alcohol_fraction(0.6);
+
+        std::cout << result << std::endl;
+        std::cout << map << std::endl;
+    }
+
+    {
+        Cocktail result = map.mix_for_alcohol_fraction(0.3);
+
+        std::cout << result << std::endl;
+        std::cout << map << std::endl;
+    }
+}
+
 int main() {
     TRY_CATCH_WRAPPER({
         try {
             test_hah();
+        } catch (const std::exception &e) {
+            std::cout << "Error: " << e.what() << std::endl;
+        } catch (...) {
+            std::cout << "Unknwon error occured" << std::endl;
+        }
+    })
+
+    TRY_CATCH_WRAPPER({
+        try {
+            test_ch();
         } catch (const std::exception &e) {
             std::cout << "Error: " << e.what() << std::endl;
         } catch (...) {
