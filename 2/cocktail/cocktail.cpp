@@ -155,18 +155,11 @@ bool Cocktail::mix_for_alcohol_fraction_sorted(
         target_fraction, volume_to_add
     );
 
-    bool ok = false;
-    if (min_fraction_cocktail.volume() >= first_volume &&
-        max_fraction_cocktail.volume() >= second_volume)
+    bool ok = true;
+    if (min_fraction_cocktail.volume() < first_volume ||
+        max_fraction_cocktail.volume() < second_volume)
     {
-        ok = true;
-        // } else if (min_fraction_cocktail.volume() < first_volume) {
-        //     second_volume *= (min_fraction_cocktail.volume() / first_volume);
-        //     first_volume = min_fraction_cocktail.volume();
-        // } else if (max_fraction_cocktail.volume() < second_volume) {
-        //     first_volume *= (max_fraction_cocktail.volume() / second_volume);
-        //     second_volume = max_fraction_cocktail.volume();
-    } else {
+        ok = false;
         float scale = std::min(
             min_fraction_cocktail.volume() / first_volume,
             max_fraction_cocktail.volume() / second_volume

@@ -300,40 +300,6 @@ public:
         (*this) += cock;
     }
 
-    // Cocktail make_cocktail_with_alcohol_fraction_in_range(
-    // {
-    //     Cocktail ready_cocktail;
-    //     for (auto &it : *this) {
-    //         float frac = it.second().alcohol_fraction();
-    //         if (min_frac <= frac && frac <= max_frac) {
-    //             it.second().pour(ready_cocktail, volume - ready_cocktail.volume());
-    //             if (volume == ready_cocktail.volume())  // feels wrong, maybe add epsilon?
-    //                 return ready_cocktail;
-    //         }
-    //     }
-
-    //     float remaining_volume = volume - ready_cocktail.volume();
-
-    //     // if two drinks have the same volume
-    //     // than combined fraction is arithmetic mean of fractions
-    //     // (frac1 + frac2) / 2
-
-    //     // you can go from smaller fraction to larger, but not vice versa
-    //     Cocktail in_process_cocktail;
-    //     bool found = false;
-    //     for (auto &it : *this) {
-    //         float frac = it.second().alcohol_fraction();
-    //         if (frac < min_frac) {
-    //             it.second().pour(in_process_cocktail, remaining_volume -
-    //             in_process_cocktail.volume()); found = true; if (ready_cocktail.volume() ==
-    //             volume)  // feels wrong, maybe add epsilon?
-    //                 return ready_cocktail + in_process_cocktail;
-    //         }
-    //     }
-
-    //     return ready_cocktail + in_process_cocktail;
-    // }
-
     Cocktail mix_for_alcohol_fraction(float fraction, float volume = 5) {
         CocktailMap temp;
         this->copy_into(temp);
