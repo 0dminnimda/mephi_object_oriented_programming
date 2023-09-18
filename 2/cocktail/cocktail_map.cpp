@@ -51,9 +51,8 @@ private:
 
 public:
     HashTable() : HashTable(0) {}
-    HashTable(std::size_t capacity) : capacity_(capacity), size_(0) {
-        entries_ = new Entry[capacity];
-    }
+    HashTable(std::size_t capacity)
+        : capacity_(capacity), size_(0), entries_(new Entry[capacity]) {}
     HashTable(const Self &other) = default;
     HashTable(Self &&other) = default;
 
