@@ -70,6 +70,24 @@ public:
     std::size_t size() const { return size_; }
     std::size_t capacity() const { return capacity_; }
 
+    void reserve(std::size_t new_capacity) {
+        if (new_capacity <= capacity_) {
+            return;
+        }
+        Entry *new_entries = new Entry[new_capacity];
+        std::copy_n(entries_, capacity_, new_entries);
+        delete[] entries_;
+        entries_ = new_entries;
+        capacity_ = new_capacity;
+    }
+
+    void copy_into(Self &table) const {
+        table.reserve(table.size() + size_);
+        for (const auto &it : *this) {
+            table.insert(it.first(), it.second());
+        }
+    }
+
     void swap(Self &other) {
         std::swap(entries_, other.entries_);
         std::swap(capacity_, other.capacity_);
