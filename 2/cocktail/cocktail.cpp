@@ -131,6 +131,66 @@ Cocktail Cocktail::split(float part_volume) {
 
 void Cocktail::pour(Cocktail &other, float poured_volume) { other += split(poured_volume); }
 
+const float Cocktail::volume_ratio_for_sum(
+    float left_fraction, float right_fraction, float target_fraction
+) {
+    return (target_fraction - right_fraction) / (left_fraction - right_fraction);
+}
+
+const std::pair<float, float> Cocktail::volumes_for_sum(
+    float left_fraction, float right_fraction, float target_fraction, float total_volume
+) {
+    float volume_ratio = volume_ratio_for_sum(left_fraction, right_fraction, target_fraction);
+    float first_vomue = total_volume * volume_ratio;
+    float second_vomue = total_volume - first_vomue;
+    return std::make_pair(first_vomue, second_vomue);
+}
+
+bool Cocktail::mix_for_alcohol_fraction_sorted(
+    Cocktail &min_fraction_cocktail, Cocktail &max_fraction_cocktail, Cocktail &result,
+    float target_fraction, float volume_to_add
+) {
+    auto [first_volume, second_volume] = volumes_for_sum(
+        min_fraction_cocktail.alcohol_fraction(), max_fraction_cocktail.alcohol_fraction(),
+        target_fraction, volume_to_add
+    );
+
+    bool ok = false;
+    if (min_fraction_cocktail.volume() >= first_volume &&
+        max_fraction_cocktail.volume() >= second_volume)
+    {
+        ok = true;
+        // } else if (min_fraction_cocktail.volume() < first_volume) {
+        //     second_volume *= (min_fraction_cocktail.volume() / first_volume);
+        //     first_volume = min_fraction_cocktail.volume();
+        // } else if (max_fraction_cocktail.volume() < second_volume) {
+        //     first_volume *= (max_fraction_cocktail.volume() / second_volume);
+        //     second_volume = max_fraction_cocktail.volume();
+    } else {
+        float scale = std::min(
+            min_fraction_cocktail.volume() / first_volume,
+            max_fraction_cocktail.volume() / second_volume
+        );
+        first_volume *= scale;
+        second_volume *= scale;
+    }
+
+    min_fraction_cocktail.pour(result, first_volume);
+    max_fraction_cocktail.pour(result, second_volume);
+
+    return ok;
+}
+
+bool Cocktail::mix_for_alcohol_fraction(
+    Cocktail &lhs, Cocktail &rhs, Cocktail &result, float target_fraction, float volume_to_add
+) {
+    if (lhs.alcohol_fraction() < rhs.alcohol_fraction()) {
+        return mix_for_alcohol_fraction_sorted(lhs, rhs, result, target_fraction, volume_to_add);
+    } else {
+        return mix_for_alcohol_fraction_sorted(rhs, lhs, result, target_fraction, volume_to_add);
+    }
+}
+
 Cocktail &Cocktail::operator>>(Cocktail &other) {
     pour(other, 1);
     return *this;

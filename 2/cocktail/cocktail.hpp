@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <string>
+#include <utility>
 
 class Cocktail {
 private:
@@ -67,6 +68,23 @@ public:
 
     void pour(Cocktail &other, float poured_volume);
 
+    static const float volume_ratio_for_sum(
+        float left_fraction, float right_fraction, float target_fraction
+    );
+
+    static const std::pair<float, float> volumes_for_sum(
+        float left_fraction, float right_fraction, float target_fraction, float total_volume
+    );
+
+    static bool mix_for_alcohol_fraction(
+        Cocktail &lhs, Cocktail &rhs, Cocktail &result, float target_fraction, float volume_to_add
+    );
+
+    static bool mix_for_alcohol_fraction_sorted(
+        Cocktail &min_fraction_cocktail, Cocktail &max_fraction_cocktail, Cocktail &result,
+        float target_fraction, float volume_to_add
+    );
+
     Cocktail &operator>>(Cocktail &other);
 
     std::string to_string() const;
@@ -80,4 +98,4 @@ namespace std {
     std::string to_string(const Cocktail &cock);
 }
 
-#endif // COCKTAIL_HPP
+#endif  // COCKTAIL_HPP
