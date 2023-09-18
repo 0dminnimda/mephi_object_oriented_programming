@@ -307,6 +307,7 @@ public:
     void rename(const std::string &old_name, const std::string &new_name) {
         Cocktail cock = at(old_name);
         erase(old_name);
-        insert(new_name, cock);
+        cock.name(new_name);
+        (*this) += cock;
     }
 };
