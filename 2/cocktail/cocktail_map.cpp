@@ -11,7 +11,9 @@
 #include "array.hpp"
 #include "cocktail.hpp"
 
+#ifndef HT_NEXT_INDEX
 #define HT_NEXT_INDEX(index, capacity) (((index) + 1) % (capacity))
+#endif  // HT_NEXT_INDEX
 
 #define HT_FOR(index, capacity, condition)                     \
     for (std::size_t i_ = 0; (i_ < (capacity)) && (condition); \
