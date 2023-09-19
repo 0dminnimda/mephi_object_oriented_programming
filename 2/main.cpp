@@ -21,7 +21,8 @@ inline constexpr bool is_one_of_v = is_one_of<T, Ts...>::value;
 enum TokenKind {
     Identifier,
     Operator,
-    Bracket,
+    OpeningBracket,
+    ClosingBracket,
     Decimal,
     Floating,
     String,
@@ -35,7 +36,8 @@ const char *token_kind_name(TokenKind kind) {
     switch (kind) {
         ENUM_TO_STR_CASE(Identifier);
         ENUM_TO_STR_CASE(Operator);
-        ENUM_TO_STR_CASE(Bracket);
+        ENUM_TO_STR_CASE(OpeningBracket);
+        ENUM_TO_STR_CASE(ClosingBracket);
         ENUM_TO_STR_CASE(Decimal);
         ENUM_TO_STR_CASE(Floating);
         ENUM_TO_STR_CASE(String);
@@ -82,17 +84,25 @@ namespace std {
     std::string to_string(const Token &token) { return token.to_string(); }
 }  // namespace std
 
-bool isbracket(char c) {
+bool is_opening_bracket(char c) {
     switch (c) {
         case '(':
-        case ')':
         case '[':
+        case '{': return true;
+        default: return false;
+    }
+}
+
+bool is_closing_bracket(char c) {
+    switch (c) {
+        case ')':
         case ']':
-        case '{':
         case '}': return true;
         default: return false;
     }
 }
+
+bool isbracket(char c) { return is_opening_bracket(c) || is_closing_bracket(c); }
 
 bool isquote(char c) {
     switch (c) {
@@ -160,7 +170,11 @@ private:
     Token get_bracket(CharStream &stream) {
         const char *start = stream.peek();
         if (stream.peek() && isbracket(*stream.peek())) stream.consume();
-        return Token(TokenKind::Bracket, start, stream.peek_prev());
+        if (is_opening_bracket(*start)) {
+            return Token(TokenKind::OpeningBracket, start, stream.peek_prev());
+        } else {
+            return Token(TokenKind::ClosingBracket, start, stream.peek_prev());
+        }
     }
 
     Token get_string(CharStream &stream) {
@@ -460,7 +474,8 @@ private:
     value_type eval() {
         value_type prev = decimal{0};
 
-        while ((lexer.peek().kind != TokenKind::End) && (lexer.peek().kind != TokenKind::Bracket) &&
+        while ((lexer.peek().kind != TokenKind::End) &&
+               (lexer.peek().kind != TokenKind::ClosingBracket) &&
                (lexer.peek() != Token(TokenKind::Operator, ",")))
         {
             if (lexer.peek().kind == TokenKind::Identifier) {
