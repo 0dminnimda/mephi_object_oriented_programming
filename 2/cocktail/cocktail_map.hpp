@@ -27,7 +27,9 @@ public:
     void operator+=(const Cocktail &cocktail);
     Cocktail &operator[](const std::string &name);
 
-    friend std::ostream &operator<<(std::ostream &stream, const CocktailMap &table);
+    friend std::ostream &operator<<(std::ostream &stream, const CocktailMap &map);
+
+    friend std::istream &operator>>(std::istream &stream, CocktailMap &map);
 
     bool is_empty() const;
     bool is_full() const;

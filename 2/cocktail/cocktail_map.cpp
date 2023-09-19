@@ -10,10 +10,10 @@ CocktailMap::CocktailMap(std::size_t capacity) : HashTable(capacity) {}
 void CocktailMap::operator+=(const Cocktail &cocktail) { insert(cocktail.name(), cocktail); }
 Cocktail &CocktailMap::operator[](const std::string &name) { return at(name); }
 
-std::ostream &operator<<(std::ostream &stream, const CocktailMap &table) {
+std::ostream &operator<<(std::ostream &stream, const CocktailMap &map) {
     stream << "{";
     bool first = true;
-    for (const auto &it : table) {
+    for (const auto &it : map) {
         if (!first) {
             stream << ", ";
         }
@@ -22,6 +22,19 @@ std::ostream &operator<<(std::ostream &stream, const CocktailMap &table) {
         stream << it.second();
     }
     stream << "}";
+    return stream;
+}
+
+std::istream &operator>>(std::istream &stream, CocktailMap &map) {
+    std::size_t n = 0;
+    stream >> n;
+
+    for (size_t i = 0; i < n; ++i) {
+        Cocktail cock;
+        stream >> cock;
+        map += cock;
+    }
+
     return stream;
 }
 
