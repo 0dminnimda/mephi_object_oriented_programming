@@ -271,6 +271,11 @@ struct name_of_type<Cocktail> {
     static constexpr const char *value = "cocktail";
 };
 
+template <>
+struct name_of_type<CocktailMap> {
+    static constexpr const char *value = "cocktail_map";
+};
+
 #define BINARY_OPERATION_IMPL(T1, lhs, T2, rhs, code)                               \
     std::string_view lexeme = lexer.peek().lexeme;                                  \
     lexer.consume();                                                                \
@@ -292,7 +297,7 @@ public:
     using decimal = long long;
     using floating = float;
     using string = std::string;
-    using value_type = std::variant<decimal, floating, string, Cocktail>;
+    using value_type = std::variant<decimal, floating, string, Cocktail, CocktailMap>;
 
 private:
     Lexer lexer;
@@ -471,6 +476,27 @@ private:
         }
     }
 
+    CocktailMap eval_map() {
+        CocktailMap result;
+        expect_and_consume("{");
+        while (!consume_if_got("}")) {
+            if (result.size()) {
+                expect_and_consume(",");
+            }
+            result += eval_as<Cocktail>();
+        }
+        return result;
+    }
+
+    CocktailMap eval_bracket() {
+        std::string_view lexeme = lexer.peek().lexeme;
+        if (lexeme == "{") {
+            return eval_map();
+        } else {
+            throw std::runtime_error("Unexpected bracket '" + std::string(lexeme) + "'");
+        }
+    }
+
     value_type eval() {
         value_type prev = decimal{0};
 
@@ -488,6 +514,8 @@ private:
                 prev = eval_string();
             } else if (lexer.peek().kind == TokenKind::Operator) {
                 prev = eval_operator(prev);
+            } else if (lexer.peek().kind == TokenKind::OpeningBracket) {
+                prev = eval_bracket();
             } else {
                 throw std::runtime_error(
                     "Unknown token '" + std::string(lexer.peek().lexeme) + "'"
@@ -699,6 +727,9 @@ Cocktail() * 3
 Cocktail("Beer", 5, 0.3) * 3
 "it's a string!"
 "he" + "llo"
+{}
+{Cock("Volna", 20, 0.3)}
+{Cock("a"), Cock("b"), Cock("c")}
 
 $ ./main.out
 ~> 3 - 3 -
@@ -747,4 +778,10 @@ Cocktail(name="Beer", volume=15.000000, alcohol_fraction=0.300000)
 it's a string!
 ~> "he" + "llo"
 hello
+~> {}
+{}
+~> {Cock("Volna", 20, 0.3)}
+{Cocktail(name="Volna", volume=20.000000, alcohol_fraction=0.300000)}
+~> {Cock("a"), Cock("b"), Cock("c")}
+{Cocktail(name="c", volume=0.000000, alcohol_fraction=0.000000), Cocktail(name="b", volume=0.000000, alcohol_fraction=0.000000), Cocktail(name="a", volume=0.000000, alcohol_fraction=0.000000)}
 */
