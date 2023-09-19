@@ -317,19 +317,21 @@ private:
         return result;
     }
 
-    bool consume_if_got(const Token &token) {
-        if (lexer.peek() == token) {
+    template <typename T>
+    bool consume_if_got(T lexeme) {
+        if (lexer.peek().lexeme == lexeme) {
             lexer.consume();
             return true;
         }
         return false;
     }
 
-    void expect_and_consume(const Token &token) {
-        if (lexer.peek() != token) {
+    template <typename T>
+    void expect_and_consume(T lexeme) {
+        if (lexer.peek().lexeme != lexeme) {
             throw std::runtime_error(
                 "Unexpected token '" + std::string(lexer.peek().lexeme) +
-                "'. Perhaps you forgot a '" + std::string(token.lexeme) + "'?"
+                "'. Perhaps you forgot a '" + std::string(lexeme) + "'?"
             );
         }
         lexer.consume();
@@ -339,28 +341,28 @@ private:
         string arg1;
         floating arg2, arg3;
 
-        expect_and_consume(Token(TokenKind::Bracket, "("));
+        expect_and_consume("(");
 
-        if (consume_if_got(Token(TokenKind::Bracket, ")"))) {
+        if (consume_if_got(")")) {
             return Cocktail();
         }
 
         arg1 = eval_as<string>();
-        if (consume_if_got(Token(TokenKind::Bracket, ")"))) {
+        if (consume_if_got(")")) {
             return Cocktail(arg1, 0);
         }
 
-        expect_and_consume(Token(TokenKind::Operator, ","));
+        expect_and_consume(",");
 
         arg2 = eval_as<floating>();
-        if (consume_if_got(Token(TokenKind::Bracket, ")"))) {
+        if (consume_if_got(")")) {
             return Cocktail(arg1, arg2);
         }
 
-        expect_and_consume(Token(TokenKind::Operator, ","));
+        expect_and_consume(",");
 
         arg3 = eval_as<floating>();
-        expect_and_consume(Token(TokenKind::Bracket, ")"));
+        expect_and_consume(")");
 
         return Cocktail(arg1, arg2, arg3);
     }
