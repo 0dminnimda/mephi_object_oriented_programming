@@ -41,6 +41,11 @@ public:
         const Key &first() const { return key; }
         Value &second() { return value; }
         const Value &second() const { return value; }
+
+        bool operator==(const Entry &other) const {
+            return std::tie(key, value) != std::tie(other.key, other.value);
+        }
+        bool operator!=(const Entry &other) const { return !(*this == other); }
     };
 
 private:
@@ -70,8 +75,9 @@ public:
     Self &operator=(Self &&) = default;
 
     bool operator==(const Self &other) const {
-        return std::tie(entries_, capacity_, size_) ==
-               std::tie(other.entries_, other.capacity_, other.size_);
+        if (std::tie(capacity_, size_) != std::tie(other.capacity_, other.size_)) return false;
+        if (entries_ == other.entries_) return true;
+        return std::equal(entries_, entries_ + capacity_, other.entries_);
     }
     bool operator!=(const Self &other) const { return !(*this == other); }
 
