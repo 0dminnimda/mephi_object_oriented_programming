@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef ARRAY_HPP
+#define ARRAY_HPP
+
 #include <algorithm>
 #include <cstddef>
 #include <functional>
@@ -53,3 +58,5 @@ namespace std {
         lhs.swap(rhs);
     }
 }  // namespace std
+
+#endif  // ARRAY_HPP
