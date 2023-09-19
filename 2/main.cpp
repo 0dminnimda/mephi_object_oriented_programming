@@ -218,13 +218,15 @@ public:
         }
     }
 
+    Token end() const { return Token(TokenKind::End, "EOF"); }
+
     Token peek_at(std::size_t position) {
         if (position < tokens.size()) return tokens[position];
-        return Token(TokenKind::End);
+        return end();
     }
     Token peek() { return peek_at(cursor); }
     Token peek_prev() {
-        if (cursor == 0) return Token(TokenKind::End);
+        if (cursor == 0) return end();
         return peek_at(cursor - 1);
     }
     void consume() { ++cursor; }
