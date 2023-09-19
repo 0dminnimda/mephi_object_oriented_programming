@@ -343,21 +343,21 @@ private:
             return Cocktail();
         }
 
-        arg1 = eval_as<string>("name");
+        arg1 = eval_as<string>();
         if (consume_if_got(Token(TokenKind::Bracket, ")"))) {
             return Cocktail(arg1, 0);
         }
 
         expect_and_consume(Token(TokenKind::Operator, ","));
 
-        arg2 = eval_as<floating>("number");
+        arg2 = eval_as<floating>();
         if (consume_if_got(Token(TokenKind::Bracket, ")"))) {
             return Cocktail(arg1, arg2);
         }
 
         expect_and_consume(Token(TokenKind::Operator, ","));
 
-        arg3 = eval_as<floating>("number");
+        arg3 = eval_as<floating>();
         expect_and_consume(Token(TokenKind::Bracket, ")"));
 
         return Cocktail(arg1, arg2, arg3);
@@ -480,14 +480,14 @@ private:
     }
 
     template <typename OutT>
-    OutT eval_as(const char *name) {
+    OutT eval_as() {
         return std::visit(
             [&](auto arg) -> OutT {
                 using ArgT = std::decay_t<decltype(arg)>;
                 if constexpr (std::is_convertible_v<ArgT, OutT>) {
                     return arg;
                 } else {
-                    throw std::runtime_error("Invalid " + std::string(name));
+                    throw std::runtime_error(std::string("Invalid ") + name_of_type<OutT>::value);
                 }
             },
             eval()
