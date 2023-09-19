@@ -10,7 +10,7 @@
 
 #include "EH.hpp"
 #include "cocktail/cocktail.hpp"
-#include "cocktail/cocktail_map.cpp"
+#include "cocktail/cocktail_map.hpp"
 
 template <typename T, typename... Ts>
 using is_one_of = std::disjunction<std::is_same<T, Ts>...>;
