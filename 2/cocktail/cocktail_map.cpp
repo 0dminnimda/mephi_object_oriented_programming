@@ -57,9 +57,7 @@ public:
     HashTable() : HashTable(0) {}
     HashTable(std::size_t capacity) : HashTable(capacity, 0) {}
     HashTable(const Self &other) : HashTable(other.capacity_, other.size_) {
-        for (const auto &it : other) {
-            insert(it.first(), it.second());
-        }
+        std::copy_n(other.entries_, capacity_, entries_);
     }
     HashTable(Self &&other)
         : entries_(std::exchange(other.entries_, nullptr)),
