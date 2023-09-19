@@ -504,8 +504,6 @@ public:
 };
 
 void print_tokens(std::string code) {
-    // std::string code = "Cocktail (10, 0.1, var3)";
-    // std::string code = "3 - 3 -";
     Lexer lexer;
     lexer.lex(code);
 
