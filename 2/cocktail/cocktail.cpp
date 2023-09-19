@@ -189,6 +189,11 @@ Cocktail &Cocktail::operator>>(Cocktail &other) {
     return *this;
 }
 
+Cocktail &Cocktail::operator<<(Cocktail &other) {
+    other.pour(*this, 1);
+    return *this;
+}
+
 std::string Cocktail::to_string() const {
     std::string result;
     result += "Cocktail(";

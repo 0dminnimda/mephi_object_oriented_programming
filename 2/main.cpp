@@ -447,7 +447,7 @@ private:
         BINARY_OPERATION_IMPL(
             T1, lhs, T2, rhs,
             if constexpr (std::is_same_v<T1, Cocktail> && std::is_same_v<T2, Cocktail>) {
-                rhs >> lhs;
+                lhs << rhs;
                 if (return_first) {
                     return lhs;
                 } else {
