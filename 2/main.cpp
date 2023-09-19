@@ -315,52 +315,52 @@ private:
         return result;
     }
 
+    bool consume_if_got(const Token &token) {
+        if (lexer.peek() == token) {
+            lexer.consume();
+            return true;
+        }
+        return false;
+    }
+
+    void expect_and_consume(const Token &token) {
+        if (lexer.peek() != token) {
+            throw std::runtime_error(
+                "Unexpected token '" + std::string(lexer.peek().lexeme) +
+                "'. Perhaps you forgot a '" + std::string(token.lexeme) + "'?"
+            );
+        }
+        lexer.consume();
+    }
+
     Cocktail eval_cocktail() {
         string arg1;
         floating arg2, arg3;
 
-        if (lexer.peek() != Token(TokenKind::Bracket, "("))
-            goto bad;
-        else
-            lexer.consume();
+        expect_and_consume(Token(TokenKind::Bracket, "("));
 
-        if (lexer.peek() == Token(TokenKind::Bracket, ")")) {
-            lexer.consume();
+        if (consume_if_got(Token(TokenKind::Bracket, ")"))) {
             return Cocktail();
         }
 
         arg1 = eval_as<string>("name");
-        if (lexer.peek() == Token(TokenKind::Bracket, ")")) {
-            lexer.consume();
+        if (consume_if_got(Token(TokenKind::Bracket, ")"))) {
             return Cocktail(arg1, 0);
         }
 
-        if (lexer.peek() != Token(TokenKind::Operator, ","))
-            goto bad;
-        else
-            lexer.consume();
+        expect_and_consume(Token(TokenKind::Operator, ","));
 
         arg2 = eval_as<floating>("number");
-        if (lexer.peek() == Token(TokenKind::Bracket, ")")) {
-            lexer.consume();
+        if (consume_if_got(Token(TokenKind::Bracket, ")"))) {
             return Cocktail(arg1, arg2);
         }
 
-        if (lexer.peek() != Token(TokenKind::Operator, ","))
-            goto bad;
-        else
-            lexer.consume();
+        expect_and_consume(Token(TokenKind::Operator, ","));
 
         arg3 = eval_as<floating>("number");
-        if (lexer.peek() == Token(TokenKind::Bracket, ")")) {
-            lexer.consume();
-            return Cocktail(arg1, arg2, arg3);
-        }
+        expect_and_consume(Token(TokenKind::Bracket, ")"));
 
-    bad:
-        throw std::runtime_error(
-            "Invalid cocktail, unexpected token '" + std::to_string(lexer.peek()) + "'"
-        );
+        return Cocktail(arg1, arg2, arg3);
     }
 
     Cocktail eval_identifier() {
