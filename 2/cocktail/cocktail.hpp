@@ -1,7 +1,7 @@
+#pragma once
+
 #ifndef COCKTAIL_HPP
 #define COCKTAIL_HPP
-
-#pragma once
 
 #include <iostream>
 #include <string>
