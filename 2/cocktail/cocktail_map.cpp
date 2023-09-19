@@ -50,20 +50,23 @@ private:
 
     using Self = HashTable<Key, Value>;
 
+    HashTable(std::size_t capacity, std::size_t size)
+        : entries_(capacity ? new Entry[capacity] : nullptr), capacity_(capacity), size_(size) {}
+
 public:
     HashTable() : HashTable(0) {}
-    HashTable(std::size_t capacity)
-        : capacity_(capacity), size_(0), entries_(new Entry[capacity]) {}
-    HashTable(const Self &other)
-        : capacity_(other.capacity_), size_(other.size_), entries_(new Entry[other.capacity_]) {
-        std::copy_n(other.entries_, capacity_, entries_);
+    HashTable(std::size_t capacity) : HashTable(capacity, 0) {}
+    HashTable(const Self &other) : HashTable(other.capacity_, other.size_) {
+        for (const auto &it : other) {
+            insert(it.first(), it.second());
+        }
     }
     HashTable(Self &&other)
-        : capacity_(std::exchange(other.capacity_, 0)),
-          size_(std::exchange(other.size_, 0)),
-          entries_(std::exchange(other.entries_, nullptr)) {}
+        : entries_(std::exchange(other.entries_, nullptr)),
+          capacity_(std::exchange(other.capacity_, 0)),
+          size_(std::exchange(other.size_, 0)) {}
 
-    ~HashTable() { delete[] entries_; }
+    ~HashTable() = default;
 
     Self &operator=(const Self &) = default;
     Self &operator=(Self &&) = default;
@@ -76,24 +79,6 @@ public:
 
     std::size_t size() const { return size_; }
     std::size_t capacity() const { return capacity_; }
-
-    void reserve(std::size_t new_capacity) {
-        if (new_capacity <= capacity_) {
-            return;
-        }
-        Entry *new_entries = new Entry[new_capacity];
-        std::copy_n(entries_, capacity_, new_entries);
-        delete[] entries_;
-        entries_ = new_entries;
-        capacity_ = new_capacity;
-    }
-
-    void copy_into(Self &table) const {
-        table.reserve(table.size() + size_);
-        for (const auto &it : *this) {
-            table.insert(it.first(), it.second());
-        }
-    }
 
     void swap(Self &other) {
         std::swap(entries_, other.entries_);
@@ -307,8 +292,7 @@ public:
     }
 
     Cocktail mix_for_alcohol_fraction(float fraction, float volume = 5) {
-        CocktailMap temp;
-        this->copy_into(temp);
+        CocktailMap temp = *this;
 
         std::list<std::reference_wrapper<Cocktail>> cocktails;
         for (auto &it : temp) {
