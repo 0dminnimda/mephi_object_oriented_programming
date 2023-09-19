@@ -54,8 +54,14 @@ public:
     HashTable() : HashTable(0) {}
     HashTable(std::size_t capacity)
         : capacity_(capacity), size_(0), entries_(new Entry[capacity]) {}
-    HashTable(const Self &other) = default;
-    HashTable(Self &&other) = default;
+    HashTable(const Self &other)
+        : capacity_(other.capacity_), size_(other.size_), entries_(new Entry[other.capacity_]) {
+        std::copy_n(other.entries_, capacity_, entries_);
+    }
+    HashTable(Self &&other)
+        : capacity_(std::exchange(other.capacity_, 0)),
+          size_(std::exchange(other.size_, 0)),
+          entries_(std::exchange(other.entries_, nullptr)) {}
 
     ~HashTable() { delete[] entries_; }
 
