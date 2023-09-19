@@ -8,6 +8,7 @@
 #include <string>
 #include <tuple>
 
+#include "array.hpp"
 #include "cocktail.hpp"
 
 #define HT_NEXT_INDEX(index, capacity) (((index) + 1) % (capacity))
@@ -49,46 +50,28 @@ public:
     };
 
 private:
-    Entry *entries_;
-    std::size_t capacity_;
-    std::size_t size_;
+    Array<Entry> entries_;
 
     using Self = HashTable<Key, Value>;
 
-    HashTable(std::size_t capacity, std::size_t size)
-        : entries_(capacity ? new Entry[capacity] : nullptr), capacity_(capacity), size_(size) {}
-
 public:
     HashTable() : HashTable(0) {}
-    HashTable(std::size_t capacity) : HashTable(capacity, 0) {}
-    HashTable(const Self &other) : HashTable(other.capacity_, other.size_) {
-        std::copy_n(other.entries_, capacity_, entries_);
-    }
-    HashTable(Self &&other)
-        : entries_(std::exchange(other.entries_, nullptr)),
-          capacity_(std::exchange(other.capacity_, 0)),
-          size_(std::exchange(other.size_, 0)) {}
+    HashTable(std::size_t capacity) : entries_(capacity, 0) {}
+    HashTable(const Self &other) = default;
+    HashTable(Self &&other) = default;
 
     ~HashTable() = default;
 
     Self &operator=(const Self &) = default;
     Self &operator=(Self &&) = default;
 
-    bool operator==(const Self &other) const {
-        if (std::tie(capacity_, size_) != std::tie(other.capacity_, other.size_)) return false;
-        if (entries_ == other.entries_) return true;
-        return std::equal(entries_, entries_ + capacity_, other.entries_);
-    }
+    bool operator==(const Self &other) const { return entries_ == other.entries_; }
     bool operator!=(const Self &other) const { return !(*this == other); }
 
-    std::size_t size() const { return size_; }
-    std::size_t capacity() const { return capacity_; }
+    std::size_t size() const { return entries_.size; }
+    std::size_t capacity() const { return entries_.capacity; }
 
-    void swap(Self &other) {
-        std::swap(entries_, other.entries_);
-        std::swap(capacity_, other.capacity_);
-        std::swap(size_, other.size_);
-    }
+    void swap(Self &other) { std::swap(entries_, other.entries_); }
 
     void insert(const Key &key, const Value &value) {
         try_rehash();
@@ -104,14 +87,14 @@ public:
         entries_[index].key = key;
         entries_[index].value = value;
         entries_[index].busy = true;
-        ++size_;
+        ++entries_.size;
     }
 
     bool erase(const Key &key) {
         std::size_t index;
         if (find_index(key, index)) {
             entries_[index].busy = false;
-            --size_;
+            --entries_.size;
             return true;
         }
         return false;
@@ -141,11 +124,11 @@ public:
     }
 
 private:
-    std::size_t key_index(const Key &key) const { return std::hash<Key>{}(key) % capacity_; }
+    std::size_t key_index(const Key &key) const { return std::hash<Key>{}(key) % capacity(); }
 
     bool find_index(const Key &key, std::size_t &index) const {
         std::size_t i = key_index(key);
-        HT_FOR(i, capacity_, entries_[i].busy) {
+        HT_FOR(i, capacity(), entries_[i].busy) {
             if (entries_[i].key == key) {
                 index = i;
                 return true;
@@ -156,8 +139,8 @@ private:
     }
 
     void try_rehash() {
-        std::size_t new_capacity = (size_ + 1) * 2;
-        if (new_capacity <= capacity_) return;
+        std::size_t new_capacity = (size() + 1) * 2;
+        if (new_capacity <= capacity()) return;
 
         Self new_table(new_capacity);
 
@@ -208,26 +191,26 @@ public:
 
     private:
         void progress() {
-            if (index < table.capacity_) {
+            if (index < table.capacity()) {
                 ++index;
             }
         }
 
         void skip_untill_busy() {
-            while (index < table.capacity_ && !table.entries_[index].busy) {
+            while (index < table.capacity() && !table.entries_[index].busy) {
                 ++index;
             }
         }
     };
 
     Iterator<false> begin() { return Iterator<false>(*this, 0); }
-    Iterator<false> end() { return Iterator<false>(*this, capacity_); }
+    Iterator<false> end() { return Iterator<false>(*this, capacity()); }
 
     Iterator<true> begin() const { return Iterator<true>(*this, 0); }
-    Iterator<true> end() const { return Iterator<true>(*this, capacity_); }
+    Iterator<true> end() const { return Iterator<true>(*this, capacity()); }
 
     Iterator<true> cbegin() const { return Iterator<true>(*this, 0); }
-    Iterator<true> cend() const { return Iterator<true>(*this, capacity_); }
+    Iterator<true> cend() const { return Iterator<true>(*this, capacity()); }
 };
 
 enum Quartile { FIRST, SECOND, THIRD, FOURTH };
