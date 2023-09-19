@@ -84,7 +84,7 @@ public:
             return;
         }
 
-        assert((index < capacity_) && "Ur fucked! Rehashing didn't help");
+        assert((index < capacity()) && "Ur fucked! Rehashing didn't help");
 
         entries_[index].key = key;
         entries_[index].value = value;
