@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cstddef>
 #include <iostream>
+#include <iterator>
 #include <stdexcept>
 #include <type_traits>
 
@@ -215,4 +216,4 @@ public:
     Iterator<true> cend() const { return Iterator<true>(*this, capacity()); }
 };
 
-#endif // HASH_TABLE_HPP
+#endif  // HASH_TABLE_HPP
