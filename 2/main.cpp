@@ -624,6 +624,12 @@ void test_hah() {
 }
 
 void test_ch() {
+    {
+        Cocktail cocks[] = {Cocktail("a", 10), Cocktail("b", 18), Cocktail("c", 15)};
+        CocktailMap map(cocks, sizeof(cocks) / sizeof(cocks[0]));
+        std::cout << map << std::endl;
+    }
+
     CocktailMap map;
     std::cout << map << std::endl;
 

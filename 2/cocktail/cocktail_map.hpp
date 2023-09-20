@@ -24,6 +24,11 @@ public:
     CocktailMap(std::size_t capacity);
 
     /*!
+    Constructs a map from a given `array` of cocktails.
+    */
+    CocktailMap(Cocktail *array, std::size_t size);
+
+    /*!
     Constructs a copy of the `other` map.
     */
     CocktailMap(const CocktailMap &) = default;

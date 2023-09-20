@@ -7,6 +7,12 @@ CocktailMap::CocktailMap() : HashTable() {}
 
 CocktailMap::CocktailMap(std::size_t capacity) : HashTable(capacity) {}
 
+CocktailMap::CocktailMap(Cocktail *array, std::size_t size) : HashTable(size) {
+    for (std::size_t i = 0; i < size; ++i) {
+        *this += array[i];
+    }
+}
+
 void CocktailMap::operator+=(const Cocktail &cocktail) { insert(cocktail.name(), cocktail); }
 Cocktail &CocktailMap::operator[](const std::string &name) { return at(name); }
 
