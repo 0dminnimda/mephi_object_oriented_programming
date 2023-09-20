@@ -69,7 +69,8 @@ public:
     friend std::ostream &operator<<(std::ostream &stream, const CocktailMap &map);
 
     /*!
-    Inputs the cocktail from a `stream`. It reads number of cocktails, then reads each cocktail and inserts it into the map.
+    Inputs the cocktail from a `stream`. It reads number of cocktails, then reads each cocktail and
+    inserts it into the map.
     */
     friend std::istream &operator>>(std::istream &stream, CocktailMap &map);
 
@@ -106,8 +107,8 @@ public:
     void rename(const std::string &old_name, const std::string &new_name);
 
     /*!
-    Tries to mix the cocktail with the given `fraction` and `volume` using the cocktails in the map. If the
-    cocktail can't be mixed, std::runtime_error is thrown.
+    Tries to mix the cocktail with the given `fraction` and `volume` using the cocktails in the map.
+    If the cocktail can't be mixed, std::runtime_error is thrown.
     */
     Cocktail mix_for_alcohol_fraction(float fraction, float volume = 5);
 };
