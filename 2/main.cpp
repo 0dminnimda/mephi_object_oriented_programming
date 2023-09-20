@@ -798,32 +798,32 @@ Error: Invalid decimal
 3.24234e+28
 ~> 0.34536456456456456498203470982370423705482347052734095870234750320485023
 0.345365
-~> 341123123123123123123123123132123132123.
+~> 341123123123123123123123123132123132123.34536456456456456498203470982370423705482347052734095870234750320485023
 Error: Invalid floating
 ~> Cocktail()
-Cocktail(name="", volume=0.000000, alcohol_fraction=0.000000)
+Cocktail("", 0.000000, 0.000000)
 ~> Cocktail("Vodka", 10)
-Cocktail(name="Vodka", volume=10.000000, alcohol_fraction=0.000000)
+Cocktail("Vodka", 10.000000, 0.000000)
 ~> Cocktail("Vodka", 10, 0.1)
-Cocktail(name="Vodka", volume=10.000000, alcohol_fraction=0.100000)
+Cocktail("Vodka", 10.000000, 0.100000)
 ~> Cocktail("Vodka", 10, 0.1) + Cocktail("Vine", 16, 0.1)
-Cocktail(name="VodkaVine", volume=26.000000, alcohol_fraction=0.100000)
+Cocktail("VodkaVine", 26.000000, 0.100000)
 ~> Cocktail("Vodka", 10, 0.1) + Cocktail("Vine", 10 + 6, 0.1)
-Cocktail(name="VodkaVine", volume=26.000000, alcohol_fraction=0.100000)
+Cocktail("VodkaVine", 26.000000, 0.100000)
 ~> Cocktail("Vodka", 10, 0.1) >> Cocktail("Vine", 16, 0.1)
-Cocktail(name="VineVodka", volume=17.000000, alcohol_fraction=0.100000)
+Cocktail("VineVodka", 17.000000, 0.100000)
 ~> Cocktail("Vodka", 10, 0.1) >>! Cocktail("Vine", 16, 0.1)
-Cocktail(name="Vodka", volume=9.000000, alcohol_fraction=0.100000)
+Cocktail("Vodka", 9.000000, 0.100000)
 ~> Cocktail("Vodka", 10, 0.1) << Cocktail("Vine", 16, 0.1)
-Cocktail(name="Vine", volume=15.000000, alcohol_fraction=0.100000)
+Cocktail("Vine", 15.000000, 0.100000)
 ~> Cocktail("Vodka", 10, 0.1) <<! Cocktail("Vine", 16, 0.1)
-Cocktail(name="VodkaVine", volume=11.000000, alcohol_fraction=0.100000)
+Cocktail("VodkaVine", 11.000000, 0.100000)
 ~> Cocktail() + 3
 Error: Unsupported operation '+' between 'cocktail' and 'decimal'
 ~> Cocktail() * 3
-Cocktail(name="", volume=0.000000, alcohol_fraction=0.000000)
+Cocktail("", 0.000000, 0.000000)
 ~> Cocktail("Beer", 5, 0.3) * 3
-Cocktail(name="Beer", volume=15.000000, alcohol_fraction=0.300000)
+Cocktail("Beer", 15.000000, 0.300000)
 ~> "it's a string!"
 it's a string!
 ~> "he" + "llo"
@@ -831,13 +831,13 @@ hello
 ~> {}
 {}
 ~> {Cock("Volna", 20, 0.3)}
-{Cocktail(name="Volna", volume=20.000000, alcohol_fraction=0.300000)}
+{Cocktail("Volna", 20.000000, 0.300000)}
 ~> {Cock("a"), Cock("b"), Cock("c")}
-{Cocktail(name="c", volume=0.000000, alcohol_fraction=0.000000), Cocktail(name="b", volume=0.000000, alcohol_fraction=0.000000), Cocktail(name="a", volume=0.000000, alcohol_fraction=0.000000)}
+{Cocktail("c", 0.000000, 0.000000), Cocktail("b", 0.000000, 0.000000), Cocktail("a", 0.000000, 0.000000)}
 ~> {} += Cock("a")
-{Cocktail(name="a", volume=0.000000, alcohol_fraction=0.000000)}
+{Cocktail("a", 0.000000, 0.000000)}
 ~> {} += Cock("a") += Cock("b")
-{Cocktail(name="a", volume=0.000000, alcohol_fraction=0.000000), Cocktail(name="b", volume=0.000000, alcohol_fraction=0.000000)}
+{Cocktail("a", 0.000000, 0.000000), Cocktail("b", 0.000000, 0.000000)}
 ~> {Cock(), Cock("Vodka", 10, 0.1) + Cock("Vine", 16, 0.1)}
-{Cocktail(name="", volume=0.000000, alcohol_fraction=0.000000), Cocktail(name="VodkaVine", volume=26.000000, alcohol_fraction=0.100000)}
+{Cocktail("", 0.000000, 0.000000), Cocktail("VodkaVine", 26.000000, 0.100000)}
 */

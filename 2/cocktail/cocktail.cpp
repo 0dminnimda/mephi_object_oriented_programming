@@ -197,9 +197,9 @@ Cocktail &Cocktail::operator<<(Cocktail &other) {
 std::string Cocktail::to_string() const {
     std::string result;
     result += "Cocktail(";
-    result += "name=\"" + name() + "\", ";
-    result += "volume=" + std::to_string(volume()) + ", ";
-    result += "alcohol_fraction=" + std::to_string(alcohol_fraction());
+    result += "\"" + name() + "\", ";
+    result += std::to_string(volume()) + ", ";
+    result += std::to_string(alcohol_fraction());
     result += ")";
     return result;
 }
