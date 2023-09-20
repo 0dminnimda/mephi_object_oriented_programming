@@ -301,9 +301,10 @@ public:
 
 private:
     Lexer lexer;
+    bool evaluates_operand;
 
 public:
-    Evaluator() : lexer() {}
+    Evaluator() : lexer(), evaluates_operand(false) {}
 
 private:
     decimal eval_decimal() {
@@ -366,21 +367,21 @@ private:
             return Cocktail();
         }
 
-        arg1 = eval_as<string>();
+        arg1 = eval_as<string>(true);
         if (consume_if_got(")")) {
             return Cocktail(arg1, 0);
         }
 
         expect_and_consume(",");
 
-        arg2 = eval_as<floating>();
+        arg2 = eval_as<floating>(true);
         if (consume_if_got(")")) {
             return Cocktail(arg1, arg2);
         }
 
         expect_and_consume(",");
 
-        arg3 = eval_as<floating>();
+        arg3 = eval_as<floating>(true);
         expect_and_consume(")");
 
         return Cocktail(arg1, arg2, arg3);
@@ -469,7 +470,7 @@ private:
         );
     }
 
-    value_type eval_operator(value_type &lhs) {
+    value_type eval_operator_(value_type &lhs) {
         std::string_view lexeme = lexer.peek().lexeme;
         if (lexeme == "+") {
             return eval_add(lhs);
@@ -488,6 +489,13 @@ private:
         }
     }
 
+    value_type eval_operator(value_type &lhs) {
+        evaluates_operand = true;
+        value_type result = eval_operator_(lhs);
+        evaluates_operand = false;
+        return result;
+    }
+
     CocktailMap eval_map() {
         CocktailMap result;
         expect_and_consume("{");
@@ -495,7 +503,7 @@ private:
             if (result.size()) {
                 expect_and_consume(",");
             }
-            result += eval_as<Cocktail>();
+            result += eval_as<Cocktail>(true);
         }
         return result;
     }
@@ -525,6 +533,7 @@ private:
             } else if (lexer.peek().kind == TokenKind::String) {
                 prev = eval_string();
             } else if (lexer.peek().kind == TokenKind::Operator) {
+                if (evaluates_operand) break;
                 prev = eval_operator(prev);
             } else if (lexer.peek().kind == TokenKind::OpeningBracket) {
                 prev = eval_bracket();
@@ -538,8 +547,19 @@ private:
         return prev;
     }
 
+    value_type eval(bool can_eval_operators) {
+        if (can_eval_operators) {
+            bool saved_evaluates_operand = evaluates_operand;
+            evaluates_operand = false;
+            value_type result = eval();
+            evaluates_operand = saved_evaluates_operand;
+            return result;
+        }
+        return eval();
+    }
+
     template <typename OutT>
-    OutT eval_as() {
+    OutT eval_as(bool can_eval_operators = false) {
         return std::visit(
             [&](auto arg) -> OutT {
                 using ArgT = std::decay_t<decltype(arg)>;
@@ -549,7 +569,7 @@ private:
                     throw std::runtime_error(std::string("Invalid ") + name_of_type<OutT>::value);
                 }
             },
-            eval()
+            eval(can_eval_operators)
         );
     }
 
@@ -725,6 +745,8 @@ int main() {
 3 - 3 -
 3 + 4.5 - 3.7
 3 + 435435 + 343  - 3
+3 + 4 - 6
+-6 + 3 + 4
 fgdfgdf
 2 + 4 ~ 5
 9170401481593653160
@@ -736,6 +758,7 @@ Cocktail()
 Cocktail("Vodka", 10)
 Cocktail("Vodka", 10, 0.1)
 Cocktail("Vodka", 10, 0.1) + Cocktail("Vine", 16, 0.1)
+Cocktail("Vodka", 10, 0.1) + Cocktail("Vine", 10 + 6, 0.1)
 Cocktail("Vodka", 10, 0.1) >> Cocktail("Vine", 16, 0.1)
 Cocktail("Vodka", 10, 0.1) >>! Cocktail("Vine", 16, 0.1)
 Cocktail("Vodka", 10, 0.1) << Cocktail("Vine", 16, 0.1)
@@ -749,6 +772,8 @@ Cocktail("Beer", 5, 0.3) * 3
 {Cock("Volna", 20, 0.3)}
 {Cock("a"), Cock("b"), Cock("c")}
 {} += Cock("a")
+{} += Cock("a") += Cock("b")
+{Cock(), Cock("Vodka", 10, 0.1) + Cock("Vine", 16, 0.1)}
 
 $ ./main.out
 ~> 3 - 3 -
@@ -757,6 +782,10 @@ $ ./main.out
 3.8
 ~> 3 + 435435 + 343  - 3
 435778
+~> 3 + 4 - 6
+1
+~> -6 + 3 + 4
+1
 ~> fgdfgdf
 Error: Unknown identifier
 ~> 2 + 4 ~ 5
@@ -778,6 +807,8 @@ Cocktail(name="Vodka", volume=10.000000, alcohol_fraction=0.000000)
 ~> Cocktail("Vodka", 10, 0.1)
 Cocktail(name="Vodka", volume=10.000000, alcohol_fraction=0.100000)
 ~> Cocktail("Vodka", 10, 0.1) + Cocktail("Vine", 16, 0.1)
+Cocktail(name="VodkaVine", volume=26.000000, alcohol_fraction=0.100000)
+~> Cocktail("Vodka", 10, 0.1) + Cocktail("Vine", 10 + 6, 0.1)
 Cocktail(name="VodkaVine", volume=26.000000, alcohol_fraction=0.100000)
 ~> Cocktail("Vodka", 10, 0.1) >> Cocktail("Vine", 16, 0.1)
 Cocktail(name="VineVodka", volume=17.000000, alcohol_fraction=0.100000)
@@ -805,4 +836,8 @@ hello
 {Cocktail(name="c", volume=0.000000, alcohol_fraction=0.000000), Cocktail(name="b", volume=0.000000, alcohol_fraction=0.000000), Cocktail(name="a", volume=0.000000, alcohol_fraction=0.000000)}
 ~> {} += Cock("a")
 {Cocktail(name="a", volume=0.000000, alcohol_fraction=0.000000)}
+~> {} += Cock("a") += Cock("b")
+{Cocktail(name="a", volume=0.000000, alcohol_fraction=0.000000), Cocktail(name="b", volume=0.000000, alcohol_fraction=0.000000)}
+~> {Cock(), Cock("Vodka", 10, 0.1) + Cock("Vine", 16, 0.1)}
+{Cocktail(name="", volume=0.000000, alcohol_fraction=0.000000), Cocktail(name="VodkaVine", volume=26.000000, alcohol_fraction=0.100000)}
 */
