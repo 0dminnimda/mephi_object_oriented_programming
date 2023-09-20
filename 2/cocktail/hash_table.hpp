@@ -64,7 +64,9 @@ public:
         Checks if the `other` entry is equal to this one.
         */
         bool operator==(const Entry &other) const {
-            return std::tie(key, value) != std::tie(other.key, other.value);
+            if (busy != other.busy) return false;
+            if (busy == false && other.busy == false) return true;
+            return std::tie(key, value) == std::tie(other.key, other.value);
         }
 
         /*!
