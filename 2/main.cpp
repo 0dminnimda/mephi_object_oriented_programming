@@ -407,6 +407,16 @@ private:
         );
     }
 
+    value_type eval_in_place_add(value_type &lhs) {
+        BINARY_OPERATION_IMPL(
+            T1, lhs, T2, rhs,
+            if constexpr (std::is_same_v<T1, CocktailMap> && std::is_same_v<T2, Cocktail>) {
+                lhs += rhs;
+                return lhs;
+            }
+        );
+    }
+
     value_type eval_sub(value_type &lhs) {
         BINARY_OPERATION_IMPL(
             T1, lhs, T2, rhs,
@@ -463,6 +473,8 @@ private:
         std::string_view lexeme = lexer.peek().lexeme;
         if (lexeme == "+") {
             return eval_add(lhs);
+        } else if (lexeme == "+=") {
+            return eval_in_place_add(lhs);
         } else if (lexeme == "-") {
             return eval_sub(lhs);
         } else if (lexeme == "*") {
@@ -736,6 +748,7 @@ Cocktail("Beer", 5, 0.3) * 3
 {}
 {Cock("Volna", 20, 0.3)}
 {Cock("a"), Cock("b"), Cock("c")}
+{} += Cock("a")
 
 $ ./main.out
 ~> 3 - 3 -
@@ -790,4 +803,6 @@ hello
 {Cocktail(name="Volna", volume=20.000000, alcohol_fraction=0.300000)}
 ~> {Cock("a"), Cock("b"), Cock("c")}
 {Cocktail(name="c", volume=0.000000, alcohol_fraction=0.000000), Cocktail(name="b", volume=0.000000, alcohol_fraction=0.000000), Cocktail(name="a", volume=0.000000, alcohol_fraction=0.000000)}
+~> {} += Cock("a")
+{Cocktail(name="a", volume=0.000000, alcohol_fraction=0.000000)}
 */
