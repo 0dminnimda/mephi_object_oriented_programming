@@ -56,12 +56,22 @@ public:
     /*!
     Copies the `other` array into this.
     */
-    Array &operator=(const Array &other) = default;
+    Array &operator=(const Array &other) {
+        if (&other != this) {
+            Array temp(other);
+            temp.swap(*this);
+        }
+        return *this;
+    }
 
     /*!
     Moves the `other` array into this.
     */
-    Array &operator=(Array &&other) = default;
+    Array &operator=(Array &&other) {
+        Array temp(std::move(other));
+        temp.swap(*this);
+        return *this;
+    }
 
     /*!
     Checks if the `other` array is equal to this one.
