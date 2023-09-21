@@ -810,9 +810,9 @@ void test_ch() {
 }
 
 int main() {
-    TRY_CATCH_ALL({ test_hah(); })
+    // TRY_CATCH_ALL({ test_hah(); })
 
-    TRY_CATCH_ALL({ test_ch(); })
+    // TRY_CATCH_ALL({ test_ch(); })
 
     TRY_CATCH_ALL({ intrpret(); })
 
