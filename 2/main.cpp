@@ -542,6 +542,15 @@ private:
                     expect_and_consume(")");
                     std::cout << lhs.erase(arg1) << std::endl;
                     return lhs;
+                } else if (lexer.peek().lexeme == "rename") {
+                    lexer.consume();
+                    expect_and_consume("(");
+                    string arg1 = eval_as<string>(true);
+                    expect_and_consume(",");
+                    string arg2 = eval_as<string>(true);
+                    expect_and_consume(")");
+                    lhs.rename(arg1, arg2);
+                    return lhs;
                 }
             }
         );
@@ -871,6 +880,9 @@ Cocktail("Beer", 5, 0.3) * 3
 1 = a
 a
 a + 6
+{} += Cock("a", 10, 0.3) += Cock("b", 5, 0.8) = mp
+mp.erase("a")
+mp.rename("a", "d")
 
 $ ./main.out
 ~> 3 - 3 -
@@ -943,6 +955,13 @@ hello
 1
 ~> a + 6
 7
+~> {} += Cock("a", 10, 0.3) += Cock("b", 5, 0.8) = mp
+{Cocktail("b", 5.000000, 0.800000), Cocktail("a", 10.000000, 0.300000)}
+~> mp.erase("a")
+1
+{Cocktail("b", 5.000000, 0.800000)}
+~> mp.rename("a", "d")
+{Cocktail("b", 5.000000, 0.800000), Cocktail("d", 10.000000, 0.300000)}
 */
 
 // clang-format on
