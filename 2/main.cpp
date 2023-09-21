@@ -522,12 +522,18 @@ private:
                 }
                 if (lexer.peek().lexeme == "is_empty") {
                     lexer.consume();
+                    expect_and_consume("(");
+                    expect_and_consume(")");
                     return lhs.is_empty();
                 } else if (lexer.peek().lexeme == "is_full") {
                     lexer.consume();
+                    expect_and_consume("(");
+                    expect_and_consume(")");
                     return lhs.is_full();
                 } else if (lexer.peek().lexeme == "is_partially_full") {
                     lexer.consume();
+                    expect_and_consume("(");
+                    expect_and_consume(")");
                     return lhs.is_partially_full();
                 }
             }
