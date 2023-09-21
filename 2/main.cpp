@@ -511,6 +511,23 @@ private:
         );
     }
 
+    Quartile eval_quartile() {
+        if (lexer.peek().lexeme == "FIRST") {
+            lexer.consume();
+            return Quartile::FIRST;
+        } else if (lexer.peek().lexeme == "SECOND") {
+            lexer.consume();
+            return Quartile::SECOND;
+        } else if (lexer.peek().lexeme == "THIRD") {
+            lexer.consume();
+            return Quartile::THIRD;
+        } else if (lexer.peek().lexeme == "FOURTH") {
+            lexer.consume();
+            return Quartile::FOURTH;
+        }
+        throw std::runtime_error("Expected quartile");
+    }
+
     value_type eval_getattr(value_type &lhs) {
         UNARY_OPERATION_IMPL(
             T1, lhs,
@@ -551,6 +568,13 @@ private:
                     expect_and_consume(")");
                     lhs.rename(arg1, arg2);
                     return lhs;
+                } else if (lexer.peek().lexeme == "volume_with_alcohol_fraction_in_quartile" || lexer.peek().lexeme == "volquar")
+                {
+                    lexer.consume();
+                    expect_and_consume("(");
+                    Quartile arg1 = eval_quartile();
+                    expect_and_consume(")");
+                    return lhs.volume_with_alcohol_fraction_in_quartile(arg1);
                 }
             }
         );
@@ -881,6 +905,10 @@ Cocktail("Beer", 5, 0.3) * 3
 a
 a + 6
 {} += Cock("a", 10, 0.3) += Cock("b", 5, 0.8) = mp
+mp.volume_with_alcohol_fraction_in_quartile(FIRST)
+mp.volume_with_alcohol_fraction_in_quartile(SECOND)
+mp.volume_with_alcohol_fraction_in_quartile(THIRD)
+mp.volume_with_alcohol_fraction_in_quartile(FOURTH)
 mp.erase("a")
 mp.rename("a", "d")
 
@@ -957,6 +985,14 @@ hello
 7
 ~> {} += Cock("a", 10, 0.3) += Cock("b", 5, 0.8) = mp
 {Cocktail("b", 5.000000, 0.800000), Cocktail("a", 10.000000, 0.300000)}
+~> mp.volume_with_alcohol_fraction_in_quartile(FIRST)
+0
+~> mp.volume_with_alcohol_fraction_in_quartile(SECOND)
+10
+~> mp.volume_with_alcohol_fraction_in_quartile(THIRD)
+0
+~> mp.volume_with_alcohol_fraction_in_quartile(FOURTH)
+5
 ~> mp.erase("a")
 1
 {Cocktail("b", 5.000000, 0.800000)}
