@@ -278,7 +278,24 @@ struct name_of_type<CocktailMap> {
     static constexpr const char *value = "cocktail_map";
 };
 
-#define BINARY_OPERATION_IMPL(T1, lhs, T2, rhs, code)                               \
+#define UNARY_OPERATION_IMPL_(T1, lhs, in_lhs, code)                          \
+    std::string_view lexeme = lexer.peek().lexeme;                            \
+    lexer.consume();                                                          \
+    return std::visit(                                                        \
+        [&](auto lhs) -> value_type {                                         \
+            using T1 = std::decay_t<decltype(lhs)>;                           \
+            code;                                                             \
+            throw std::runtime_error(                                         \
+                "Unsupported operation '" + std::string(lexeme) + "' for '" + \
+                name_of_type<T1>::value + "'"                                 \
+            );                                                                \
+        },                                                                    \
+        in_lhs                                                                \
+    );
+
+#define UNARY_OPERATION_IMPL(T1, lhs, code) UNARY_OPERATION_IMPL_(T1, lhs, lhs, code)
+
+#define BINARY_OPERATION_IMPL_(T1, lhs, T2, rhs, in_lhs, in_rhs, code)              \
     std::string_view lexeme = lexer.peek().lexeme;                                  \
     lexer.consume();                                                                \
     return std::visit(                                                              \
@@ -291,15 +308,18 @@ struct name_of_type<CocktailMap> {
                 name_of_type<T1>::value + "' and '" + name_of_type<T2>::value + "'" \
             );                                                                      \
         },                                                                          \
-        lhs, eval()                                                                 \
+        in_lhs, in_rhs                                                              \
     );
+
+#define BINARY_OPERATION_IMPL(T1, lhs, T2, rhs, code) \
+    BINARY_OPERATION_IMPL_(T1, lhs, T2, rhs, lhs, eval(), code)
 
 class Evaluator {
 public:
     using decimal = long long;
     using floating = float;
     using string = std::string;
-    using value_type = std::variant<decimal, floating, string, Cocktail, CocktailMap>;
+    using value_type = std::variant<bool, decimal, floating, string, Cocktail, CocktailMap>;
 
 private:
     Lexer lexer;
@@ -472,6 +492,24 @@ private:
         );
     }
 
+    value_type eval_getattr(value_type &lhs) {
+        UNARY_OPERATION_IMPL(
+            T1, lhs,
+            if constexpr (std::is_same_v<T1, CocktailMap>) {
+                if (lexer.peek().lexeme == "is_empty") {
+                    lexer.consume();
+                    return lhs.is_empty();
+                } else if (lexer.peek().lexeme == "is_full") {
+                    lexer.consume();
+                    return lhs.is_full();
+                } else if (lexer.peek().lexeme == "is_partially_full") {
+                    lexer.consume();
+                    return lhs.is_partially_full();
+                }
+            }
+        );
+    }
+
     value_type eval_operator_(value_type &lhs) {
         std::string_view lexeme = lexer.peek().lexeme;
         if (lexeme == "+") {
@@ -486,6 +524,8 @@ private:
             return eval_shift_right(lhs, lexeme != ">>");
         } else if (lexeme == "<<" or lexeme == "<<!") {
             return eval_shift_left(lhs, lexeme != "<<");
+        } else if (lexeme == ".") {
+            return eval_getattr(lhs);
         } else {
             throw std::runtime_error("Unknown operator '" + std::string(lexeme) + "'");
         }
