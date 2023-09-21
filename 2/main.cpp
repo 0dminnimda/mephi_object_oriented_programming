@@ -114,6 +114,8 @@ bool isquote(char c) {
 
 bool isoperator(char c) { return std::ispunct(c) && !isbracket(c) && !isquote(c); }
 
+bool isident(char c) { return std::isalnum(c) || c == '_'; }
+
 class CharStream {
 private:
     std::string &code;
@@ -157,7 +159,7 @@ private:
 
     Token get_identifier(CharStream &stream) {
         const char *start = stream.peek();
-        while (stream.peek() && std::isalnum(*stream.peek())) stream.consume();
+        while (stream.peek() && isident(*stream.peek())) stream.consume();
         return Token(TokenKind::Identifier, start, stream.peek_prev());
     }
 
