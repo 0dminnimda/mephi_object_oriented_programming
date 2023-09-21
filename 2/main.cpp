@@ -12,6 +12,17 @@
 #include "cocktail/cocktail.hpp"
 #include "cocktail/cocktail_map.hpp"
 
+#define TRY_CATCH_ALL(code)                                    \
+    TRY_CATCH_WRAPPER({                                        \
+        try {                                                  \
+            code;                                              \
+        } catch (const std::exception &e) {                    \
+            std::cout << "Error: " << e.what() << std::endl;   \
+        } catch (...) {                                        \
+            std::cout << "Unknwon error occured" << std::endl; \
+        }                                                      \
+    });
+
 template <typename T, typename... Ts>
 using is_one_of = std::disjunction<std::is_same<T, Ts>...>;
 
@@ -758,36 +769,12 @@ void test_ch() {
 }
 
 int main() {
-    TRY_CATCH_WRAPPER({
-        try {
-            test_hah();
-        } catch (const std::exception &e) {
-            std::cout << "Error: " << e.what() << std::endl;
-        } catch (...) {
-            std::cout << "Unknwon error occured" << std::endl;
-        }
-    })
+    TRY_CATCH_ALL({ test_hah(); })
 
-    TRY_CATCH_WRAPPER({
-        try {
-            test_ch();
-        } catch (const std::exception &e) {
-            std::cout << "Error: " << e.what() << std::endl;
-        } catch (...) {
-            std::cout << "Unknwon error occured" << std::endl;
-        }
-    })
+    TRY_CATCH_ALL({ test_ch(); })
 
     while (1) {
-        TRY_CATCH_WRAPPER({
-            try {
-                evaluate();
-            } catch (const std::exception &e) {
-                std::cout << "Error: " << e.what() << std::endl;
-            } catch (...) {
-                std::cout << "Unknwon error occured" << std::endl;
-            }
-        })
+        TRY_CATCH_ALL({ evaluate(); })
     }
 
     return 0;
