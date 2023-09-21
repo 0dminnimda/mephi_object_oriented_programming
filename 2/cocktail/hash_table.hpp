@@ -176,6 +176,14 @@ public:
     }
 
     /*!
+    Checks if the `key` is in the HashTable.
+    */
+    bool contains(const Key &key) {
+        std::size_t index;
+        return find_index(key, index);
+    }
+
+    /*!
     Returns the value associated with the `key`.
     */
     Value &at(const Key &key) {
