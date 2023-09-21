@@ -793,6 +793,8 @@ int main() {
     return 0;
 }
 
+// clang-format off
+
 /*
 
 3 - 3 -
@@ -894,3 +896,5 @@ hello
 ~> {Cock(), Cock("Vodka", 10, 0.1) + Cock("Vine", 16, 0.1)}
 {Cocktail("", 0.000000, 0.000000), Cocktail("VodkaVine", 26.000000, 0.100000)}
 */
+
+// clang-format on
