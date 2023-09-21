@@ -575,6 +575,13 @@ private:
                     Quartile arg1 = eval_quartile();
                     expect_and_consume(")");
                     return lhs.volume_with_alcohol_fraction_in_quartile(arg1);
+                } else if (lexer.peek().lexeme == "mix_for_alcohol_fraction") {
+                    lexer.consume();
+                    expect_and_consume("(");
+                    floating arg1 = eval_as<floating>(true);
+                    expect_and_consume(")");
+                    std::cout << lhs.mix_for_alcohol_fraction(arg1) << std::endl;
+                    return lhs;
                 }
             }
         );
@@ -911,6 +918,7 @@ mp.volume_with_alcohol_fraction_in_quartile(THIRD)
 mp.volume_with_alcohol_fraction_in_quartile(FOURTH)
 mp.erase("a")
 mp.rename("a", "d")
+mp.mix_for_alcohol_fraction(0.6)
 
 $ ./main.out
 ~> 3 - 3 -
@@ -998,6 +1006,9 @@ hello
 {Cocktail("b", 5.000000, 0.800000)}
 ~> mp.rename("a", "d")
 {Cocktail("b", 5.000000, 0.800000), Cocktail("d", 10.000000, 0.300000)}
+~> mp.mix_for_alcohol_fraction(0.6)
+Cocktail("ab", 5.000000, 0.600000)
+{Cocktail("b", 2.000000, 0.800000), Cocktail("a", 8.000000, 0.300000)}
 */
 
 // clang-format on
