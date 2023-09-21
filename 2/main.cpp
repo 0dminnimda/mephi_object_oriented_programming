@@ -535,6 +535,13 @@ private:
                     expect_and_consume("(");
                     expect_and_consume(")");
                     return lhs.is_partially_full();
+                } else if (lexer.peek().lexeme == "erase") {
+                    lexer.consume();
+                    expect_and_consume("(");
+                    string arg1 = eval_as<string>(true);
+                    expect_and_consume(")");
+                    std::cout << lhs.erase(arg1) << std::endl;
+                    return lhs;
                 }
             }
         );
