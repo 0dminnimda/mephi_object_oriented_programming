@@ -508,10 +508,21 @@ private:
         return result;
     }
 
-    CocktailMap eval_bracket() {
+    value_type eval_lookup(value_type &lhs) {
+        BINARY_OPERATION_IMPL(
+            T1, lhs, T2, rhs,
+            if constexpr (std::is_same_v<T1, CocktailMap> && std::is_same_v<T2, string>) {
+                return lhs[rhs];
+            }
+        );
+    }
+
+    value_type eval_bracket(value_type &lhs) {
         std::string_view lexeme = lexer.peek().lexeme;
         if (lexeme == "{") {
             return eval_map();
+        } else if (lexeme == "[") {
+            return eval_lookup(lhs);
         } else {
             throw std::runtime_error("Unexpected bracket '" + std::string(lexeme) + "'");
         }
@@ -536,7 +547,7 @@ private:
                 if (evaluates_operand) break;
                 prev = eval_operator(prev);
             } else if (lexer.peek().kind == TokenKind::OpeningBracket) {
-                prev = eval_bracket();
+                prev = eval_bracket(prev);
             } else {
                 throw std::runtime_error(
                     "Unknown token '" + std::string(lexer.peek().lexeme) + "'"
