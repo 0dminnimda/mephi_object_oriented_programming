@@ -1,0 +1,456 @@
+diff --git a/2/main.cpp b/2/main.cpp
+index 21da67a..4beec49 100644
+--- a/2/main.cpp
++++ b/2/main.cpp
+@@ -289,11 +289,9 @@ struct name_of_type<CocktailMap> {
+     static constexpr const char *value = "cocktail_map";
+ };
+ 
+-#define UNARY_OPERATION_IMPL_(T1, lhs, in_lhs, code)                          \
+-    std::string_view lexeme = lexer.peek().lexeme;                            \
+-    lexer.consume();                                                          \
+-    return std::visit(                                                        \
+-        [&](auto lhs) -> value_type {                                         \
++#define UNARY_OPERATION_IMPL_(T1, lhs, in_lhs, lexeme, code)                  \
++    std::visit(                                                               \
++        [&](auto lhs) -> auto {                                               \
+             using T1 = std::decay_t<decltype(lhs)>;                           \
+             code;                                                             \
+             throw std::runtime_error(                                         \
+@@ -302,15 +300,14 @@ struct name_of_type<CocktailMap> {
+             );                                                                \
+         },                                                                    \
+         in_lhs                                                                \
+-    );
++    )
+ 
+-#define UNARY_OPERATION_IMPL(T1, lhs, code) UNARY_OPERATION_IMPL_(T1, lhs, lhs, code)
++#define UNARY_OPERATION_IMPL(T1, lhs, lexeme, code) \
++    UNARY_OPERATION_IMPL_(T1, lhs, lhs, lexeme, code)
+ 
+-#define BINARY_OPERATION_IMPL_(T1, lhs, T2, rhs, in_lhs, in_rhs, code)              \
+-    std::string_view lexeme = lexer.peek().lexeme;                                  \
+-    lexer.consume();                                                                \
+-    return std::visit(                                                              \
+-        [&](auto lhs, auto rhs) -> value_type {                                     \
++#define BINARY_OPERATION_IMPL_(T1, lhs, T2, rhs, in_lhs, in_rhs, lexeme, code)      \
++    std::visit(                                                                     \
++        [&](auto lhs, auto rhs) -> auto {                                           \
+             using T1 = std::decay_t<decltype(lhs)>;                                 \
+             using T2 = std::decay_t<decltype(rhs)>;                                 \
+             code;                                                                   \
+@@ -320,10 +317,10 @@ struct name_of_type<CocktailMap> {
+             );                                                                      \
+         },                                                                          \
+         in_lhs, in_rhs                                                              \
+-    );
++    )
+ 
+-#define BINARY_OPERATION_IMPL(T1, lhs, T2, rhs, code) \
+-    BINARY_OPERATION_IMPL_(T1, lhs, T2, rhs, lhs, eval(), code)
++#define BINARY_OPERATION_IMPL(T1, lhs, T2, rhs, lexeme, code) \
++    BINARY_OPERATION_IMPL_(T1, lhs, T2, rhs, lhs, (eval(rhs), rhs), lexeme, code)
+ 
+ class Evaluator {
+ public:
+@@ -403,117 +400,151 @@ private:
+             return Cocktail();
+         }
+ 
+-        arg1 = eval_as<string>(true);
++        eval_as<string>(arg1, true);
+         if (consume_if_got(")")) {
+             return Cocktail(arg1, 0);
+         }
+ 
+         expect_and_consume(",");
+ 
+-        arg2 = eval_as<floating>(true);
++        eval_as<floating>(arg2, true);
+         if (consume_if_got(")")) {
+             return Cocktail(arg1, arg2);
+         }
+ 
+         expect_and_consume(",");
+ 
+-        arg3 = eval_as<floating>(true);
++        eval_as<floating>(arg3, true);
+         expect_and_consume(")");
+ 
+         return Cocktail(arg1, arg2, arg3);
+     }
+ 
+-    value_type eval_identifier() {
++    void eval_identifier(value_type &result) {
+         if (lexer.peek().lexeme == "Cocktail" || lexer.peek().lexeme == "Cock") {
+             lexer.consume();
+-            return eval_cocktail();
++            result = eval_cocktail();
++            return;
+         }
+         std::string lexeme(lexer.peek().lexeme);
+         if (variables.contains(lexeme)) {
+             lexer.consume();
+-            return variables.at(lexeme);
++            result = variables.at(lexeme);
++            return;
+         }
+         throw std::runtime_error("Unknown identifier '" + lexeme + "'");
+     }
+ 
+-    value_type eval_add(value_type &lhs) {
++    void eval_add(value_type &result, value_type &lhs) {
++        std::string_view lexeme = lexer.peek().lexeme;
++        lexer.consume();
++        value_type rhs;
+         BINARY_OPERATION_IMPL(
+-            T1, lhs, T2, rhs,
++            T1, lhs, T2, rhs, lexeme,
+             if constexpr (is_one_of_v<T1, decimal, floating> && is_one_of_v<T2, decimal, floating>) {
+-                return lhs + rhs;
++                result = lhs + rhs;
++                return;
+             } else if constexpr (std::is_same_v<T1, Cocktail> && std::is_same_v<T2, Cocktail>) {
+-                return lhs + rhs;
++                result = lhs + rhs;
++                return;
+             } else if constexpr (std::is_same_v<T1, string> && std::is_same_v<T2, string>) {
+-                return lhs + rhs;
++                result = lhs + rhs;
++                return;
+             }
+         );
+     }
+ 
+-    value_type eval_in_place_add(value_type &lhs) {
++    void eval_in_place_add(value_type &result, value_type &lhs) {
++        std::string_view lexeme = lexer.peek().lexeme;
++        lexer.consume();
++        value_type rhs;
+         BINARY_OPERATION_IMPL(
+-            T1, lhs, T2, rhs,
++            T1, lhs, T2, rhs, lexeme,
+             if constexpr (std::is_same_v<T1, CocktailMap> && std::is_same_v<T2, Cocktail>) {
+                 lhs += rhs;
+-                return lhs;
++                result = lhs;
++                return;
+             }
+         );
+     }
+ 
+-    value_type eval_sub(value_type &lhs) {
++    void eval_sub(value_type &result, value_type &lhs) {
++        std::string_view lexeme = lexer.peek().lexeme;
++        lexer.consume();
++        value_type rhs;
+         BINARY_OPERATION_IMPL(
+-            T1, lhs, T2, rhs,
++            T1, lhs, T2, rhs, lexeme,
+             if constexpr (is_one_of_v<T1, decimal, floating> && is_one_of_v<T2, decimal, floating>) {
+-                return lhs - rhs;
++                result = lhs - rhs;
++                return;
+             }
+         );
+     }
+ 
+-    value_type eval_mul(value_type &lhs) {
++    void eval_mul(value_type &result, value_type &lhs) {
++        std::string_view lexeme = lexer.peek().lexeme;
++        lexer.consume();
++        value_type rhs;
+         BINARY_OPERATION_IMPL(
+-            T1, lhs, T2, rhs,
++            T1, lhs, T2, rhs, lexeme,
+             if constexpr (is_one_of_v<T1, decimal, floating> && is_one_of_v<T2, decimal, floating>) {
+-                return lhs * rhs;
++                result = lhs * rhs;
++                return;
+             } else if constexpr (std::is_same_v<T1, Cocktail> && is_one_of_v<T2, decimal, floating>) {
+-                return lhs * rhs;
++                result = lhs * rhs;
++                return;
+             }
+         );
+     }
+ 
+-    value_type eval_shift_right(value_type &lhs, bool return_first = false) {
++    void eval_shift_right(value_type &result, value_type &lhs, bool return_first = false) {
++        std::string_view lexeme = lexer.peek().lexeme;
++        lexer.consume();
++        value_type rhs;
+         BINARY_OPERATION_IMPL(
+-            T1, lhs, T2, rhs,
++            T1, lhs, T2, rhs, lexeme,
+             if constexpr (std::is_same_v<T1, Cocktail> && std::is_same_v<T2, Cocktail>) {
+                 lhs >> rhs;
+                 if (return_first) {
+-                    return lhs;
++                    result = lhs;
+                 } else {
+-                    return rhs;
++                    result = rhs;
+                 }
++                return;
+             } else if constexpr (std::is_same_v<T1, decimal> && std::is_same_v<T2, decimal>) {
+-                return lhs >> rhs;
++                result = lhs >> rhs;
++                return;
+             }
+         );
+     }
+ 
+-    value_type eval_shift_left(value_type &lhs, bool return_first = false) {
++    void eval_shift_left(value_type &result, value_type &lhs, bool return_first = false) {
++        std::string_view lexeme = lexer.peek().lexeme;
++        lexer.consume();
++        value_type rhs;
+         BINARY_OPERATION_IMPL(
+-            T1, lhs, T2, rhs,
++            T1, lhs, T2, rhs, lexeme,
+             if constexpr (std::is_same_v<T1, Cocktail> && std::is_same_v<T2, Cocktail>) {
+                 lhs << rhs;
+                 if (return_first) {
+-                    return lhs;
++                    result = lhs;
+                 } else {
+-                    return rhs;
++                    result = rhs;
+                 }
++                return;
+             } else if constexpr (std::is_same_v<T1, decimal> && std::is_same_v<T2, decimal>) {
+-                return lhs << rhs;
++                result = lhs << rhs;
++                return;
+             }
+         );
+     }
+ 
+-    value_type eval_getattr(value_type &lhs) {
++    void eval_getattr(value_type &result, value_type &lhs) {
++        std::string_view lexeme = lexer.peek().lexeme;
++        lexer.consume();
++        value_type rhs;
+         UNARY_OPERATION_IMPL(
+-            T1, lhs,
++            T1, lhs, lexeme,
+             if constexpr (std::is_same_v<T1, CocktailMap>) {
+                 if (lexer.peek().kind != TokenKind::Identifier) {
+                     throw std::runtime_error(
+@@ -522,19 +553,22 @@ private:
+                 }
+                 if (lexer.peek().lexeme == "is_empty") {
+                     lexer.consume();
+-                    return lhs.is_empty();
++                    result = lhs.is_empty();
++                    return;
+                 } else if (lexer.peek().lexeme == "is_full") {
+                     lexer.consume();
+-                    return lhs.is_full();
++                    result = lhs.is_full();
++                    return;
+                 } else if (lexer.peek().lexeme == "is_partially_full") {
+                     lexer.consume();
+-                    return lhs.is_partially_full();
++                    result = lhs.is_partially_full();
++                    return;
+                 }
+             }
+         );
+     }
+ 
+-    value_type eval_assign(value_type &lhs) {
++    void eval_assign(value_type &result, value_type &lhs) {
+         std::string_view lexeme = lexer.peek().lexeme;
+         lexer.consume();
+ 
+@@ -547,37 +581,36 @@ private:
+         variables.insert(std::string(lexer.peek().lexeme), lhs);
+         lexer.consume();
+ 
+-        return lhs;
++        result = lhs;
+     }
+ 
+-    value_type eval_operator_(value_type &lhs) {
++    void eval_operator_(value_type &result, value_type &lhs) {
+         std::string_view lexeme = lexer.peek().lexeme;
+         if (lexeme == "+") {
+-            return eval_add(lhs);
++            eval_add(result, lhs);
+         } else if (lexeme == "+=") {
+-            return eval_in_place_add(lhs);
++            eval_in_place_add(result, lhs);
+         } else if (lexeme == "-") {
+-            return eval_sub(lhs);
++            eval_sub(result, lhs);
+         } else if (lexeme == "*") {
+-            return eval_mul(lhs);
++            eval_mul(result, lhs);
+         } else if (lexeme == ">>" or lexeme == ">>!") {
+-            return eval_shift_right(lhs, lexeme != ">>");
++            eval_shift_right(result, lhs, lexeme != ">>");
+         } else if (lexeme == "<<" or lexeme == "<<!") {
+-            return eval_shift_left(lhs, lexeme != "<<");
++            eval_shift_left(result, lhs, lexeme != "<<");
+         } else if (lexeme == ".") {
+-            return eval_getattr(lhs);
++            eval_getattr(result, lhs);
+         } else if (lexeme == "=") {
+-            return eval_assign(lhs);
++            eval_assign(result, lhs);
+         } else {
+             throw std::runtime_error("Unknown operator '" + std::string(lexeme) + "'");
+         }
+     }
+ 
+-    value_type eval_operator(value_type &lhs) {
++    void eval_operator(value_type &result, value_type &lhs) {
+         evaluates_operand = true;
+-        value_type result = eval_operator_(lhs);
++        eval_operator_(result, lhs);
+         evaluates_operand = false;
+-        return result;
+     }
+ 
+     CocktailMap eval_map() {
+@@ -587,91 +620,99 @@ private:
+             if (result.size()) {
+                 expect_and_consume(",");
+             }
+-            result += eval_as<Cocktail>(true);
++            Cocktail cock;
++            eval_as<Cocktail>(cock, true);
++            result += cock;
+         }
+         return result;
+     }
+ 
+-    value_type eval_lookup(value_type &lhs) {
++    void eval_lookup(value_type &result, value_type &lhs) {
++        std::string_view lexeme = lexer.peek().lexeme;
++        lexer.consume();
++        value_type rhs;
+         BINARY_OPERATION_IMPL(
+-            T1, lhs, T2, rhs,
++            T1, lhs, T2, rhs, lexeme,
+             if constexpr (std::is_same_v<T1, CocktailMap> && std::is_same_v<T2, string>) {
+-                return lhs[rhs];
++                result = lhs[rhs];
++                return;
+             }
+         );
+     }
+ 
+-    value_type eval_bracket(value_type &lhs) {
++    void eval_bracket(value_type &result, value_type &lhs) {
+         std::string_view lexeme = lexer.peek().lexeme;
+         if (lexeme == "{") {
+-            return eval_map();
++            result = eval_map();
+         } else if (lexeme == "[") {
+-            return eval_lookup(lhs);
++            eval_lookup(result, lhs);
+         } else {
+             throw std::runtime_error("Unexpected bracket '" + std::string(lexeme) + "'");
+         }
+     }
+ 
+-    value_type eval() {
+-        value_type prev = decimal{0};
++    void eval(value_type &result) {
++        result = decimal{0};
+ 
+         while ((lexer.peek().kind != TokenKind::End) &&
+                (lexer.peek().kind != TokenKind::ClosingBracket) &&
+                (lexer.peek() != Token(TokenKind::Operator, ",")))
+         {
+             if (lexer.peek().kind == TokenKind::Identifier) {
+-                prev = eval_identifier();
++                eval_identifier(result);
+             } else if (lexer.peek().kind == TokenKind::Decimal) {
+-                prev = eval_decimal();
++                result = eval_decimal();
+             } else if (lexer.peek().kind == TokenKind::Floating) {
+-                prev = eval_floating();
++                result = eval_floating();
+             } else if (lexer.peek().kind == TokenKind::String) {
+-                prev = eval_string();
++                result = eval_string();
+             } else if (lexer.peek().kind == TokenKind::Operator) {
+                 if (evaluates_operand) break;
+-                prev = eval_operator(prev);
++                eval_operator(result, result);
+             } else if (lexer.peek().kind == TokenKind::OpeningBracket) {
+-                prev = eval_bracket(prev);
++                eval_bracket(result, result);
+             } else {
+                 throw std::runtime_error(
+                     "Unknown token '" + std::string(lexer.peek().lexeme) + "'"
+                 );
+             }
+         }
+-
+-        return prev;
+     }
+ 
+-    value_type eval(bool can_eval_operators) {
++    void eval(value_type &result, bool can_eval_operators) {
+         if (can_eval_operators) {
+             bool saved_evaluates_operand = evaluates_operand;
+             evaluates_operand = false;
+-            value_type result = eval();
++            eval(result);
+             evaluates_operand = saved_evaluates_operand;
+-            return result;
++        } else {
++            eval(result);
+         }
+-        return eval();
+     }
+ 
+     template <typename OutT>
+-    OutT eval_as(bool can_eval_operators = false) {
+-        return std::visit(
+-            [&](auto arg) -> OutT {
++    void eval_as(OutT &result, bool can_eval_operators = false) {
++        value_type evaluated;
++        eval(evaluated, can_eval_operators);
++        std::visit(
++            [&](auto arg) {
+                 using ArgT = std::decay_t<decltype(arg)>;
+                 if constexpr (std::is_convertible_v<ArgT, OutT>) {
+-                    return arg;
++                    result = std::move(arg);
+                 } else {
+                     throw std::runtime_error(std::string("Invalid ") + name_of_type<OutT>::value);
+                 }
+             },
+-            eval(can_eval_operators)
++            evaluated
+         );
+     }
+ 
+ public:
+     value_type evaluate(std::string &code) {
+         lexer.lex(code);
+-        return eval();
++        value_type result;
++        eval(result);
++        return result;
+     }
+ };
+ 
+@@ -810,9 +851,9 @@ void test_ch() {
+ }
+ 
+ int main() {
+-    TRY_CATCH_ALL({ test_hah(); })
++    // TRY_CATCH_ALL({ test_hah(); })
+ 
+-    TRY_CATCH_ALL({ test_ch(); })
++    // TRY_CATCH_ALL({ test_ch(); })
+ 
+     TRY_CATCH_ALL({ intrpret(); })
+ 
