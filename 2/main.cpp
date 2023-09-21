@@ -332,12 +332,15 @@ public:
     using string = std::string;
     using value_type = std::variant<bool, decimal, floating, string, Cocktail, CocktailMap>;
 
+    using VarTable = HashTable<string, value_type>;
+
 private:
     Lexer lexer;
+    VarTable &variables;
     bool evaluates_operand;
 
 public:
-    Evaluator() : lexer(), evaluates_operand(false) {}
+    Evaluator(VarTable &variables) : lexer(), variables(variables), evaluates_operand(false) {}
 
 private:
     decimal eval_decimal() {
@@ -420,12 +423,17 @@ private:
         return Cocktail(arg1, arg2, arg3);
     }
 
-    Cocktail eval_identifier() {
+    value_type eval_identifier() {
         if (lexer.peek().lexeme == "Cocktail" || lexer.peek().lexeme == "Cock") {
             lexer.consume();
             return eval_cocktail();
         }
-        throw std::runtime_error("Unknown identifier");
+        std::string lexeme(lexer.peek().lexeme);
+        if (variables.contains(lexeme)) {
+            lexer.consume();
+            return variables.at(lexeme);
+        }
+        throw std::runtime_error("Unknown identifier '" + lexeme + "'");
     }
 
     value_type eval_add(value_type &lhs) {
@@ -507,6 +515,11 @@ private:
         UNARY_OPERATION_IMPL(
             T1, lhs,
             if constexpr (std::is_same_v<T1, CocktailMap>) {
+                if (lexer.peek().kind != TokenKind::Identifier) {
+                    throw std::runtime_error(
+                        "Expected identifier for operation '" + std::string(lexeme) + "'"
+                    );
+                }
                 if (lexer.peek().lexeme == "is_empty") {
                     lexer.consume();
                     return lhs.is_empty();
@@ -519,6 +532,22 @@ private:
                 }
             }
         );
+    }
+
+    value_type eval_assign(value_type &lhs) {
+        std::string_view lexeme = lexer.peek().lexeme;
+        lexer.consume();
+
+        if (lexer.peek().kind != TokenKind::Identifier) {
+            throw std::runtime_error(
+                "Expected identifier for operation '" + std::string(lexeme) + "'"
+            );
+        }
+
+        variables.insert(std::string(lexer.peek().lexeme), lhs);
+        lexer.consume();
+
+        return lhs;
     }
 
     value_type eval_operator_(value_type &lhs) {
@@ -537,6 +566,8 @@ private:
             return eval_shift_left(lhs, lexeme != "<<");
         } else if (lexeme == ".") {
             return eval_getattr(lhs);
+        } else if (lexeme == "=") {
+            return eval_assign(lhs);
         } else {
             throw std::runtime_error("Unknown operator '" + std::string(lexeme) + "'");
         }
@@ -655,7 +686,7 @@ void print_tokens(std::string code) {
     std::cout << lexer.peek() << std::endl;
 }
 
-void evaluate() {
+void evaluate(Evaluator::VarTable &variables) {
     std::cout << "\n~> " << std::flush;
 
     std::string line;
@@ -667,7 +698,17 @@ void evaluate() {
         return;
     }
 
-    std::visit([](auto value) { std::cout << value << std::endl; }, Evaluator().evaluate(line));
+    std::visit(
+        [](auto value) { std::cout << value << std::endl; }, Evaluator(variables).evaluate(line)
+    );
+}
+
+void intrpret() {
+    Evaluator::VarTable variables;
+
+    while (1) {
+        TRY_CATCH_ALL({ evaluate(variables); })
+    }
 }
 
 void test_hah() {
@@ -773,9 +814,7 @@ int main() {
 
     TRY_CATCH_ALL({ test_ch(); })
 
-    while (1) {
-        TRY_CATCH_ALL({ evaluate(); })
-    }
+    TRY_CATCH_ALL({ intrpret(); })
 
     return 0;
 }
@@ -816,6 +855,9 @@ Cocktail("Beer", 5, 0.3) * 3
 {} += Cock("a")
 {} += Cock("a") += Cock("b")
 {Cock(), Cock("Vodka", 10, 0.1) + Cock("Vine", 16, 0.1)}
+1 = a
+a
+a + 6
 
 $ ./main.out
 ~> 3 - 3 -
@@ -882,6 +924,12 @@ hello
 {Cocktail("a", 0.000000, 0.000000), Cocktail("b", 0.000000, 0.000000)}
 ~> {Cock(), Cock("Vodka", 10, 0.1) + Cock("Vine", 16, 0.1)}
 {Cocktail("", 0.000000, 0.000000), Cocktail("VodkaVine", 26.000000, 0.100000)}
+~> 1 = a
+1
+~> a
+1
+~> a + 6
+7
 */
 
 // clang-format on
