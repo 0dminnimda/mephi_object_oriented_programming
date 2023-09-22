@@ -64,6 +64,11 @@ public:
     Cocktail &operator[](const std::string &name);
 
     /*!
+    Returns the cocktail with the given `name`.
+    */
+    const Cocktail &operator[](const std::string &name) const;
+
+    /*!
     Outputs the map to a `stream`. In the format `{<CocktailX>, <CocktailY>, ...}`.
     */
     friend std::ostream &operator<<(std::ostream &stream, const CocktailMap &map);

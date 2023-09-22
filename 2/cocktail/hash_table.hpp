@@ -194,6 +194,10 @@ public:
         throw std::out_of_range("Key not found");
     }
 
+    const Value &at(const Key &key) const {
+        return (const Value &)at((Key &)key);
+    }
+
     /*!
     Outputs the HashTable to a `stream`. In the format `{<keyX>: <valueX>, <keyY>: <valueY>, ...}`.
     */
