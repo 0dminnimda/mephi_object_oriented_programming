@@ -12,6 +12,7 @@
 *.profdata
 
 build
+docs
 analysis
 coverage
 .cache

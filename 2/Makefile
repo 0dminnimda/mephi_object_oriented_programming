@@ -54,6 +54,10 @@ test: $(TEST_DIR) $(COV_DIR)
 	$(call llvm_cov,report,$(EXEC),$(COV_DIR)/merged.profdata)
 	$(call llvm_cov,show,$(EXEC),$(COV_DIR)/merged.profdata) > $(COV_DIR)/report.txt
 
+.PHONY: docs
+docs:
+	doxygen Doxyfile
+
 .PHONY: clean
 clean:
 	rm -rf $(OUT_DIR)
