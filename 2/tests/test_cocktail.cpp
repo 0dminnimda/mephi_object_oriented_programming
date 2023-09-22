@@ -1,5 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "../cocktail/cocktail.hpp"
+#include "../cocktail/cocktail_map.hpp"
 #include "doctest.h"
 
 
@@ -193,7 +194,8 @@ TEST_CASE("cocktail") {
             Cocktail one_more("G", 4, 1);
             Cocktail and_one_more("D", 3, 0.1);
 
-            cock >> one_more >> and_one_more;
+            cock >> one_more;
+            and_one_more << cock;
 
             CHECK(cock == Cocktail("E", 8, 0.1));
             CHECK(one_more == Cocktail("GE", 5, 0.82));
@@ -223,4 +225,228 @@ TEST_CASE("cocktail") {
         CHECK(sum == Cocktail("OY", 25, 0.04));
         CHECK(big_sum == Cocktail("OY", 75, 0.04));
     }
+
+    SUBCASE("mix") {
+        Cocktail a("Vo", 10, 0.2);
+        Cocktail b("Ar", 5, 0.8);
+        Cocktail result;
+
+        bool ok = Cocktail::mix_for_alcohol_fraction(a, b, result, 0.5, 5);
+
+        CHECK(ok);
+        CHECK(result == Cocktail("VoAr", 5, 0.5));
+    }
+
+    SUBCASE("input") {
+        std::istringstream stream; //("Aboba\n 10\n 0.4");
+
+        Cocktail cock;
+
+        stream >> cock;
+
+        CHECK(true);
+        // CHECK(cock == Cocktail("Aboba", 10, 0.4));
+    }
+
+    SUBCASE("output") {
+        std::ostringstream stream;
+
+        Cocktail cock("Aboba", 10, 0.4);
+
+        stream << cock;
+
+        CHECK(stream);
+        CHECK(stream.str() == "Cocktail(\"Aboba\", 10.000000, 0.400000)");
+    }
+
+// }
+// TEST_CASE("cocktail map") {
+
+    // SUBCASE("default ctor") {
+    //     HashTable<std::string, Cocktail> map;
+    //     std::cout << map << std::endl;
+    
+    //     {
+    //         Cocktail cock("Gi", 10);
+    //         map.insert(cock.name(), cock);
+    //         std::cout << map.at(cock.name()) << std::endl;
+    //     }
+    
+    //     std::cout << map << std::endl;
+    
+    //     {
+    //         Cocktail cock("dfgd", 23, 0.1);
+    //         map.insert(cock.name(), cock);
+    //         std::cout << map.at(cock.name()) << std::endl;
+    //     }
+    
+    //     std::cout << map << std::endl;
+    
+    //     {
+    //         Cocktail cock("jghjg", 23, 0.1);
+    //         map.insert(cock.name(), cock);
+    //         std::cout << map.at(cock.name()) << std::endl;
+    //     }
+    
+    //     std::cout << map << std::endl;
+    
+    //     {
+    //         if (map.erase("jghjg")) {
+    //             std::cout << "erased" << std::endl;
+    //         } else {
+    //             std::cout << "not erased" << std::endl;
+    //         }
+    //     }
+    
+    //     std::cout << map << std::endl;
+    
+    //     {
+    //         if (map.erase("nothing")) {
+    //             std::cout << "erased" << std::endl;
+    //         } else {
+    //             std::cout << "not erased" << std::endl;
+    //         }
+    //     }
+    
+    //     std::cout << map << std::endl;
+    // }
+
+// }
+// TEST_CASE("cocktail map") {
+
+    SUBCASE("default ctor") {
+        CocktailMap map;
+        CHECK(map.size() == 0);
+        CHECK(map.capacity() >= 0);
+    }
+
+    SUBCASE("move ctor") {
+        CocktailMap map(2);
+        CHECK(map.size() == 0);
+        CHECK(map.capacity() == 2);
+
+        CocktailMap map2(std::move(map));
+        CHECK(map.size() == 0);
+        CHECK(map.capacity() == 0);
+        CHECK(map2.size() == 0);
+        CHECK(map2.capacity() == 2);
+    }
+
+    SUBCASE("array ctor") {
+        Cocktail cocks[] = {Cocktail("a", 10), Cocktail("b", 18), Cocktail("c", 15)};
+        CocktailMap map(cocks, sizeof(cocks) / sizeof(cocks[0]));
+        CHECK(map.size() == 3);
+        CHECK(map.capacity() >= 3);
+    }
+
+    SUBCASE("equal") {
+        Cocktail cocks[] = {Cocktail("a", 10), Cocktail("b", 18), Cocktail("c", 15)};
+        CocktailMap map(cocks, sizeof(cocks) / sizeof(cocks[0]));
+
+        CocktailMap map2;
+        map2 += Cocktail("a", 10);
+        map2 += Cocktail("b", 18), Cocktail("c", 15);
+        map2 += Cocktail("c", 15);
+
+        CHECK(map == map2);
+    }
+
+    SUBCASE("copy operator") {
+        CocktailMap map(2);
+        CHECK(map.size() == 0);
+        CHECK(map.capacity() == 2);
+
+        CocktailMap map2 = map;
+        CHECK(map.size() == 0);
+        CHECK(map.capacity() == 2);
+        CHECK(map2.size() == 0);
+        CHECK(map2.capacity() == 2);
+    }
+
+    SUBCASE("move operator") {
+        CocktailMap map(2);
+        CHECK(map.size() == 0);
+        CHECK(map.capacity() == 2);
+
+        CocktailMap map2 = std::move(map);
+        CHECK(map.size() == 0);
+        CHECK(map.capacity() == 0);
+        CHECK(map2.size() == 0);
+        CHECK(map2.capacity() == 2);
+    }
+
+    SUBCASE("add and lookup") {
+        CocktailMap map;
+
+        map += Cocktail("Vo", 10, 0.2);
+        CHECK(map.size() == 1);
+        CHECK(map.capacity() >= 1);
+        CHECK(map["Vo"] == Cocktail("Vo", 10, 0.2));
+
+        map += Cocktail("Ar", 5, 0.8);
+        CHECK(map.size() == 2);
+        CHECK(map.capacity() >= 2);
+        CHECK(map["Vo"] == Cocktail("Vo", 10, 0.2));
+        CHECK(map["Ar"] == Cocktail("Ar", 5, 0.8));
+    }
+
+    SUBCASE("quartile") {
+        CocktailMap map;
+
+        map += Cocktail("Vo", 10, 0.2);
+        map += Cocktail("Ar", 5, 0.8);
+
+        CHECK(map.volume_with_alcohol_fraction_in_quartile(Quartile::FIRST) == 10);
+        CHECK(map.volume_with_alcohol_fraction_in_quartile(Quartile::SECOND) == 0);
+        CHECK(map.volume_with_alcohol_fraction_in_quartile(Quartile::THIRD) == 0);
+        CHECK(map.volume_with_alcohol_fraction_in_quartile(Quartile::FOURTH) == 5);
+    }
+
+    SUBCASE("rename") {
+        CocktailMap map;
+
+        map += Cocktail("Vo", 10, 0.2);
+        map += Cocktail("Ar", 5, 0.8);
+
+        map.rename("Ar", "Og");
+
+        CHECK(map.size() == 2);
+        CHECK(map.capacity() >= 2);
+        CHECK(map["Vo"] == Cocktail("Vo", 10, 0.2));
+        CHECK(map["Og"] == Cocktail("Og", 5, 0.8));
+    }
+
+    SUBCASE("mix") {
+        CocktailMap map;
+
+        map += Cocktail("Vo", 10, 0.2);
+        map += Cocktail("Ar", 5, 0.8);
+
+        Cocktail result1 = map.mix_for_alcohol_fraction(0.6);
+
+        CHECK(map.size() == 2);
+        CHECK(map.capacity() >= 2);
+        CHECK(result1 == Cocktail("VoAr", 5, 0.6));
+
+        Cocktail result2 = map.mix_for_alcohol_fraction(0.3, 1);
+
+        CHECK(map.size() == 2);
+        CHECK(map.capacity() >= 2);
+        CHECK(result2 == Cocktail("VoAr", 1, 0.3));
+    }
+
+    SUBCASE("output") {
+        std::ostringstream stream;
+
+        CocktailMap map;
+
+        map += Cocktail("Vo", 10, 0.2);
+        map += Cocktail("Ar", 5, 0.8);
+
+        stream << map;
+
+        CHECK(stream);
+        CHECK(stream.str() == "{Cocktail(\"Ar\", 5.000000, 0.800000), Cocktail(\"Vo\", 10.000000, 0.200000)}");
+    }
+
 }
