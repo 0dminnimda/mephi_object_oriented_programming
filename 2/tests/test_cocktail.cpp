@@ -3,7 +3,7 @@
 #include "doctest.h"
 
 
-TEST_CASE("sugma") {
+TEST_CASE("cocktail") {
     SUBCASE("default ctor") {
         Cocktail cock;
         CHECK(cock == Cocktail());
