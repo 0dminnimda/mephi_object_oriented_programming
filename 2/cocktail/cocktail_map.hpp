@@ -56,7 +56,7 @@ public:
     /*!
     Inserts the `cocktail` into the map.
     */
-    void operator+=(const Cocktail &cocktail);
+    CocktailMap &operator+=(const Cocktail &cocktail);
 
     /*!
     Returns the cocktail with the given `name`.

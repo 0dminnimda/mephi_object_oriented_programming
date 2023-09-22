@@ -13,7 +13,11 @@ CocktailMap::CocktailMap(Cocktail *array, std::size_t size) : HashTable(size) {
     }
 }
 
-void CocktailMap::operator+=(const Cocktail &cocktail) { insert(cocktail.name(), cocktail); }
+CocktailMap &CocktailMap::operator+=(const Cocktail &cocktail) {
+    insert(cocktail.name(), cocktail);
+    return *this;
+}
+
 Cocktail &CocktailMap::operator[](const std::string &name) { return at(name); }
 const Cocktail &CocktailMap::operator[](const std::string &name) const { return at(name); }
 
