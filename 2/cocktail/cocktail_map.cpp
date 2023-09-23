@@ -40,6 +40,8 @@ std::istream &operator>>(std::istream &stream, CocktailMap &map) {
     std::size_t n = 0;
     stream >> n;
 
+    CocktailMap result = map;
+
     for (size_t i = 0; i < n; ++i) {
         Cocktail cock;
         stream >> cock;
@@ -47,7 +49,11 @@ std::istream &operator>>(std::istream &stream, CocktailMap &map) {
             stream.setstate(std::ios::failbit);
             break;
         }
-        map += cock;
+        result += cock;
+    }
+
+    if (!stream.fail()) {
+        std::swap(map, result);
     }
 
     return stream;

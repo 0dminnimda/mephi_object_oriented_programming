@@ -248,6 +248,39 @@ TEST_CASE("cocktail") {
         CHECK(cock == Cocktail("Aboba", 10, 0.4));
     }
 
+    SUBCASE("bad input 1") {
+        std::istringstream stream("Aboba 10");
+
+        Cocktail cock;
+
+        stream >> cock;
+
+        CHECK(stream.fail());
+        CHECK(cock == Cocktail());
+    }
+
+    SUBCASE("bad input 2") {
+        std::istringstream stream("Aboba");
+
+        Cocktail cock;
+
+        stream >> cock;
+
+        CHECK(stream.fail());
+        CHECK(cock == Cocktail());
+    }
+
+    SUBCASE("bad input 3") {
+        std::istringstream stream("");
+
+        Cocktail cock;
+
+        stream >> cock;
+
+        CHECK(stream.fail());
+        CHECK(cock == Cocktail());
+    }
+
     SUBCASE("output") {
         std::ostringstream stream;
 
@@ -508,6 +541,45 @@ TEST_CASE("cocktail map") {
         map2 += Cocktail("Beer", 3, 0.4);
 
         CHECK(!stream.fail());
+        CHECK(map == map2);
+    }
+
+    SUBCASE("bad input 1") {
+        std::istringstream stream("2 Vodka 10 0.6 Beer 3");
+
+        CocktailMap map;
+
+        stream >> map;
+
+        CocktailMap map2;
+
+        CHECK(stream.fail());
+        CHECK(map == map2);
+    }
+
+    SUBCASE("bad input 2") {
+        std::istringstream stream("2 Vodka 10 0.6 Beer");
+
+        CocktailMap map;
+
+        stream >> map;
+
+        CocktailMap map2;
+
+        CHECK(stream.fail());
+        CHECK(map == map2);
+    }
+
+    SUBCASE("bad input 3") {
+        std::istringstream stream("2 Vodka 10 0.6");
+
+        CocktailMap map;
+
+        stream >> map;
+
+        CocktailMap map2;
+
+        CHECK(stream.fail());
         CHECK(map == map2);
     }
 
