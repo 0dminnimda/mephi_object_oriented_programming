@@ -161,6 +161,12 @@ TEST_CASE("cocktail") {
 
     SUBCASE("mul") { CHECK(Cocktail("R", 25, 0.04) * 3 == Cocktail("R", 75, 0.04)); }
 
+    SUBCASE("raw volumes") {
+        Cocktail cock("sdf", 20, 0.75);
+        CHECK(cock.alcohol_volume() == 15);
+        CHECK(cock.water_volume() == 5);
+    }
+
     SUBCASE("zero volume") {
         CHECK(Cocktail() == Cocktail("", 0, 0));
         CHECK(Cocktail("", 0) == Cocktail("", 0, 0));
