@@ -546,6 +546,17 @@ TEST_CASE("cocktail map") {
         CHECK(map.volume_with_alcohol_fraction_in_quartile(Quartile::FOURTH) == 5);
     }
 
+    SUBCASE("override") {
+        CocktailMap map;
+
+        map += Cocktail("Vo", 10, 0.2);
+        map += Cocktail("Vo", 5, 0.8);
+
+        CHECK(map.size() == 1);
+        CHECK(map.capacity() >= 1);
+        CHECK(map["Vo"] == Cocktail("Vo", 5, 0.8));
+    }
+
     SUBCASE("rename") {
         CocktailMap map;
 
