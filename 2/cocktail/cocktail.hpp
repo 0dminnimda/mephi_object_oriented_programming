@@ -40,6 +40,11 @@ public:
     Cocktail &operator=(const Cocktail &) = default;
 
     /*!
+    Spaceship operator to enable comparisons.
+    */
+    auto operator<=>(const Cocktail &other) const = default;
+
+    /*!
     Checks if the `other` cocktail is equal to this one.
     */
     bool operator==(const Cocktail &other) const noexcept;
