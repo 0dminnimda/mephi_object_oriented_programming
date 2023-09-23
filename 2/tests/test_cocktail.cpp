@@ -507,6 +507,33 @@ TEST_CASE("cocktail map") {
         CHECK(map["Ar"] == Cocktail("Ar", 5, 0.8));
     }
 
+    SUBCASE("bad lookup 1") {
+        CocktailMap map;
+
+        CHECK_THROWS_AS(map["gg"], std::out_of_range);
+    }
+
+    SUBCASE("bad lookup 2") {
+        CocktailMap map;
+
+        map += Cocktail("Vo", 10, 0.2);
+        map += Cocktail("Ar", 5, 0.8);
+
+        CHECK_THROWS_AS(map["gg"], std::out_of_range);
+    }
+
+    SUBCASE("bad lookup 3") {
+        CocktailMap map;
+
+        map += Cocktail("Vo", 10, 0.2);
+        map += Cocktail("Ar", 5, 0.8);
+
+        map.erase("Vo");
+        map.erase("Ar");
+
+        CHECK_THROWS_AS(map["Vo"], std::out_of_range);
+    }
+
     SUBCASE("quartile") {
         CocktailMap map;
 

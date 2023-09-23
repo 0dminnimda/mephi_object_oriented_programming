@@ -213,7 +213,10 @@ public:
     }
 
 private:
-    std::size_t key_index(const Key &key) const { return std::hash<Key>{}(key) % capacity(); }
+    std::size_t key_index(const Key &key) const {
+        if (capacity() <= 0) return 0;
+        return std::hash<Key>{}(key) % capacity();
+    }
 
     bool find_index(const Key &key, std::size_t &index) const {
         std::size_t i = key_index(key);
