@@ -237,6 +237,28 @@ TEST_CASE("cocktail") {
         CHECK(result == Cocktail("VoAr", 5, 0.5));
     }
 
+    SUBCASE("mix reverse order") {
+        Cocktail a("Vo", 10, 0.2);
+        Cocktail b("Ar", 5, 0.8);
+        Cocktail result;
+
+        bool ok = Cocktail::mix_for_alcohol_fraction(b, a, result, 0.5, 5);
+
+        CHECK(ok);
+        CHECK(result == Cocktail("VoAr", 5, 0.5));
+    }
+
+    SUBCASE("mix too much") {
+        Cocktail a("Vo", 10, 0.2);
+        Cocktail b("Ar", 5, 0.8);
+        Cocktail result;
+
+        bool ok = Cocktail::mix_for_alcohol_fraction(b, a, result, 0.5, 15);
+
+        CHECK(!ok);
+        CHECK(result == Cocktail("VoAr", 10, 0.5));
+    }
+
     SUBCASE("input") {
         std::istringstream stream("Aboba 10 0.4");
 
