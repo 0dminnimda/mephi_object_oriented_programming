@@ -4,7 +4,7 @@ cmake_policy(SET CMP0091 NEW)
 project(test_cocktails)
 
 set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 file(DOWNLOAD "https://raw.githubusercontent.com/doctest/doctest/master/doctest/doctest.h" "${CMAKE_CURRENT_BINARY_DIR}/doctest.h")
 

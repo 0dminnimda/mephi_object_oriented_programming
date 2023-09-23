@@ -4,7 +4,7 @@ cmake_policy(SET CMP0091 NEW)
 project(SparseMatrix)
 
 set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 add_compile_options(-fsanitize=address)
 add_link_options(-fsanitize=address)

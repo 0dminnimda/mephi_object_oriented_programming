@@ -6,7 +6,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS YES)
 project(cocktail_lib)
 
 set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 add_library(cocktail_lib STATIC cocktail.cpp cocktail_map.cpp)
 target_include_directories(cocktail_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
