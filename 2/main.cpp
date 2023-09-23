@@ -58,7 +58,7 @@ const char *token_kind_name(TokenKind kind) {
 }
 
 namespace std {
-    std::string to_string(const TokenKind &kind) {
+    [[nodiscard]] std::string to_string(const TokenKind &kind) {
         return std::string() + "TokenKind::" + token_kind_name(kind);
     }
 }  // namespace std
@@ -153,7 +153,7 @@ private:
     std::size_t cursor;
 
 public:
-    Lexer() : tokens(), cursor(0) {}
+    explicit Lexer() : tokens(), cursor(0) {}
 
 private:
     Token get_number(CharStream &stream) {
@@ -340,7 +340,8 @@ private:
     bool evaluates_operand;
 
 public:
-    Evaluator(VarTable &variables) : lexer(), variables(variables), evaluates_operand(false) {}
+    explicit Evaluator(VarTable &variables)
+        : lexer(), variables(variables), evaluates_operand(false) {}
 
 private:
     decimal eval_decimal() {
@@ -367,7 +368,7 @@ private:
         throw std::runtime_error("Invalid floating");
     }
 
-    string eval_string() {
+    [[nodiscard]] string eval_string() {
         string result = string(lexer.peek().lexeme);
         lexer.consume();
         return result;
@@ -423,7 +424,7 @@ private:
         return Cocktail(arg1, arg2, arg3);
     }
 
-    value_type eval_identifier() {
+    [[nodiscard]] value_type eval_identifier() {
         if (lexer.peek().lexeme == "Cocktail" || lexer.peek().lexeme == "Cock") {
             lexer.consume();
             return eval_cocktail();
@@ -528,7 +529,7 @@ private:
         throw std::runtime_error("Expected quartile");
     }
 
-    value_type eval_getattr(value_type &lhs) {
+    [[nodiscard]] value_type eval_getattr(value_type &lhs) {
         UNARY_OPERATION_IMPL(
             T1, lhs,
             if constexpr (std::is_same_v<T1, CocktailMap>) {
@@ -587,7 +588,7 @@ private:
         );
     }
 
-    value_type eval_assign(value_type &lhs) {
+    [[nodiscard]] value_type eval_assign(value_type &lhs) {
         std::string_view lexeme = lexer.peek().lexeme;
         lexer.consume();
 
@@ -603,7 +604,7 @@ private:
         return lhs;
     }
 
-    value_type eval_operator_(value_type &lhs) {
+    [[nodiscard]] value_type eval_operator_(value_type &lhs) {
         std::string_view lexeme = lexer.peek().lexeme;
         if (lexeme == "+") {
             return eval_add(lhs);
@@ -626,14 +627,14 @@ private:
         }
     }
 
-    value_type eval_operator(value_type &lhs) {
+    [[nodiscard]] value_type eval_operator(value_type &lhs) {
         evaluates_operand = true;
         value_type result = eval_operator_(lhs);
         evaluates_operand = false;
         return result;
     }
 
-    CocktailMap eval_map() {
+    [[nodiscard]] CocktailMap eval_map() {
         CocktailMap result;
         expect_and_consume("{");
         while (!consume_if_got("}")) {
@@ -645,7 +646,7 @@ private:
         return result;
     }
 
-    value_type eval_lookup(value_type &lhs) {
+    [[nodiscard]] value_type eval_lookup(value_type &lhs) {
         BINARY_OPERATION_IMPL(
             T1, lhs, T2, rhs,
             if constexpr (std::is_same_v<T1, CocktailMap> && std::is_same_v<T2, string>) {
@@ -654,7 +655,7 @@ private:
         );
     }
 
-    value_type eval_bracket(value_type &lhs) {
+    [[nodiscard]] value_type eval_bracket(value_type &lhs) {
         std::string_view lexeme = lexer.peek().lexeme;
         if (lexeme == "{") {
             return eval_map();
@@ -665,7 +666,7 @@ private:
         }
     }
 
-    value_type eval() {
+    [[nodiscard]] value_type eval() {
         value_type prev = decimal{0};
 
         while ((lexer.peek().kind != TokenKind::End) &&
@@ -695,7 +696,7 @@ private:
         return prev;
     }
 
-    value_type eval(bool can_eval_operators) {
+    [[nodiscard]] value_type eval(bool can_eval_operators) {
         if (can_eval_operators) {
             bool saved_evaluates_operand = evaluates_operand;
             evaluates_operand = false;
@@ -707,7 +708,7 @@ private:
     }
 
     template <typename OutT>
-    OutT eval_as(bool can_eval_operators = false) {
+    [[nodiscard]] OutT eval_as(bool can_eval_operators = false) {
         return std::visit(
             [&](auto arg) -> OutT {
                 using ArgT = std::decay_t<decltype(arg)>;
@@ -722,7 +723,7 @@ private:
     }
 
 public:
-    value_type evaluate(std::string &code) {
+    [[nodiscard]] value_type evaluate(std::string &code) {
         lexer.lex(code);
         return eval();
     }
