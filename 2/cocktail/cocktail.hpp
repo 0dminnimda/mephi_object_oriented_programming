@@ -107,6 +107,11 @@ public:
     float water_volume() const noexcept;
 
     /*!
+    Gives you the inverse cocktail, where alcohol and water volumes are swapped.
+    */
+    Cocktail operator~() const noexcept;
+
+    /*!
     Will mix `other` cocktail into this cocktail.
     */
     Cocktail &operator+=(const Cocktail &other) noexcept;

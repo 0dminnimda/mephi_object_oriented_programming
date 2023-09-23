@@ -167,6 +167,14 @@ TEST_CASE("cocktail") {
         CHECK(cock.water_volume() == 5);
     }
 
+    SUBCASE("invert") {
+        Cocktail cock("sdf", 20, 0.75);
+        Cocktail inverted = ~cock;
+        CHECK(inverted.alcohol_volume() == 5);
+        CHECK(inverted.water_volume() == 15);
+        CHECK(inverted == Cocktail("sdf", 20, 0.25));
+    }
+
     SUBCASE("zero volume") {
         CHECK(Cocktail() == Cocktail("", 0, 0));
         CHECK(Cocktail("", 0) == Cocktail("", 0, 0));

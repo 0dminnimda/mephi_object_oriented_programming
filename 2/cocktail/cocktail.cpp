@@ -55,6 +55,10 @@ float Cocktail::alcohol_volume() const noexcept { return volume() * alcohol_frac
 
 float Cocktail::water_volume() const noexcept { return volume() - alcohol_volume(); }
 
+Cocktail Cocktail::operator~() const noexcept {
+    return Cocktail(name(), volume(), 1 - alcohol_fraction());
+}
+
 Cocktail &Cocktail::operator+=(const Cocktail &other) noexcept {
     if (!other.is_empty()) {
         float total_alcohol_volume = alcohol_volume() + other.alcohol_volume();
