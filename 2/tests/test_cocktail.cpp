@@ -340,15 +340,75 @@ TEST_CASE("cocktail map") {
     }
 
     SUBCASE("equal") {
+        CocktailMap map;
+        map += Cocktail("a", 10);
+        map += Cocktail("b", 18);
+        map += Cocktail("c", 15);
+
+        CocktailMap map2;
+        map2 += Cocktail("a", 10);
+        map2 += Cocktail("b", 18);
+        map2 += Cocktail("c", 15);
+
+        CHECK(map == map2);
+    }
+
+    SUBCASE("equal to array") {
         Cocktail cocks[] = {Cocktail("a", 10), Cocktail("b", 18), Cocktail("c", 15)};
         CocktailMap map(cocks, sizeof(cocks) / sizeof(cocks[0]));
 
         CocktailMap map2;
         map2 += Cocktail("a", 10);
-        map2 += Cocktail("b", 18), Cocktail("c", 15);
+        map2 += Cocktail("b", 18);
         map2 += Cocktail("c", 15);
 
         CHECK(map == map2);
+    }
+
+    SUBCASE("equal mixed order") {
+        CocktailMap map(5);
+        map += Cocktail("a", 10);
+        map += Cocktail("b", 18);
+        map += Cocktail("c", 15);
+        map += Cocktail("d", 34);
+        map += Cocktail("e", 4);
+
+        CocktailMap map2(6);
+        map2 += Cocktail("d", 34);
+        map2 += Cocktail("c", 15);
+        map2 += Cocktail("a", 10);
+        map2 += Cocktail("e", 4);
+        map2 += Cocktail("b", 18);
+
+        CHECK(map == map2);
+    }
+
+    SUBCASE("unequal 1") {
+        CocktailMap map;
+        map += Cocktail("a", 10);
+        map += Cocktail("b", 18);
+        map += Cocktail("c", 15);
+
+        CocktailMap map2;
+        map2 += Cocktail("a", 100);
+        map2 += Cocktail("b", 18);
+        map2 += Cocktail("c", 15);
+
+        CHECK(map != map2);
+    }
+
+    SUBCASE("unequal 2") {
+        CocktailMap map;
+        map += Cocktail("a", 10);
+        map += Cocktail("b", 18);
+        map += Cocktail("c", 15);
+
+        CocktailMap map2;
+        map2 += Cocktail("aa", 10);
+        map2 += Cocktail("b", 18);
+        map2 += Cocktail("c", 15);
+
+        CHECK(map != map2);
     }
 
     SUBCASE("copy operator") {

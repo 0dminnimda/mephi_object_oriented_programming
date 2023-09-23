@@ -59,20 +59,6 @@ public:
         Getter for value. Emulates std::pair.
         */
         const Value &second() const { return value; }
-
-        /*!
-        Checks if the `other` entry is equal to this one.
-        */
-        bool operator==(const Entry &other) const {
-            if (busy != other.busy) return false;
-            if (busy == false && other.busy == false) return true;
-            return std::tie(key, value) == std::tie(other.key, other.value);
-        }
-
-        /*!
-        Checks if the `other` entry is not equal to this one.
-        */
-        bool operator!=(const Entry &other) const { return !(*this == other); }
     };
 
 private:
@@ -119,7 +105,17 @@ public:
     /*!
     Checks if the `other` HashTable is equal to this one.
     */
-    bool operator==(const Self &other) const { return entries_ == other.entries_; }
+    bool operator==(const Self &other) const {
+        if (this == &other) return true;
+        if (size() != other.size()) return false;
+        for (const auto &it : *this) {
+            std::size_t index;
+            bool found = other.find_index(it.first(), index);
+            if (!found) return false;
+            if (it.second() != other.entries_[index].second()) return false;
+        }
+        return true;
+    }
 
     /*!
     Checks if the `other` HashTable is not equal to this one.
