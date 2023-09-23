@@ -238,14 +238,14 @@ TEST_CASE("cocktail") {
     }
 
     SUBCASE("input") {
-        std::istringstream stream; //("Aboba\n 10\n 0.4");
+        std::istringstream stream("Aboba 10 0.4");
 
         Cocktail cock;
 
         stream >> cock;
 
-        CHECK(true);
-        // CHECK(cock == Cocktail("Aboba", 10, 0.4));
+        CHECK(!stream.fail());
+        CHECK(cock == Cocktail("Aboba", 10, 0.4));
     }
 
     SUBCASE("output") {
@@ -495,6 +495,22 @@ TEST_CASE("cocktail map") {
         CHECK(result2 == Cocktail("VoAr", 1, 0.3));
     }
 
+    SUBCASE("input") {
+        std::istringstream stream("2 Vodka 10 0.6 Beer 3 0.4");
+
+        CocktailMap map;
+
+        stream >> map;
+
+        CocktailMap map2;
+
+        map2 += Cocktail("Vodka", 10, 0.6);
+        map2 += Cocktail("Beer", 3, 0.4);
+
+        CHECK(!stream.fail());
+        CHECK(map == map2);
+    }
+
     SUBCASE("output") {
         std::ostringstream stream;
 
@@ -522,5 +538,4 @@ TEST_CASE("cocktail map") {
         CHECK(stream);
         CHECK(stream.str() == "{Cocktail(\"Vo\", 10.000000, 0.200000), Cocktail(\"Vo\", 10.000000, 0.200000)}");
     }
-
 }

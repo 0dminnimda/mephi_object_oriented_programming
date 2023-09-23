@@ -215,21 +215,21 @@ std::istream &operator>>(std::istream &stream, Cocktail &cock) {
     std::string name;
     stream >> name;
 
-    if (!stream.good()) {
+    if (stream.fail()) {
         goto bad;
     }
 
     float volume;
     stream >> volume;
 
-    if (!stream.good()) {
+    if (stream.fail()) {
         goto bad;
     }
 
     float alcohol_fraction;
     stream >> alcohol_fraction;
 
-    if (!stream.good()) {
+    if (stream.fail()) {
         goto bad;
     }
 

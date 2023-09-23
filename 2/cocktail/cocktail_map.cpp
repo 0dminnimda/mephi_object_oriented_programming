@@ -43,7 +43,7 @@ std::istream &operator>>(std::istream &stream, CocktailMap &map) {
     for (size_t i = 0; i < n; ++i) {
         Cocktail cock;
         stream >> cock;
-        if (!stream.good()) {
+        if (stream.fail()) {
             stream.setstate(std::ios::failbit);
             break;
         }
