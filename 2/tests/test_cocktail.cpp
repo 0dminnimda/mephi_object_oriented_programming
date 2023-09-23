@@ -272,37 +272,39 @@ TEST_CASE("cocktail") {
         CHECK(cock == Cocktail("Aboba", 10, 0.4));
     }
 
-    SUBCASE("bad input 1") {
-        std::istringstream stream("Aboba 10");
+    SUBCASE("bad input") {
+        SUBCASE("1") {
+            std::istringstream stream("Aboba 10");
 
-        Cocktail cock;
+            Cocktail cock;
 
-        stream >> cock;
+            stream >> cock;
 
-        CHECK(stream.fail());
-        CHECK(cock == Cocktail());
-    }
+            CHECK(stream.fail());
+            CHECK(cock == Cocktail());
+        }
 
-    SUBCASE("bad input 2") {
-        std::istringstream stream("Aboba");
+        SUBCASE("2") {
+            std::istringstream stream("Aboba");
 
-        Cocktail cock;
+            Cocktail cock;
 
-        stream >> cock;
+            stream >> cock;
 
-        CHECK(stream.fail());
-        CHECK(cock == Cocktail());
-    }
+            CHECK(stream.fail());
+            CHECK(cock == Cocktail());
+        }
 
-    SUBCASE("bad input 3") {
-        std::istringstream stream("");
+        SUBCASE("3") {
+            std::istringstream stream("");
 
-        Cocktail cock;
+            Cocktail cock;
 
-        stream >> cock;
+            stream >> cock;
 
-        CHECK(stream.fail());
-        CHECK(cock == Cocktail());
+            CHECK(stream.fail());
+            CHECK(cock == Cocktail());
+        }
     }
 
     SUBCASE("output") {
@@ -319,7 +321,7 @@ TEST_CASE("cocktail") {
 
 
 // TEST_CASE("hash table") {
-//     SUBCASE("default ctor") {
+//     SUBCASE("") {
 //         HashTable<std::string, Cocktail> map;
 //         std::cout << map << std::endl;
 
@@ -440,32 +442,34 @@ TEST_CASE("cocktail map") {
         CHECK(map == map2);
     }
 
-    SUBCASE("unequal 1") {
-        CocktailMap map;
-        map += Cocktail("a", 10);
-        map += Cocktail("b", 18);
-        map += Cocktail("c", 15);
+    SUBCASE("unequal") {
+        SUBCASE("1") {
+            CocktailMap map;
+            map += Cocktail("a", 10);
+            map += Cocktail("b", 18);
+            map += Cocktail("c", 15);
 
-        CocktailMap map2;
-        map2 += Cocktail("a", 100);
-        map2 += Cocktail("b", 18);
-        map2 += Cocktail("c", 15);
+            CocktailMap map2;
+            map2 += Cocktail("a", 100);
+            map2 += Cocktail("b", 18);
+            map2 += Cocktail("c", 15);
 
-        CHECK(map != map2);
-    }
+            CHECK(map != map2);
+        }
 
-    SUBCASE("unequal 2") {
-        CocktailMap map;
-        map += Cocktail("a", 10);
-        map += Cocktail("b", 18);
-        map += Cocktail("c", 15);
+        SUBCASE("2") {
+            CocktailMap map;
+            map += Cocktail("a", 10);
+            map += Cocktail("b", 18);
+            map += Cocktail("c", 15);
 
-        CocktailMap map2;
-        map2 += Cocktail("aa", 10);
-        map2 += Cocktail("b", 18);
-        map2 += Cocktail("c", 15);
+            CocktailMap map2;
+            map2 += Cocktail("aa", 10);
+            map2 += Cocktail("b", 18);
+            map2 += Cocktail("c", 15);
 
-        CHECK(map != map2);
+            CHECK(map != map2);
+        }
     }
 
     SUBCASE("copy operator") {
@@ -508,30 +512,32 @@ TEST_CASE("cocktail map") {
     }
 
     SUBCASE("bad lookup 1") {
-        CocktailMap map;
+        SUBCASE("1") {
+            CocktailMap map;
 
-        CHECK_THROWS_AS(map["gg"], std::out_of_range);
-    }
+            CHECK_THROWS_AS(map["gg"], std::out_of_range);
+        }
 
-    SUBCASE("bad lookup 2") {
-        CocktailMap map;
+        SUBCASE("2") {
+            CocktailMap map;
 
-        map += Cocktail("Vo", 10, 0.2);
-        map += Cocktail("Ar", 5, 0.8);
+            map += Cocktail("Vo", 10, 0.2);
+            map += Cocktail("Ar", 5, 0.8);
 
-        CHECK_THROWS_AS(map["gg"], std::out_of_range);
-    }
+            CHECK_THROWS_AS(map["gg"], std::out_of_range);
+        }
 
-    SUBCASE("bad lookup 3") {
-        CocktailMap map;
+        SUBCASE("3") {
+            CocktailMap map;
 
-        map += Cocktail("Vo", 10, 0.2);
-        map += Cocktail("Ar", 5, 0.8);
+            map += Cocktail("Vo", 10, 0.2);
+            map += Cocktail("Ar", 5, 0.8);
 
-        map.erase("Vo");
-        map.erase("Ar");
+            map.erase("Vo");
+            map.erase("Ar");
 
-        CHECK_THROWS_AS(map["Vo"], std::out_of_range);
+            CHECK_THROWS_AS(map["Vo"], std::out_of_range);
+        }
     }
 
     SUBCASE("quartile") {
@@ -637,42 +643,44 @@ TEST_CASE("cocktail map") {
     }
 
     SUBCASE("bad input 1") {
-        std::istringstream stream("2 Vodka 10 0.6 Beer 3");
+        SUBCASE("1") {
+            std::istringstream stream("2 Vodka 10 0.6 Beer 3");
 
-        CocktailMap map;
+            CocktailMap map;
 
-        stream >> map;
+            stream >> map;
 
-        CocktailMap map2;
+            CocktailMap map2;
 
-        CHECK(stream.fail());
-        CHECK(map == map2);
-    }
+            CHECK(stream.fail());
+            CHECK(map == map2);
+        }
 
-    SUBCASE("bad input 2") {
-        std::istringstream stream("2 Vodka 10 0.6 Beer");
+        SUBCASE("2") {
+            std::istringstream stream("2 Vodka 10 0.6 Beer");
 
-        CocktailMap map;
+            CocktailMap map;
 
-        stream >> map;
+            stream >> map;
 
-        CocktailMap map2;
+            CocktailMap map2;
 
-        CHECK(stream.fail());
-        CHECK(map == map2);
-    }
+            CHECK(stream.fail());
+            CHECK(map == map2);
+        }
 
-    SUBCASE("bad input 3") {
-        std::istringstream stream("2 Vodka 10 0.6");
+        SUBCASE("3") {
+            std::istringstream stream("2 Vodka 10 0.6");
 
-        CocktailMap map;
+            CocktailMap map;
 
-        stream >> map;
+            stream >> map;
 
-        CocktailMap map2;
+            CocktailMap map2;
 
-        CHECK(stream.fail());
-        CHECK(map == map2);
+            CHECK(stream.fail());
+            CHECK(map == map2);
+        }
     }
 
     SUBCASE("output") {
