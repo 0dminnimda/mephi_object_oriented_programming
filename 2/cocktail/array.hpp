@@ -18,17 +18,17 @@ public:
     /*!
     Constructs an empty array.
     */
-    Array() : Array(0) {}
+    explicit Array() : Array(0) {}
 
     /*!
     Constructs an array with the given `capacity`.
     */
-    Array(std::size_t capacity) : Array(capacity, 0) {}
+    explicit Array(std::size_t capacity) : Array(capacity, 0) {}
 
     /*!
     Constructs an array with the given `capacity` and `size`.
     */
-    Array(std::size_t capacity, std::size_t size)
+    explicit Array(std::size_t capacity, std::size_t size)
         : data(capacity ? new T[capacity] : nullptr), capacity(capacity), size(size) {}
 
     /*!

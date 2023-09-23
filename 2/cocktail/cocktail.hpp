@@ -17,17 +17,17 @@ public:
     /*!
     Constructs an empty cocktail.
     */
-    Cocktail() noexcept;
+    explicit Cocktail() noexcept;
 
     /*!
     Constructs a cocktail from the `name`, `volume` and `alcohol_fraction`.
     */
-    Cocktail(const std::string &name, float volume, float alcohol_fraction);
+    explicit Cocktail(const std::string &name, float volume, float alcohol_fraction);
 
     /*!
     Constructs a cocktail from the `name` and `volume`.
     */
-    Cocktail(const std::string &name, float volume);
+    explicit Cocktail(const std::string &name, float volume);
 
     /*!
     Constructs a copy of the `other` cocktail.

@@ -70,12 +70,12 @@ public:
     /*!
     Constructs an empty HashTable.
     */
-    HashTable() : HashTable(0) {}
+    explicit HashTable() : HashTable(0) {}
 
     /*!
     Constructs a HashTable with the given `capacity`.
     */
-    HashTable(std::size_t capacity) : entries_(capacity, 0) {}
+    explicit HashTable(std::size_t capacity) : entries_(capacity, 0) {}
 
     /*!
     Constructs a copy of the `other` HashTable.

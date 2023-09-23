@@ -16,17 +16,17 @@ public:
     /*!
     Constructs an empty map.
     */
-    CocktailMap();
+    explicit CocktailMap();
 
     /*!
     Constructs a map with the given `capacity`.
     */
-    CocktailMap(std::size_t capacity);
+    explicit CocktailMap(std::size_t capacity);
 
     /*!
     Constructs a map from a given `array` of cocktails.
     */
-    CocktailMap(Cocktail *array, std::size_t size);
+    explicit CocktailMap(Cocktail *array, std::size_t size);
 
     /*!
     Constructs a copy of the `other` map.
