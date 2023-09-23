@@ -441,12 +441,26 @@ TEST_CASE("cocktail") {
         CocktailMap map;
 
         map += Cocktail("Vo", 10, 0.2);
-        map += Cocktail("Ar", 5, 0.8);
 
         stream << map;
 
         CHECK(stream);
-        CHECK(stream.str() == "{Cocktail(\"Ar\", 5.000000, 0.800000), Cocktail(\"Vo\", 10.000000, 0.200000)}");
+        CHECK(stream.str() == "{Cocktail(\"Vo\", 10.000000, 0.200000)}");
+    }
+
+    SUBCASE("output several") {
+        std::ostringstream stream;
+
+        CocktailMap map;
+
+        map += Cocktail("Vo", 10, 0.2);
+        // hack for testing, otherwise the ordering is STL implementation detail
+        map.insert("Ar", Cocktail("Vo", 10, 0.2));
+
+        stream << map;
+
+        CHECK(stream);
+        CHECK(stream.str() == "{Cocktail(\"Vo\", 10.000000, 0.200000), Cocktail(\"Vo\", 10.000000, 0.200000)}");
     }
 
 }
