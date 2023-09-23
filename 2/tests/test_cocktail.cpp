@@ -310,10 +310,10 @@ TEST_CASE("cocktail") {
     
     //     std::cout << map << std::endl;
     // }
+}
 
-// }
-// TEST_CASE("cocktail map") {
 
+TEST_CASE("cocktail map") {
     SUBCASE("default ctor") {
         CocktailMap map;
         CHECK(map.size() == 0);
