@@ -563,6 +563,39 @@ TEST_CASE("cocktail map") {
         }
     }
 
+    SUBCASE("fullness") {
+        SUBCASE("1") {
+            CocktailMap map;
+
+            CHECK(map.is_empty());
+            CHECK(!map.is_partially_full());
+            CHECK(map.is_full());
+        }
+
+        SUBCASE("2") {
+            CocktailMap map(7);
+
+            map += Cocktail("Vo", 10, 0.2);
+            map += Cocktail("Ar", 5, 0.8);
+
+            CHECK(!map.is_empty());
+            CHECK(map.is_partially_full());
+            CHECK(!map.is_full());
+        }
+
+        SUBCASE("3") {
+            CocktailMap map(4);
+
+            map += Cocktail("Vo", 10, 0.2);
+            map += Cocktail("Ar", 5, 0.8);
+
+            // it never will be full, only 1/2 empty
+            CHECK(!map.is_empty());
+            CHECK(map.is_partially_full());
+            CHECK(!map.is_full());
+        }
+    }
+
     SUBCASE("quartile") {
         CocktailMap map;
 
