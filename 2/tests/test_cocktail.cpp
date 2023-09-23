@@ -525,6 +525,15 @@ TEST_CASE("cocktail map") {
         CHECK(map["Ar"] == Cocktail("Ar", 5, 0.8));
     }
 
+    SUBCASE("const lookup") {
+        CocktailMap map;
+        map += Cocktail("Vo", 10, 0.2);
+
+        const CocktailMap cmap = map;
+        const Cocktail &cock = cmap["Vo"];
+        CHECK(cock == Cocktail("Vo", 10, 0.2));
+    }
+
     SUBCASE("bad lookup 1") {
         SUBCASE("1") {
             CocktailMap map;

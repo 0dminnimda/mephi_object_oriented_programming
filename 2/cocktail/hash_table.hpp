@@ -190,7 +190,13 @@ public:
         throw std::out_of_range("Key not found");
     }
 
-    const Value &at(const Key &key) const { return (const Value &)at((Key &)key); }
+    /*!
+    Returns the value associated with the `key`.
+    */
+    const Value &at(const Key &key) const {
+        // we know that at() itself does not change the table, so we can use it in here
+        return ((Self *)this)->at(key);
+    }
 
     /*!
     Outputs the HashTable to a `stream`. In the format `{<keyX>: <valueX>, <keyY>: <valueY>, ...}`.
