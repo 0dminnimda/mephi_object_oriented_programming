@@ -208,7 +208,7 @@ public:
     /*!
     Creates a `string` representation of the cocktail.
     */
-    std::string to_string() const;
+    [[nodiscard]] std::string to_string() const;
 
     /*!
     Outputs the cocktail to a `stream`.
@@ -222,7 +222,7 @@ public:
 };
 
 namespace std {
-    std::string to_string(const Cocktail &cock);
+    [[nodiscard]] std::string to_string(const Cocktail &cock);
 }
 
 #endif  // COCKTAIL_HPP
