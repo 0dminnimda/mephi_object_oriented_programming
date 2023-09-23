@@ -69,7 +69,6 @@ float CocktailMap::volume_with_alcohol_fraction_in_quartile(Quartile quart) cons
         case SECOND: return volume_with_alcohol_fraction_in_range(0.25, 0.5);
         case THIRD: return volume_with_alcohol_fraction_in_range(0.5, 0.75);
         case FOURTH: return volume_with_alcohol_fraction_in_range(0.75, 1);
-        default: return 0;
     }
 }
 
