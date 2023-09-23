@@ -1,3 +1,5 @@
+#include <stdexcept>
+
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "../cocktail/cocktail.hpp"
 #include "../cocktail/cocktail_map.hpp"
@@ -548,6 +550,36 @@ TEST_CASE("cocktail map") {
         CHECK(map.size() == 2);
         CHECK(map.capacity() >= 2);
         CHECK(result2 == Cocktail("VoAr", 1, 0.3));
+    }
+
+    SUBCASE("mix multiple") {
+        CocktailMap map;
+
+        map += Cocktail("Vo", 3, 0.2);
+        map += Cocktail("Ar", 5, 0.45);
+        map += Cocktail("Og", 7, 0.7);
+        map += Cocktail("Pl", 2, 0.8);
+
+        Cocktail result1 = map.mix_for_alcohol_fraction(0.5, 10);
+
+        CHECK(map.size() == 4);
+        CHECK(map.capacity() >= 4);
+        CHECK(result1.volume() == 10);
+        CHECK(result1.alcohol_fraction() == 0.5);
+    }
+
+    SUBCASE("mix throw") {
+        CocktailMap map;
+
+        map += Cocktail("Vo", 3, 0.2);
+        map += Cocktail("Ar", 5, 0.45);
+        map += Cocktail("Og", 7, 0.7);
+        map += Cocktail("Pl", 2, 0.8);
+
+        CHECK_THROWS_AS(map.mix_for_alcohol_fraction(0.5, 20), std::runtime_error);
+
+        CHECK(map.size() == 4);
+        CHECK(map.capacity() >= 4);
     }
 
     SUBCASE("input") {
