@@ -298,31 +298,31 @@ TEST_CASE("cocktail") {
 //     SUBCASE("default ctor") {
 //         HashTable<std::string, Cocktail> map;
 //         std::cout << map << std::endl;
-    
+
 //         {
 //             Cocktail cock("Gi", 10);
 //             map.insert(cock.name(), cock);
 //             std::cout << map.at(cock.name()) << std::endl;
 //         }
-    
+
 //         std::cout << map << std::endl;
-    
+
 //         {
 //             Cocktail cock("dfgd", 23, 0.1);
 //             map.insert(cock.name(), cock);
 //             std::cout << map.at(cock.name()) << std::endl;
 //         }
-    
+
 //         std::cout << map << std::endl;
-    
+
 //         {
 //             Cocktail cock("jghjg", 23, 0.1);
 //             map.insert(cock.name(), cock);
 //             std::cout << map.at(cock.name()) << std::endl;
 //         }
-    
+
 //         std::cout << map << std::endl;
-    
+
 //         {
 //             if (map.erase("jghjg")) {
 //                 std::cout << "erased" << std::endl;
@@ -330,9 +330,9 @@ TEST_CASE("cocktail") {
 //                 std::cout << "not erased" << std::endl;
 //             }
 //         }
-    
+
 //         std::cout << map << std::endl;
-    
+
 //         {
 //             if (map.erase("nothing")) {
 //                 std::cout << "erased" << std::endl;
@@ -340,7 +340,7 @@ TEST_CASE("cocktail") {
 //                 std::cout << "not erased" << std::endl;
 //             }
 //         }
-    
+
 //         std::cout << map << std::endl;
 //     }
 // }
