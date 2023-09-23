@@ -258,59 +258,59 @@ TEST_CASE("cocktail") {
         CHECK(stream);
         CHECK(stream.str() == "Cocktail(\"Aboba\", 10.000000, 0.400000)");
     }
-
-// }
-// TEST_CASE("cocktail map") {
-
-    // SUBCASE("default ctor") {
-    //     HashTable<std::string, Cocktail> map;
-    //     std::cout << map << std::endl;
-    
-    //     {
-    //         Cocktail cock("Gi", 10);
-    //         map.insert(cock.name(), cock);
-    //         std::cout << map.at(cock.name()) << std::endl;
-    //     }
-    
-    //     std::cout << map << std::endl;
-    
-    //     {
-    //         Cocktail cock("dfgd", 23, 0.1);
-    //         map.insert(cock.name(), cock);
-    //         std::cout << map.at(cock.name()) << std::endl;
-    //     }
-    
-    //     std::cout << map << std::endl;
-    
-    //     {
-    //         Cocktail cock("jghjg", 23, 0.1);
-    //         map.insert(cock.name(), cock);
-    //         std::cout << map.at(cock.name()) << std::endl;
-    //     }
-    
-    //     std::cout << map << std::endl;
-    
-    //     {
-    //         if (map.erase("jghjg")) {
-    //             std::cout << "erased" << std::endl;
-    //         } else {
-    //             std::cout << "not erased" << std::endl;
-    //         }
-    //     }
-    
-    //     std::cout << map << std::endl;
-    
-    //     {
-    //         if (map.erase("nothing")) {
-    //             std::cout << "erased" << std::endl;
-    //         } else {
-    //             std::cout << "not erased" << std::endl;
-    //         }
-    //     }
-    
-    //     std::cout << map << std::endl;
-    // }
 }
+
+
+// TEST_CASE("hash table") {
+//     SUBCASE("default ctor") {
+//         HashTable<std::string, Cocktail> map;
+//         std::cout << map << std::endl;
+    
+//         {
+//             Cocktail cock("Gi", 10);
+//             map.insert(cock.name(), cock);
+//             std::cout << map.at(cock.name()) << std::endl;
+//         }
+    
+//         std::cout << map << std::endl;
+    
+//         {
+//             Cocktail cock("dfgd", 23, 0.1);
+//             map.insert(cock.name(), cock);
+//             std::cout << map.at(cock.name()) << std::endl;
+//         }
+    
+//         std::cout << map << std::endl;
+    
+//         {
+//             Cocktail cock("jghjg", 23, 0.1);
+//             map.insert(cock.name(), cock);
+//             std::cout << map.at(cock.name()) << std::endl;
+//         }
+    
+//         std::cout << map << std::endl;
+    
+//         {
+//             if (map.erase("jghjg")) {
+//                 std::cout << "erased" << std::endl;
+//             } else {
+//                 std::cout << "not erased" << std::endl;
+//             }
+//         }
+    
+//         std::cout << map << std::endl;
+    
+//         {
+//             if (map.erase("nothing")) {
+//                 std::cout << "erased" << std::endl;
+//             } else {
+//                 std::cout << "not erased" << std::endl;
+//             }
+//         }
+    
+//         std::cout << map << std::endl;
+//     }
+// }
 
 
 TEST_CASE("cocktail map") {
