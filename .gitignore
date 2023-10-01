@@ -1,15 +1,30 @@
+# Binaries
 *.a
 *.o
+*.os
+*.so
 *.obj
 *.out
+*.bc
+*.pyc
+*.dblite
 *.pdb
 *.ilk
 *.lib
+*.config
+*.creator
+*.creator.user
+*.files
+*.includes
+*.idb
 *.exp
 *.gcda
 *.gcno
 *.profraw
 *.profdata
+
+# Other stuff
+*.log
 
 build
 docs
