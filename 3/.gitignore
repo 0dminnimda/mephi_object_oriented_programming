@@ -1,0 +1,7 @@
+# Godot 4+ specific ignores
+.godot/
+
+# Ignore library files but not the gdextension file
+demo/bin/*
+!demo/bin/*.gdextension
+.sconsign*.dblite
