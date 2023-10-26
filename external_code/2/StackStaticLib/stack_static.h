@@ -9,7 +9,7 @@
 namespace Lab2{
     class Stack{
         private:
-            static const int m_size = 10;
+            static const int m_size = 169;
             int c_size;
             Test arr[m_size];
         public:

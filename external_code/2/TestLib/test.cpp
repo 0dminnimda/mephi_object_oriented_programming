@@ -2,13 +2,13 @@
 
 namespace Lab2 {
     Test::Test(const std::string &surname): mark(0), first_num(1), last_num(1){
-        (surname.size() == 0) ? throw std::invalid_argument("invalid surname") : this->surname = move(surname);
+        (surname.size() == 0) ? throw std::invalid_argument("invalid surname") : this->surname = std::move(surname);
     }
 
     Test::Test(const std::string &surname, int mark, int first_num, int last_num){
         //! @param фамилия, оценка, первая страница, вторая страница
         //! @throw invalid_surname Пустая фамилия
-        (surname.size() == 0) ? throw std::invalid_argument("invalid surname") : this->surname = move(surname);
+        (surname.size() == 0) ? throw std::invalid_argument("invalid surname") : this->surname = std::move(surname);
         //! @throw invalid_mark Некоректная оценка
         (mark != 0 && (mark < 2 || mark > 5)) ? throw std::invalid_argument("invalid mark") : this->mark = mark;
         //! @throw invalid_mark некоректное положение оценки

@@ -26,7 +26,7 @@ add_subdirectory(TestLib)
 
 
 
-add_executable(main main.cpp help.cpp menu.cpp)
+add_executable(main ligma.cpp help.cpp menu.cpp)
 if (DYNAMIC)
     target_link_libraries(main stack test)
 else()

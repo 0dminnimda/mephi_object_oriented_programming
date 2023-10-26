@@ -28,10 +28,10 @@ int main(){
                 std::cout << msg.what() << std::endl;
                 continue;
             }
-            const Stack t(stack);
-            Test test;
-            t[0] = test;
-            std::cout<<t;
+            // const Stack t(stack);
+            // Test test;
+            // t[0] = test;
+            // std::cout<<t;
         }
     } catch(const std::bad_alloc &ba){
         std::cerr<<"Not enough memory"<<std::endl;
