@@ -1,2 +1,4 @@
 *.pdf
 # student_work/
+tests/*.css
+tests/*.html
