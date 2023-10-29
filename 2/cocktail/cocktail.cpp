@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string>
 #include <tuple>
+#include <compare>
 
 using std::to_string;
 
@@ -17,6 +18,10 @@ Cocktail::Cocktail(const std::string &name, float volume, float alcohol_fraction
 }
 
 Cocktail::Cocktail(const std::string &name, float volume) : Cocktail(name, volume, 0) {}
+
+auto Cocktail::operator<=>(const Cocktail &other) const {
+    return volume() <=> other.volume();
+}
 
 bool Cocktail::operator==(const Cocktail &other) const noexcept {
     return std::tie(name_, volume_, alcohol_fraction_) ==
