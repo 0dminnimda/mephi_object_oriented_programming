@@ -15,7 +15,8 @@ godot_ext_api:
 
 .PHONY: build
 build:
-	scons platform=windows use_clang_cl=yes use_llvm=yes bits=64 custom_api_file=extension_api.json
+	scons platform=windows use_clang_cl=yes use_llvm=yes bits=64
+#	custom_api_file=extension_api.json
 
 .PHONY: run
 run:
