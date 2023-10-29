@@ -9,7 +9,7 @@ demo/bin/*
 # Ignore custom.py
 custom.py
 
-# Ignore custom.py
+# Ignore extension_api.json
 extension_api.json
 
 # Ignore generated compile_commands.json
