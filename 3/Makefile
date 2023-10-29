@@ -10,7 +10,7 @@ setup_godot_cpp:
 	git submodule init
 	git submodule update
 	cd godot-cpp && git fetch
-	cd godot-cpp && git checkout tag/godot-$(GODOT_VERSION)-stable
+	cd godot-cpp && git checkout tags/godot-$(GODOT_VERSION)-stable
 
 .PHONY: godot_ext_api
 godot_ext_api:
