@@ -1,3 +1,5 @@
+prep_executable = $(eval $(1) := $(shell bash ../../prep_exec.sh $(2)))
+
 .PHONY: fuck
 fuck:
 	mkdir -p build
@@ -6,4 +8,5 @@ fuck:
 
 .PHONY: run
 run:
-	build/main student_work
+	$(call prep_executable, EXEC, ./build/main)
+	$(EXEC) student_work
