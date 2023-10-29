@@ -1,3 +1,5 @@
+# SEE: https://docs.godotengine.org/en/stable/tutorials/scripting/gdextension/gdextension_cpp_example.html
+
 GODOT = "$(shell godot_path.sh)" --rendering-driver opengl3
 GODOT_VERSION = "4.1.1"
 
@@ -19,7 +21,10 @@ godot_ext_api:
 .PHONY: build
 build:
 	scons use_clang_cl=yes use_llvm=yes bits=64
-#	custom_api_file=extension_api.json
+
+.PHONY: build_with_ext_api
+build_with_ext_api:
+	scons use_clang_cl=yes use_llvm=yes bits=64 custom_api_file=extension_api.json
 
 .PHONY: run
 run:
@@ -33,8 +38,3 @@ build_game:
 .PHONY: run_game
 run_game:
 	demo/build/game.exe --rendering-driver opengl3
-
-# mnt/c/Godot/Godot_v4.1.2-stable_linux.x86_64/Godot_v4.1.2-stable_linux.x86_64
-# C:\Godot\Godot_v4.1.1-stable_win64\Godot_v4.1.1-stable_win64.exe --rendering-driver opengl3
-# C:\Godot\Godot_v4.1.1-stable_win64\Godot_v4.1.1-stable_win64_console.exe 
-# https://docs.godotengine.org/en/stable/tutorials/scripting/gdextension/gdextension_cpp_example.html#doc-gdextension-cpp-example
