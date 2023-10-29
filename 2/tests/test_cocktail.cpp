@@ -276,14 +276,16 @@ TEST_CASE("cocktail") {
     }
 
     SUBCASE("comparisons") {
-        /*
-        CHECK(Cocktail("A", 10) < Cocktail("B", 10));
+        CHECK(!(Cocktail("A", 10) < Cocktail("B", 10)));
+        CHECK(!(Cocktail("A", 10) > Cocktail("B", 10)));
         CHECK(Cocktail("Bod", 5) < Cocktail("Bod", 10));
-        CHECK(Cocktail("Bod", 10, 0.5) < Cocktail("Bod", 10, 1));
-        CHECK(Cocktail("B", 10) > Cocktail("A", 10));
+        CHECK(!(Cocktail("Bod", 10, 0.5) < Cocktail("Bod", 10, 1)));
+        CHECK(!(Cocktail("Bod", 10, 0.5) > Cocktail("Bod", 10, 1)));
+        CHECK(!(Cocktail("B", 10) > Cocktail("A", 10)));
+        CHECK(!(Cocktail("B", 10) < Cocktail("A", 10)));
         CHECK(Cocktail("Bod", 10) > Cocktail("Bod", 5));
-        CHECK(Cocktail("Bod", 10, 1) > Cocktail("Bod", 10, 0.5));
-        */
+        CHECK(!(Cocktail("Bod", 10, 1) > Cocktail("Bod", 10, 0.5)));
+        CHECK(!(Cocktail("Bod", 10, 1) < Cocktail("Bod", 10, 0.5)));
     }
 
     SUBCASE("input") {

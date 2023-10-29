@@ -19,7 +19,7 @@ Cocktail::Cocktail(const std::string &name, float volume, float alcohol_fraction
 
 Cocktail::Cocktail(const std::string &name, float volume) : Cocktail(name, volume, 0) {}
 
-auto Cocktail::operator<=>(const Cocktail &other) const {
+std::partial_ordering Cocktail::operator<=>(const Cocktail &other) const {
     return volume() <=> other.volume();
 }
 

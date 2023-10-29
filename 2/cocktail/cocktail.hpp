@@ -42,7 +42,7 @@ public:
     /*!
     Spaceship operator to enable comparisons.
     */
-    auto operator<=>(const Cocktail &other) const;
+    std::partial_ordering operator<=>(const Cocktail &other) const;
 
     /*!
     Checks if the `other` cocktail is equal to this one.
