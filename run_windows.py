@@ -44,15 +44,15 @@ import os
 # env["SHELL"] = "cmd.exe"
 
 
-def hook(event, args):
-    if event == 'subprocess.Popen':
-        print(f'audit: {event} with args={args}')
+# def hook(event, args):
+#     if event == 'subprocess.Popen':
+#         print(f'audit: {event} with args={args}')
 
 
-sys.addaudithook(hook)
+# sys.addaudithook(hook)
+# subprocess.Popen([sys.executable, "-m", *sys.argv[1:]], shell=False)
 
 # subprocess.Popen(["cmd.exe", "/C", *(sys.argv[1:])], env=env)
-# subprocess.Popen([*sys.argv[1:]], shell=True)
-subprocess.Popen([sys.executable, "-m", *sys.argv[1:]], shell=False)
+subprocess.Popen([*sys.argv[1:]], shell=True)
 
 # import os, psutil; pprocName = psutil.Process(os.getppid()).name()
