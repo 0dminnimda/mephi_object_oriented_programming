@@ -7,7 +7,10 @@ all:
 
 .PHONY: setup_godot_cpp
 setup_godot_cpp:
-	cd godot-cpp && git checkout godot-$(GODOT_VERSION)-stable
+	git submodule init
+	git submodule update
+	cd godot-cpp && git fetch
+	cd godot-cpp && git checkout tag/godot-$(GODOT_VERSION)-stable
 
 .PHONY: godot_ext_api
 godot_ext_api:
