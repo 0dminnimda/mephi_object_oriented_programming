@@ -26,7 +26,7 @@ void uninitialize_example_module(ModuleInitializationLevel p_level) {
 
 extern "C" {
 // Initialization.
-GDExtensionBool GDE_EXPORT example_library_init(
+GDExtensionBool GDE_EXPORT library_init(
     GDExtensionInterfaceGetProcAddress p_get_proc_address,
     const GDExtensionClassLibraryPtr p_library, GDExtensionInitialization *r_initialization
 ) {
