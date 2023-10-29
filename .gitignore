@@ -27,6 +27,8 @@
 *.log
 
 build
+html
+latex
 docs
 analysis
 coverage
