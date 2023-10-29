@@ -20,11 +20,11 @@ run:
 .PHONY: build_game
 build_game:
 	mkdir -p demo/build
-	cd demo && $(GODOT) --export-release "Windows Desktop" build/game.exe
+	$(GODOT) --path demo --export-debug "Windows Desktop" build/game.exe
 
 .PHONY: run_game
 run_game:
-	cd demo && build/game.exe --rendering-driver opengl3
+	demo/build/game.exe --rendering-driver opengl3
 
 # mnt/c/Godot/Godot_v4.1.2-stable_linux.x86_64/Godot_v4.1.2-stable_linux.x86_64
 # C:\Godot\Godot_v4.1.1-stable_win64\Godot_v4.1.1-stable_win64.exe --rendering-driver opengl3
