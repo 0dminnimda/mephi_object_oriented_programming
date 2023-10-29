@@ -1,4 +1,4 @@
-GODOT = $(shell godot_path.sh)
+GODOT = "$(shell godot_path.sh)" --rendering-driver opengl3
 
 .PHONY: all
 all:
@@ -7,8 +7,7 @@ all:
 .PHONY: setup
 setup:
 	# maybe cd godot-cpp && git checkout godot-4.1.1-stable
-	$(GODOT) --dump-extension-api extension_api.json --rendering-driver opengl3
-	# $(GODOT) --dump-extension-api extension_api.json
+	$(GODOT) --dump-extension-api extension_api.json
 
 .PHONY: build
 build:
@@ -16,7 +15,16 @@ build:
 
 .PHONY: run
 run:
-	$(GODOT) --rendering-driver opengl3
+	$(GODOT)
+
+.PHONY: build_game
+build_game:
+	mkdir -p demo/build
+	cd demo && $(GODOT) --export-release "Windows Desktop" build/game.exe
+
+.PHONY: run_game
+run_game:
+	cd demo && build/game.exe --rendering-driver opengl3
 
 # mnt/c/Godot/Godot_v4.1.2-stable_linux.x86_64/Godot_v4.1.2-stable_linux.x86_64
 # C:\Godot\Godot_v4.1.1-stable_win64\Godot_v4.1.1-stable_win64.exe --rendering-driver opengl3
