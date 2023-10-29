@@ -1,12 +1,16 @@
 GODOT = "$(shell godot_path.sh)" --rendering-driver opengl3
+GODOT_VERSION = "4.1.1"
 
 .PHONY: all
 all:
 	:
 
-.PHONY: setup
-setup:
-	# maybe cd godot-cpp && git checkout godot-4.1.1-stable
+.PHONY: setup_godot_cpp
+setup_godot_cpp:
+	cd godot-cpp && git checkout godot-$(GODOT_VERSION)-stable
+
+.PHONY: godot_ext_api
+godot_ext_api:
 	$(GODOT) --dump-extension-api extension_api.json
 
 .PHONY: build
