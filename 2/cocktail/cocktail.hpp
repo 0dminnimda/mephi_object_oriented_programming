@@ -3,6 +3,7 @@
 #ifndef COCKTAIL_HPP
 #define COCKTAIL_HPP
 
+#include <compare>
 #include <iostream>
 #include <string>
 #include <utility>
