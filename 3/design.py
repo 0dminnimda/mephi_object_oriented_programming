@@ -2,28 +2,42 @@ Vector2
 Sprite2D
 
 
+# static const Game *game
+
+
 class Game:
+    Player *player
     current_level_index: int
     all_levels: list[DungeonLevel]
+
+    def update(): ...
 
 
 class DungeonLevel:
     all_actors: list[Actor]
     tiles: list[list[Tile]]
 
+    def resize_tiles(width: int, height: int): ...
+    def get_tile_of_an_actor(actor: Actor) -> Tile | None: ...
+    def update(): ...
+
 
 class Tile:
     enum Kind:
-        ...
+        Flor
+        OpenDor
+        ClosedDor
+        UpLaddor
+        DownLaddor
 
     kind: Kind
 
     laying_items: list[Item]
-    building: Building
+    building: Chest
 
 
 class Building:
-    pass
+    def interact(): ...
     # like draw() but already in godot
 
 
@@ -39,7 +53,7 @@ class ActorClass:
 
 
 class Equipment:
-    wearable: dict[Wearable::Kind, Wearable | None]
+    wearable: dict[Wearable::Kind, Wearable]
     weapons: list[Weapon]
 
 
@@ -48,8 +62,8 @@ class Characteristics:
     defence: float
 
 
-class ValueModifier:
-    def apply(value: T) -> T: ...
+# class ValueModifier:
+#     def apply(value: T) -> T: ...
 
 
 class SetAbsoluteValue(ValueModifier):
@@ -64,12 +78,12 @@ class AddToValue(ValueModifier):
     def apply(value: T) -> T: ...
 
 
-# ValueModifier = SetAbsoluteValue | AddToValue
+ValueModifier = SetAbsoluteValue | AddToValue
 
 
 class CharacteristicsModifier:
-    max_health: ValueModifier<float>
-    defence: ValueModifier<float>
+    max_health: ValueModifier<float> | None
+    defence: ValueModifier<float> | None
 
 
 class Actor:  # XXX: creature?
@@ -79,6 +93,8 @@ class Actor:  # XXX: creature?
     characteristics: Characteristics
     equipment: Equipment
 
+    def handle_movement(): ...
+    def update(): ...
     def chance_to_take_damage() -> float: ...
     def take_damage(amount: float, source: Actor): ...
     def attack(source: Actor): ...
@@ -88,10 +104,14 @@ class Actor:  # XXX: creature?
 class Inventory:
     items: list[Item]
 
+    def add_item(item: Item): ...
+
 
 class Player(Actor):
     inventory: Inventory
     experience: Experience
+
+    def pick_up_item(item: Item): ...
 
 
 class Enemy(Actor):
@@ -109,10 +129,11 @@ class Potion(Item):
     def apply(target: Actor): ...
 
 
-class SpacialDistribution:
-    def fast_in_bounds(pos: Vector2) -> bool: ...
-    def in_bounds(pos: Vector2) -> bool: ...
-    def eval_at(pos: Vector2) -> bool: ...
+class RangeOfValues:
+    min: float
+    max: float
+
+    def get_random() -> float: ...
 
 
 class Enchantment:
@@ -121,16 +142,16 @@ class Enchantment:
 
 
 class Weapon(Item):
-    modifier: CharacteristicsModifier | None
+    artefact: CharacteristicsModifier | None
     enchantment: Enchantment | None
-    distribution: SpacialDistribution
+    damage_range: RangeOfValues
 
     def attack(pos: Vector2): ...
 
 
 class Wearable(Item):  # aka armour or equipment
-    modifier: CharacteristicsModifier | None
-    distribution: SpacialDistribution
+    artefact: CharacteristicsModifier | None
+    defence_range: RangeOfValues
 
     enum Kind:
         ...
