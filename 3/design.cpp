@@ -16,38 +16,6 @@
 
 using namespace godot;
 
-class DungeonLevel;
-
-class Game : public Node {
-    GDCLASS(Game, Node)
-
-private:
-    int current_level_index;
-    std::vector<DungeonLevel> all_levels;
-
-protected:
-    static void _bind_methods(){};
-
-public:
-    Game();
-    ~Game();
-
-    void update();
-};
-
-class Actor;
-class Tile;
-
-class DungeonLevel {
-private:
-    std::vector<Actor> all_actors;
-    std::vector<std::vector<Tile>> tiles;
-
-    void resize_tiles(size_t width, size_t height);
-    std::optional<Tile> get_tile_of_an_actor(const Actor &actor);
-    void update();
-};
-
 template <typename T>
 class SetAbsoluteValue {
     T value;
@@ -74,6 +42,8 @@ class Item {
     std::string name;
     Sprite2D icon;
 };
+
+class Actor;
 
 class Potion : public Item {
     CharacteristicsModifier modifier;
@@ -196,5 +166,29 @@ class Player : public Actor {
 };
 
 class Enemy : public Actor {};
+
+class DungeonLevel {
+private:
+    std::vector<Actor> all_actors;
+    std::vector<std::vector<Tile>> tiles;
+
+    void resize_tiles(size_t width, size_t height);
+    std::optional<Tile> get_tile_of_an_actor(const Actor &actor);
+    void update();
+};
+
+class Game : public Node {
+    GDCLASS(Game, Node)
+
+private:
+    int current_level_index;
+    std::vector<DungeonLevel> all_levels;
+
+protected:
+    static void _bind_methods(){};
+
+public:
+    void update();
+};
 
 #endif  // GAME_IMPL
