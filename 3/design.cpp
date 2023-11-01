@@ -1,13 +1,13 @@
 #pragma once
 
-#include <optional>
-#include <unordered_map>
 #ifndef GAME_IMPL
 #define GAME_IMPL
 
 #include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/classes/rigid_body2d.hpp>
 #include <godot_cpp/classes/sprite2d.hpp>
 #include <godot_cpp/variant/vector2.hpp>
+#include <memory>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -18,12 +18,13 @@ using namespace godot;
 
 class Game;
 
-static const Game *game = nullptr;
+static const Ref<Game> game;
 
 template <typename T>
 class SetAbsoluteValue {
     T value;
 
+public:
     T apply(T value);
 };
 
@@ -31,6 +32,7 @@ template <typename T>
 class AddToValue {
     T value;
 
+public:
     T apply(T value);
 };
 
@@ -48,6 +50,7 @@ class CharacteristicsModifier {
     std::optional<ValueModifier<float>> defence;
     std::optional<ValueModifier<float>> speed;
 
+public:
     void apply(Characteristics &value);
 };
 
@@ -57,12 +60,14 @@ class Item {
     std::string name;
     Ref<Texture2D> icon;
 
+public:
     virtual void use(Actor &target) {}
 };
 
 class Potion : public Item {
     CharacteristicsModifier modifier;
 
+public:
     void use(Actor &target) override;
     void apply(Actor &target);
 };
@@ -71,13 +76,12 @@ class RangeOfValues {
     float min;
     float max;
 
+public:
     float get_random();
 };
 
-class ActorClass {};
-
 class Enchantment {
-    ActorClass target_actor_class;
+    size_t target_actor_class_index;
     float damage_multiplier;
 };
 
@@ -86,6 +90,7 @@ class Weapon : public Item {
     std::optional<Enchantment> enchantment;
     RangeOfValues damage_range;
 
+public:
     void use(Actor &target) override;
     void attack(Vector2 pos);
 };
@@ -94,7 +99,12 @@ class Weapon : public Item {
 class Wearable : public Item {
 public:
     enum Kind {
-        // ...
+        Helmet,
+        ChestPlate,
+        Leggins,
+        Boots,
+        Shield,
+        Amulet,
     };
 
 private:
@@ -113,17 +123,25 @@ struct LockPickingResult {
     bool pick_borken;
 };
 
-class Inventory : public CanvasItem {
-    GDCLASS(Inventory, CanvasItem)
+class Inventory {
+private:
+    std::vector<std::unique_ptr<Item>> items;
+
+public:
+    void add_item(Item &item);
+    void open_inventory();
+    void close_inventory();
+};
+
+class InventoryCanvas : public CanvasItem {
+    GDCLASS(InventoryCanvas, CanvasItem)
 
 protected:
     static void _bind_methods(){};
 
-private:
-    std::vector<Item> items;
-
 public:
-    void add_item(Item &item);
+    void on_open_inventory(Inventory &inventory);
+    void on_close_inventory(Inventory &inventory);
     void _draw();
 };
 
@@ -132,7 +150,6 @@ class Chest {
     int level;
 
 public:
-    void interact();
     LockPickingResult try_to_pick(LockPicks &picks);
 };
 
@@ -152,13 +169,7 @@ private:
     std::optional<Chest> building;
 };
 
-class Experience : public CanvasItem {
-    GDCLASS(Experience, CanvasItem)
-
-protected:
-    static void _bind_methods(){};
-
-private:
+class Experience {
     int level;
     int value;
 
@@ -167,56 +178,107 @@ public:
     void level_up();
 };
 
+class LevelUpCanvas : public CanvasItem {
+    GDCLASS(LevelUpCanvas, CanvasItem)
+
+protected:
+    static void _bind_methods(){};
+
+public:
+    void _draw();
+    void on_level_up(Experience &exp);
+};
+
 class Equipment {
     std::unordered_map<Wearable::Kind, Wearable> wearable;
-    std::vector<Weapon> weapons;
+    Weapon weapon;
+};
+
+class ActorClass {
+    std::string name;
+    std::string description;
 };
 
 // XXX: creature?
-class Actor {
-    ActorClass actor_class;
-    Vector2 position;
-    float health;
-    Characteristics characteristics;
-    Equipment equipment;
-
-public:
-    void handle_movement();
-    void update();
-    float chance_to_take_damage();
-    void take_damage(float amount, Actor &source);
-    void attack(Actor &target);
-    void die(Actor &reason);
-};
-
-class Player : public Actor {
-    Inventory inventory;
-    Experience experience;
-
-public:
-    void pick_up_item(Item item);
-};
-
-class Enemy : public Actor {};
-
-class LayingItem : public Sprite2D {
-    GDCLASS(LayingItem, Node)
+class Actor : public RigidBody2D {
+    GDCLASS(Actor, RigidBody2D)
 
 protected:
     static void _bind_methods(){};
 
 private:
-    Item item;
+    size_t actor_class_index;
+    float health;
+    Characteristics characteristics;
+    Equipment equipment;
 
 public:
-    void _draw();
+    float chance_to_take_damage();
+    void take_damage(float amount, Actor &source);
+
+    virtual void update();
+    virtual void handle_movement();
+    virtual void attack(Actor &target);
+    virtual void die(Actor &reason);
+};
+
+class Player : public Actor {
+    GDCLASS(Player, Actor)
+
+protected:
+    static void _bind_methods(){};
+
+private:
+    Inventory inventory;
+    Experience experience;
+
+public:
+    void update() override;
+    void handle_movement() override;
+    void attack(Actor &target) override;
+    void die(Actor &reason) override;
+
+    void pick_up_item(Item &item);
+};
+
+class Enemy : public Actor {
+    void update() override;
+    void handle_movement() override;
+    void attack(Actor &target) override;
+    void die(Actor &reason) override;
+};
+
+class LayingItem : public RigidBody2D {
+    GDCLASS(LayingItem, RigidBody2D)
+
+protected:
+    static void _bind_methods(){};
+
+public:
+    std::unique_ptr<Item> item;
+};
+
+template <typename T>
+class Row {
+    std::vector<T> items;
+
+public:
+    T &operator[](size_t index);
+};
+
+template <typename T>
+class Matrix {
+    std::vector<Row<T>> rows;
+
+public:
+    Row<T> &operator[](size_t index);
 };
 
 class DungeonLevel {
 private:
     std::vector<Actor> actors;
     std::vector<Ref<LayingItem>> laying_items;
-    std::vector<std::vector<Tile>> tiles;
+    Matrix<Tile> tiles;
 
 public:
     void resize_tiles(size_t width, size_t height);
@@ -224,8 +286,8 @@ public:
     void update();
 };
 
-class Game : public Node {
-    GDCLASS(Game, Node)
+class Game : public CanvasItem {
+    GDCLASS(Game, CanvasItem)
 
 protected:
     static void _bind_methods(){};
@@ -233,8 +295,15 @@ protected:
 private:
     int current_level_index = -1;
     std::vector<DungeonLevel> all_levels;
+    InventoryCanvas inventory_canvas;
+    LevelUpCanvas level_up_canvas;
+    std::vector<ActorClass> actor_classes;
+    bool is_paused = false;
 
 public:
+    void _draw();
+    void pause();
+    void unpause();
     void update();
 };
 
