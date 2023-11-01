@@ -16,6 +16,10 @@
 
 using namespace godot;
 
+class Game;
+
+static const Game *game = nullptr;
+
 template <typename T>
 class SetAbsoluteValue {
     T value;
@@ -33,22 +37,34 @@ class AddToValue {
 template <typename T>
 using ValueModifier = std::variant<SetAbsoluteValue<T>, AddToValue<T>>;
 
+class Characteristics {
+    float max_health;
+    float defence;
+    float speed;
+};
+
 class CharacteristicsModifier {
     std::optional<ValueModifier<float>> max_health;
     std::optional<ValueModifier<float>> defence;
-};
+    std::optional<ValueModifier<float>> speed;
 
-class Item {
-    std::string name;
-    Sprite2D icon;
+    void apply(Characteristics &value);
 };
 
 class Actor;
 
+class Item {
+    std::string name;
+    Ref<Texture2D> icon;
+
+    virtual void use(Actor &target) {}
+};
+
 class Potion : public Item {
     CharacteristicsModifier modifier;
 
-    void apply(Actor target);
+    void use(Actor &target) override;
+    void apply(Actor &target);
 };
 
 class RangeOfValues {
@@ -70,6 +86,7 @@ class Weapon : public Item {
     std::optional<Enchantment> enchantment;
     RangeOfValues damage_range;
 
+    void use(Actor &target) override;
     void attack(Vector2 pos);
 };
 
@@ -96,21 +113,31 @@ struct LockPickingResult {
     bool pick_borken;
 };
 
-class Inventory {
+class Inventory : public CanvasItem {
+    GDCLASS(Inventory, CanvasItem)
+
+protected:
+    static void _bind_methods(){};
+
+private:
     std::vector<Item> items;
 
-    void add_item(Item item);
+public:
+    void add_item(Item &item);
+    void _draw();
 };
 
 class Chest {
     Inventory inventory;
     int level;
 
+public:
     void interact();
-    LockPickingResult try_to_pick(LockPicks picks);
+    LockPickingResult try_to_pick(LockPicks &picks);
 };
 
 class Tile {
+public:
     enum Kind {
         Flor,
         OpenDor,
@@ -119,27 +146,30 @@ class Tile {
         DownLaddor,
     };
 
+private:
     Kind kind;
 
-    std::vector<Item> laying_items;
     std::optional<Chest> building;
 };
 
-class Experience {
+class Experience : public CanvasItem {
+    GDCLASS(Experience, CanvasItem)
+
+protected:
+    static void _bind_methods(){};
+
+private:
     int level;
     int value;
 
-    void gain(int amount);
+public:
+    void gain(int amount, Actor &actor);
+    void level_up();
 };
 
 class Equipment {
     std::unordered_map<Wearable::Kind, Wearable> wearable;
     std::vector<Weapon> weapons;
-};
-
-class Characteristics {
-    float max_health;
-    float defence;
 };
 
 // XXX: creature?
@@ -150,28 +180,45 @@ class Actor {
     Characteristics characteristics;
     Equipment equipment;
 
+public:
     void handle_movement();
     void update();
     float chance_to_take_damage();
-    void take_damage(float amount, Actor source);
-    void attack(Actor source);
-    void die(Actor reason);
+    void take_damage(float amount, Actor &source);
+    void attack(Actor &target);
+    void die(Actor &reason);
 };
 
 class Player : public Actor {
     Inventory inventory;
     Experience experience;
 
+public:
     void pick_up_item(Item item);
 };
 
 class Enemy : public Actor {};
 
+class LayingItem : public Sprite2D {
+    GDCLASS(LayingItem, Node)
+
+protected:
+    static void _bind_methods(){};
+
+private:
+    Item item;
+
+public:
+    void _draw();
+};
+
 class DungeonLevel {
 private:
-    std::vector<Actor> all_actors;
+    std::vector<Actor> actors;
+    std::vector<Ref<LayingItem>> laying_items;
     std::vector<std::vector<Tile>> tiles;
 
+public:
     void resize_tiles(size_t width, size_t height);
     std::optional<Tile> get_tile_of_an_actor(const Actor &actor);
     void update();
@@ -180,12 +227,12 @@ private:
 class Game : public Node {
     GDCLASS(Game, Node)
 
-private:
-    int current_level_index;
-    std::vector<DungeonLevel> all_levels;
-
 protected:
     static void _bind_methods(){};
+
+private:
+    int current_level_index = -1;
+    std::vector<DungeonLevel> all_levels;
 
 public:
     void update();
