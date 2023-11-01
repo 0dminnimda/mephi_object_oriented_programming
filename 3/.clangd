@@ -1,0 +1,7 @@
+CompileFlags:
+  Add:
+    - "-std=c++20"
+    - "--include-directory=C:/Python/projects/mephi_object_oriented_programming/3/godot-cpp/include"
+    - "--include-directory=C:/Python/projects/mephi_object_oriented_programming/3/godot-cpp/gen/include"
+    - "--include-directory=C:/Python/projects/mephi_object_oriented_programming/3/godot-cpp/gdextension"
+  Compiler: clang
