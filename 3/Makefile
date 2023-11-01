@@ -18,6 +18,8 @@ setup_godot_cpp:
 godot_ext_api:
 	$(GODOT) --dump-extension-api extension_api.json
 
+# compiledb=yes doesn't work, sad face
+
 .PHONY: build
 build:
 	scons use_clang_cl=yes use_llvm=yes bits=64
