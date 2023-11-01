@@ -39,3 +39,6 @@ compile_commands.json
 # VSCode
 .vscode/*
 !.vscode/extensions.json
+
+# UML
+design.puml

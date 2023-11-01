@@ -40,3 +40,7 @@ build_game:
 .PHONY: run_game
 run_game:
 	demo/build/game.exe --rendering-driver opengl3
+
+.PHONY: uml
+uml:
+	hpp2plantuml -i design.cpp -o design.puml
