@@ -20,7 +20,10 @@ godot_ext_api:
 
 .PHONY: build
 build:
-	scons use_clang_cl=yes use_llvm=yes bits=64
+	# ANDROID_NDK_ROOT=$(HOME)/../usr/ndk scons use_clang_cl=yes use_llvm=yes bits=64 platform=$(PLATFORM)
+	# ANDROID_NDK_ROOT=/storage/emulated/0/AndroidSDK/android-ndk-r26b scons use_clang_cl=yes use_llvm=yes bits=64 platform=$(PLATFORM)
+	# ANDROID_NDK_ROOT=$(HOME)/../usr/opt/my_sdk/android-ndk-r26b scons use_clang_cl=yes use_llvm=yes bits=64 platform=$(PLATFORM)
+	scons use_clang_cl=yes use_llvm=yes bits=64 platform=$(PLATFORM)
 
 .PHONY: build_with_ext_api
 build_with_ext_api:
