@@ -24,15 +24,13 @@ setup_godot_cpp:
 godot_ext_api:
 	$(GODOT) --dump-extension-api extension_api.json
 
-# compiledb=yes doesn't work, sad face
-
 .PHONY: build
 build:
-	ANDROID_NDK_ROOT=$(NDK_ROOT) scons platform=$(PLATFORM) use_clang_cl=yes use_llvm=yes is_msvc=no ANDROID_HOME="" custom_api_file=extension_api.json
+	ANDROID_NDK_ROOT=$(NDK_ROOT) scons platform=$(PLATFORM) use_clang_cl=yes use_llvm=yes compiledb=yes ANDROID_HOME="" custom_api_file=extension_api.json
 
 .PHONY: build_no_ext_api
 build_no_ext_api:
-	ANDROID_NDK_ROOT=$(NDK_ROOT) scons platform=$(PLATFORM) use_clang_cl=yes use_llvm=yes is_msvc=no ANDROID_HOME=""
+	ANDROID_NDK_ROOT=$(NDK_ROOT) scons platform=$(PLATFORM) use_clang_cl=yes use_llvm=yes compiledb=yes ANDROID_HOME=""
 
 .PHONY: run
 run:
