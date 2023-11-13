@@ -2,6 +2,9 @@
 
 GODOT = "$(shell godot_path.sh)" --rendering-driver opengl3
 GODOT_VERSION = "4.1.1"
+PYTHON = "$(shell (which python3 2>/dev/null || which python 2>/dev/null) | head -1)"
+PLATFORM = "$(shell $(PYTHON) -c 'import platform; print(platform.system().lower())')"
+NDK_ROOT = ""
 
 .PHONY: all
 all:
@@ -25,11 +28,11 @@ godot_ext_api:
 
 .PHONY: build
 build:
-	scons use_clang_cl=yes use_llvm=yes bits=64
+	ANDROID_NDK_ROOT=$(NDK_ROOT) scons platform=$(PLATFORM) use_clang_cl=yes use_llvm=yes is_msvc=no ANDROID_HOME="" custom_api_file=extension_api.json
 
-.PHONY: build_with_ext_api
-build_with_ext_api:
-	scons use_clang_cl=yes use_llvm=yes bits=64 custom_api_file=extension_api.json
+.PHONY: build_no_ext_api
+build_no_ext_api:
+	ANDROID_NDK_ROOT=$(NDK_ROOT) scons platform=$(PLATFORM) use_clang_cl=yes use_llvm=yes is_msvc=no ANDROID_HOME=""
 
 .PHONY: run
 run:
