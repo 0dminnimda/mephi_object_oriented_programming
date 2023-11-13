@@ -27,6 +27,7 @@ godot_ext_api:
 .PHONY: build
 build:
 	ANDROID_NDK_ROOT=$(NDK_ROOT) scons platform=$(PLATFORM) use_clang_cl=yes use_llvm=yes compiledb=yes ANDROID_HOME="" custom_api_file=extension_api.json
+	- mv demo/bin/lab3.linux.template_debug.x86_64.so demo/bin/liblab3.linux.template_debug.x86_64.so
 
 .PHONY: build_no_ext_api
 build_no_ext_api:
