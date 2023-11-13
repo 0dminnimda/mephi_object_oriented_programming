@@ -13,6 +13,9 @@ setup_godot_cpp:
 	git submodule update
 	cd godot-cpp && git fetch
 	cd godot-cpp && git checkout tags/godot-$(GODOT_VERSION)-stable
+	cp godot-cpp/gdextension/extension_api.json extension_api.json
+	cd godot-cpp && git checkout master
+	cd godot-cpp && git pull
 
 .PHONY: godot_ext_api
 godot_ext_api:
