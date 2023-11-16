@@ -242,6 +242,7 @@ public:
 };
 
 class Enemy : public Actor {
+public:
     void update() override;
     void handle_movement() override;
     void attack(Actor &target) override;
