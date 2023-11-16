@@ -2,6 +2,9 @@
 
 GODOT = "$(shell godot_path.sh)" --rendering-driver opengl3
 GODOT_VERSION = "4.1.1"
+PYTHON = "$(shell (which python3 2>/dev/null || which python 2>/dev/null) | head -1)"
+PLATFORM = "$(shell $(PYTHON) -c 'import platform; print(platform.system().lower())')"
+NDK_ROOT = ""
 
 .PHONY: all
 all:
@@ -13,20 +16,22 @@ setup_godot_cpp:
 	git submodule update
 	cd godot-cpp && git fetch
 	cd godot-cpp && git checkout tags/godot-$(GODOT_VERSION)-stable
+	cp godot-cpp/gdextension/extension_api.json extension_api.json
+	cd godot-cpp && git checkout master
+	cd godot-cpp && git pull
 
 .PHONY: godot_ext_api
 godot_ext_api:
 	$(GODOT) --dump-extension-api extension_api.json
 
-# compiledb=yes doesn't work, sad face
-
 .PHONY: build
 build:
-	scons use_clang_cl=yes use_llvm=yes bits=64
+	ANDROID_NDK_ROOT=$(NDK_ROOT) scons platform=$(PLATFORM) use_clang_cl=yes use_llvm=yes compiledb=yes ANDROID_HOME="" custom_api_file=extension_api.json
+	- mv demo/bin/lab3.linux.template_debug.x86_64.so demo/bin/liblab3.linux.template_debug.x86_64.so
 
-.PHONY: build_with_ext_api
-build_with_ext_api:
-	scons use_clang_cl=yes use_llvm=yes bits=64 custom_api_file=extension_api.json
+.PHONY: build_no_ext_api
+build_no_ext_api:
+	ANDROID_NDK_ROOT=$(NDK_ROOT) scons platform=$(PLATFORM) use_clang_cl=yes use_llvm=yes compiledb=yes ANDROID_HOME=""
 
 .PHONY: run
 run:

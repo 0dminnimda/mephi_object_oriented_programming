@@ -13,7 +13,10 @@ def validate_parent_dir(key, val, env):
 
 libname = "lab3"
 
-localEnv = Environment(tools=["default"], PLATFORM="")
+# "mslib", "mslink"
+# ["default", "clang", "clang++", "mingw"]
+localEnv = Environment(tools=["clang", "clangxx", "ar", "as", "link"], PLATFORM="")
+# localEnv.Append(CCFLAGS=["-Werror"])
 
 customs = ["custom.py"]
 customs = [os.path.abspath(path) for path in customs]
