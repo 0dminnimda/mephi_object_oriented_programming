@@ -44,3 +44,6 @@ run_game:
 .PHONY: uml
 uml:
 	hpp2plantuml -i design.cpp -o design.puml
+	hpp2plantuml -i design.cpp -d -o design_dep.puml
+	python fix_puml.py design.puml
+	python fix_puml.py design_dep.puml
