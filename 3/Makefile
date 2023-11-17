@@ -16,7 +16,9 @@ setup_godot_cpp:
 	git submodule update
 	cd godot-cpp && git fetch
 	cd godot-cpp && git checkout tags/godot-$(GODOT_VERSION)-stable
-	cp godot-cpp/gdextension/extension_api.json extension_api.json
+	mkdir -p gdextension
+	cp godot-cpp/gdextension/extension_api.json gdextension/extension_api.json
+	cp godot-cpp/gdextension/gdextension_interface.h gdextension/gdextension_interface.h
 	cd godot-cpp && git checkout master
 	cd godot-cpp && git pull
 
@@ -26,7 +28,7 @@ godot_ext_api:
 
 .PHONY: build
 build:
-	ANDROID_NDK_ROOT=$(NDK_ROOT) scons platform=$(PLATFORM) use_clang_cl=yes use_llvm=yes compiledb=yes ANDROID_HOME="" custom_api_file=extension_api.json
+	ANDROID_NDK_ROOT=$(NDK_ROOT) scons platform=$(PLATFORM) use_clang_cl=yes use_llvm=yes compiledb=yes ANDROID_HOME="" gdextension_dir="gdextension"
 	- mv demo/bin/lab3.linux.template_debug.x86_64.so demo/bin/liblab3.linux.template_debug.x86_64.so
 
 .PHONY: build_no_ext_api

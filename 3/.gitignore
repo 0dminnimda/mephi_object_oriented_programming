@@ -15,6 +15,9 @@ extension_api.json
 # Ignore generated compile_commands.json
 compile_commands.json
 
+# Ignore gdextension_dir
+gdextension/
+
 # Binaries
 *.o
 *.os
