@@ -45,9 +45,9 @@ using ValueModifier = std::variant<SetAbsoluteValue<T>, AddToValue<T>>;
 
 class Characteristics {
 public:
-    float max_health;
-    float defence;
-    float speed;
+    long max_health;
+    long defence;
+    long speed;
 };
 
 class CharacteristicsModifier {
@@ -83,13 +83,13 @@ public:
 };
 
 class RangeOfValues {
-    float min;
-    float min;
+    long min;
+    long max;
 
 public:
-    RangeOfValues(float min, float min) : min(min), max(max) {}
+    RangeOfValues(long min, long max) : min(min), max(max) {}
 
-    float get_random();
+    long get_random();
 };
 
 class Enchantment {
@@ -105,6 +105,7 @@ class Weapon : public Item {
 public:
     void use(Actor &target) override;
     void attack(Vector2 pos);
+    long get_damage(Actor &target);
 };
 
 // aka armour or equipment
@@ -227,12 +228,12 @@ protected:
 
 private:
     const size_t actor_class_index_;
-    float health_;
+    long health_;
     Equipment equipment_;
     Characteristics characteristics_;
 
 public:
-    Actor(size_t class_index, float health, Characteristics characteristics) : health_(health), actor_class_index_(class_index), equipment_(), characteristics_(characteristics) {}
+    Actor(size_t class_index, long health, Characteristics characteristics) : health_(health), actor_class_index_(class_index), characteristics_(characteristics) {}
 
     size_t actor_class_index() const { return actor_class_index_; };
     float health() const { return health_; };
