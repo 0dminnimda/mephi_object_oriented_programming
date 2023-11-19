@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef GAME_IMPL
-#define GAME_IMPL
+#ifndef GAME_H
+#define GAME_H
 
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/rigid_body2d.hpp>
@@ -25,7 +25,9 @@ class SetAbsoluteValue {
     T value;
 
 public:
-    T apply(T value);
+    void apply(T &value) {
+        value = this->value;
+    }
 };
 
 template <typename T>
@@ -33,13 +35,16 @@ class AddToValue {
     T value;
 
 public:
-    T apply(T value);
+    void apply(T &value) {
+        value += this->value;
+    }
 };
 
 template <typename T>
 using ValueModifier = std::variant<SetAbsoluteValue<T>, AddToValue<T>>;
 
 class Characteristics {
+public:
     float max_health;
     float defence;
     float speed;
@@ -51,6 +56,9 @@ class CharacteristicsModifier {
     std::optional<ValueModifier<float>> speed;
 
 public:
+    CharacteristicsModifier(ValueModifier<float> max_health, ValueModifier<float> defence, ValueModifier<float> speed) :
+        max_health(max_health), defence(defence), speed(speed) {}
+
     void apply(Characteristics &value);
 };
 
@@ -68,15 +76,19 @@ class Potion : public Item {
     CharacteristicsModifier modifier;
 
 public:
+    Potion(CharacteristicsModifier modifier) : modifier(modifier) {} 
+
     void use(Actor &target) override;
     void apply(Actor &target);
 };
 
 class RangeOfValues {
     float min;
-    float max;
+    float min;
 
 public:
+    RangeOfValues(float min, float min) : min(min), max(max) {}
+
     float get_random();
 };
 
@@ -146,10 +158,12 @@ public:
 };
 
 class Chest {
-    Inventory inventory;
-    int level;
-
 public:
+    Inventory inventory;
+    const size_t level;
+
+    explicit Chest(size_t level) : inventory(), level(level) {}
+
     LockPickingResult try_to_pick(LockPicks &picks);
 };
 
@@ -166,7 +180,12 @@ public:
 private:
     Kind kind;
 
-    std::optional<Chest> building;
+    std::unique_ptr<Chest> building;
+
+public:
+    explicit Tile(Kind kind) : kind(kind), building(nullptr) {}
+
+    Tile &set_building(std::unique_ptr<Chest> building);
 };
 
 class Experience {
@@ -207,12 +226,20 @@ protected:
     static void _bind_methods(){};
 
 private:
-    size_t actor_class_index;
-    float health;
-    Characteristics characteristics;
-    Equipment equipment;
+    const size_t actor_class_index_;
+    float health_;
+    Equipment equipment_;
+    Characteristics characteristics_;
 
 public:
+    Actor(size_t class_index, float health, Characteristics characteristics) : health_(health), actor_class_index_(class_index), equipment_(), characteristics_(characteristics) {}
+
+    size_t actor_class_index() const { return actor_class_index_; };
+    float health() const { return health_; };
+    const Equipment &equipment() const { return equipment_; };
+    Characteristics &characteristics() { return characteristics_; };
+    const Characteristics &characteristics() const { return characteristics_; };
+
     float chance_to_take_damage();
     void take_damage(float amount, Actor &source);
 
@@ -308,4 +335,4 @@ public:
     void update();
 };
 
-#endif  // GAME_IMPL
+#endif  // GAME_H
