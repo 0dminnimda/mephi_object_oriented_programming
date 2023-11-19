@@ -20,7 +20,7 @@ endif()
 
 add_executable(main main.cpp)
 set_target_properties(main PROPERTIES SUFFIX ".out")
-target_link_libraries(main PRIVATE sfml-graphics sfml-audio)
+target_link_libraries(main PRIVATE sfml-window sfml-system sfml-graphics sfml-audio)
 
 if(WIN32)
     add_custom_command(
