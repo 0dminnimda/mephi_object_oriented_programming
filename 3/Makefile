@@ -4,7 +4,9 @@ GODOT = "$(shell godot_path.sh)" --rendering-driver opengl3
 GODOT_VERSION = "4.1.1"
 PYTHON = "$(shell (which python3 2>/dev/null || which python 2>/dev/null) | head -1)"
 PLATFORM = "$(shell $(PYTHON) -c 'import platform; print(platform.system().lower())')"
+COMPILEDB = "no"
 NDK_ROOT = ""
+# NDK_ROOT="C:/Users/ASUS/AppData/Local/Android/Sdk/ndk/26.1.10909125"
 
 .PHONY: all
 all:
@@ -53,12 +55,12 @@ godot_ext_api:
 
 .PHONY: build
 build:
-	ANDROID_NDK_ROOT=$(NDK_ROOT) scons platform=$(PLATFORM) use_clang_cl=yes use_llvm=yes compiledb=yes ANDROID_HOME="" gdextension_dir="gdextension"
+	ANDROID_NDK_ROOT=$(NDK_ROOT) scons platform=$(PLATFORM) use_clang_cl=yes use_llvm=yes compiledb=$(COMPILEDB) ANDROID_HOME="" gdextension_dir="gdextension"
 	- mv demo/bin/lab3.linux.template_debug.x86_64.so demo/bin/liblab3.linux.template_debug.x86_64.so
 
 .PHONY: build_no_ext_api
 build_no_ext_api:
-	ANDROID_NDK_ROOT=$(NDK_ROOT) scons platform=$(PLATFORM) use_clang_cl=yes use_llvm=yes compiledb=yes ANDROID_HOME=""
+	ANDROID_NDK_ROOT=$(NDK_ROOT) scons platform=$(PLATFORM) use_clang_cl=yes use_llvm=yes compiledb=$(COMPILEDB) ANDROID_HOME=""
 
 .PHONY: run
 run:

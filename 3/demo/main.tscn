@@ -5,6 +5,10 @@
 [node name="Node2D" type="Node2D"]
 
 [node name="GDExample" type="GDExample" parent="."]
-position = Vector2(16.6814, 18.5316)
+position = Vector2(16.9808, 15.4764)
 texture = ExtResource("1_3busb")
 centered = false
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(202, 203)
+texture = ExtResource("1_3busb")
