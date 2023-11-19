@@ -10,17 +10,42 @@ NDK_ROOT = ""
 all:
 	:
 
+.PHONY: setup_godot_cpp_uuhh
+setup_godot_cpp_uuhh:
+	git submodule init
+	git submodule update
+	cd godot-cpp && git fetch
+	cd godot-cpp && git checkout tags/godot-$(GODOT_VERSION)-stable
+	mkdir -p gdextension
+	cp -f godot-cpp/gdextension/extension_api.json gdextension/extension_api.json
+	cp -f godot-cpp/gdextension/gdextension_interface.h gdextension/gdextension_interface.h
+	cd godot-cpp && git checkout master
+	cd godot-cpp && git pull
+
+.PHONY: setup_godot_cpp_eeck
+setup_godot_cpp_eeck:
+	cd godot-cpp && git reset --hard
+	mkdir -p godot-cpp-save
+	git submodule init
+	git submodule update
+	cd godot-cpp && git fetch
+	cd godot-cpp && git checkout master
+	cd godot-cpp && git pull
+	cp -f -r godot-cpp/tools godot-cpp-save/tools
+	cp -f godot-cpp/SConstruct godot-cpp-save/SConstruct
+	cd godot-cpp && git checkout tags/godot-$(GODOT_VERSION)-stable
+	mkdir -p gdextension
+	cp -f godot-cpp/gdextension/extension_api.json gdextension/extension_api.json
+	cp -f godot-cpp/gdextension/gdextension_interface.h gdextension/gdextension_interface.h
+	cp -f -r godot-cpp-save/tools godot-cpp/tools
+	cp -f godot-cpp-save/SConstruct godot-cpp/SConstruct
+
 .PHONY: setup_godot_cpp
 setup_godot_cpp:
 	git submodule init
 	git submodule update
 	cd godot-cpp && git fetch
 	cd godot-cpp && git checkout tags/godot-$(GODOT_VERSION)-stable
-	mkdir -p gdextension
-	cp godot-cpp/gdextension/extension_api.json gdextension/extension_api.json
-	cp godot-cpp/gdextension/gdextension_interface.h gdextension/gdextension_interface.h
-	cd godot-cpp && git checkout master
-	cd godot-cpp && git pull
 
 .PHONY: godot_ext_api
 godot_ext_api:
