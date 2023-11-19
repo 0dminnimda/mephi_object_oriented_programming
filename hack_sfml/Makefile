@@ -29,6 +29,12 @@ $(TEST_DIR):
 cmake_build: $(OUT_DIR)
 	cd $(OUT_DIR) && $(call call_cmake)
 
+.PHONY: setup_sfml
+setup_sfml:
+	git submodule init
+	git submodule update
+	cd ../SFML && git checkout 2.6.x
+
 .PHONY: compile
 compile: cmake_build
 	cd $(OUT_DIR) && cmake --build .
