@@ -9,6 +9,8 @@
 #include <cstdlib>
 #include <iostream>
 
+using std::min, std::max;
+
 #ifdef SFML_SYSTEM_IOS
 #include <SFML/Main.hpp>
 #endif
@@ -32,22 +34,21 @@ float length(const sf::Vector2f &a) {
 }
 
 sf::Vector2f max(const sf::Vector2f &a, const sf::Vector2f &b) {
-    return {std::max(a.x, b.x), std::max(a.y, b.y)};
+    return {max(a.x, b.x), max(a.y, b.y)};
 }
 
 sf::Vector2f proj(const sf::Vector2f &a, const sf::Vector2f &b) {
-    float k = dot(a, b) / dot(b, b);
-    return {k * b.x, k * b.y};
+    return b * (dot(a, b) / dot(b, b));
 }
 
 float signed_distance_to_axis_aligned_rect(const sf::Vector2f &point, const sf::Vector2f &top_left, const sf::Vector2f &bottom_right)
 {
     sf::Vector2f d = max(top_left-point, point-bottom_right);
-    return length(max(sf::Vector2f(0, 0), d)) + std::min(0.0f, std::max(d.x, d.y));
+    return length(max(sf::Vector2f(0, 0), d)) + min(0.0f, max(d.x, d.y));
 }
 
 
-float distance_from_rect_to_circle(const sf::RectangleShape &rect, const sf::CircleShape &circle) {
+float signed_distance_from_rect_to_circle(const sf::RectangleShape &rect, const sf::CircleShape &circle) {
     return signed_distance_to_axis_aligned_rect(circle.getPosition(), rect.getPosition() - rect.getSize() / 2.0f, rect.getPosition() + rect.getSize() / 2.0f) - circle.getRadius();
 }
 
@@ -63,7 +64,7 @@ int main()
     float ballRadius = 100.f;
 
     // Create the window of the application
-    sf::RenderWindow window(sf::VideoMode(static_cast<unsigned int>(gameWidth), static_cast<unsigned int>(gameHeight), 32), "SFML Tennis",
+    sf::RenderWindow window(sf::VideoMode(static_cast<unsigned int>(gameWidth), static_cast<unsigned int>(gameHeight), 32), "Epic Rock Game",
                             sf::Style::Titlebar | sf::Style::Close);
     window.setVerticalSyncEnabled(true);
 
@@ -73,13 +74,23 @@ int main()
         return EXIT_FAILURE;
     sf::Sound ballSound(ballSoundBuffer);
 
-    // Create the SFML logo texture:
-    sf::Texture sfmlLogoTexture;
-    if(!sfmlLogoTexture.loadFromFile(resourcesDir() + "rock.png"))
+    sf::SoundBuffer animeAhhSoundBuffer;
+    if (!animeAhhSoundBuffer.loadFromFile(resourcesDir() + "anime-ahh.mp3"))
         return EXIT_FAILURE;
-    sf::Sprite sfmlLogo;
-    sfmlLogo.setTexture(sfmlLogoTexture);
-    sfmlLogo.setPosition(170, 50);
+    sf::Sound animeAhhSound(animeAhhSoundBuffer);
+
+    sf::SoundBuffer tromboneWahSoundBuffer;
+    if (!tromboneWahSoundBuffer.loadFromFile(resourcesDir() + "fail-wah-wah-wah-trombone.mp3"))
+        return EXIT_FAILURE;
+    sf::Sound tromboneWahSound(tromboneWahSoundBuffer);
+
+    // Create the Game logo texture:
+    sf::Texture gameLogoTexture;
+    if(!gameLogoTexture.loadFromFile(resourcesDir() + "rock.jpeg"))
+        return EXIT_FAILURE;
+    sf::Sprite gameLogo;
+    gameLogo.setTexture(gameLogoTexture);
+    gameLogo.setPosition(sf::Vector2f(window.getSize() / 2u - gameLogoTexture.getSize() / 2u));
 
     // Create the left paddle
     sf::RectangleShape leftPaddle;
@@ -118,9 +129,9 @@ int main()
     pauseMessage.setFillColor(sf::Color::White);
 
     #ifdef SFML_SYSTEM_IOS
-    pauseMessage.setString("Welcome to SFML Tennis!\nTouch the screen to start the game.");
+    pauseMessage.setString("Welcome to Epic Rock Game!\nTouch the screen to start the game.");
     #else
-    pauseMessage.setString("Welcome to SFML Tennis!\n\nPress space to start the game.");
+    pauseMessage.setString("Welcome to Epic Rock Game!\n\nPress space to start the game.");
     #endif
 
     // Define the paddles properties
@@ -237,12 +248,14 @@ int main()
 
             // Check collisions between the ball and the screen
             if (ball.getPosition().x - ballRadius < 0.f)
-            {
+            {   
+                tromboneWahSound.play();
                 isPlaying = false;
                 pauseMessage.setString("You Lost!\n\n" + inputString);
             }
             if (ball.getPosition().x + ballRadius > gameWidth)
             {
+                animeAhhSound.play();
                 isPlaying = false;
                 pauseMessage.setString("You Won!\n\n" + inputString);
             }
@@ -261,7 +274,7 @@ int main()
 
             // Check the collisions between the ball and the paddles
             // Left Paddle
-            if (distance_from_rect_to_circle(leftPaddle, ball) <= 0)
+            if (signed_distance_from_rect_to_circle(leftPaddle, ball) <= 0)
             {
                 if (ball.getPosition().y > leftPaddle.getPosition().y)
                     ballAngle = pi - ballAngle + static_cast<float>(std::rand() % 20) * pi / 180;
@@ -276,7 +289,7 @@ int main()
             }
 
             // Right Paddle
-            if (distance_from_rect_to_circle(rightPaddle, ball) < 0)
+            if (signed_distance_from_rect_to_circle(rightPaddle, ball) < 0)
             {
                 if (ball.getPosition().y > rightPaddle.getPosition().y)
                     ballAngle = pi - ballAngle + static_cast<float>(std::rand() % 20) * pi / 180;
@@ -304,8 +317,8 @@ int main()
         else
         {
             // Draw the pause message
+            window.draw(gameLogo);
             window.draw(pauseMessage);
-            window.draw(sfmlLogo);
         }
 
         // Display things on screen
