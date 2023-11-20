@@ -9,7 +9,7 @@ CXX = clang++
 PYTHON = "$(shell (which python3 2>/dev/null || which python 2>/dev/null) | head -1)"
 ANAL_BUILD_PATH = "$(shell which analyze-build)"
 
-prep_executable = $(eval $(1) := $(shell bash ../prep_exec.sh $(2)))
+prep_executable = $(eval $(1) := $(shell bash ../prep_exec.sh $(2) --use_dir))
 
 call_cmake = cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER="$(CC)" -DCMAKE_CXX_COMPILER="$(CXX)"
 
@@ -43,10 +43,15 @@ compile: cmake_build
 analyze: cmake_build $(OUT_DIR) $(ANAL_DIR)
 	$(PYTHON) $(ANAL_BUILD_PATH) --cdb $(OUT_DIR)/compile_commands.json --output $(ANAL_DIR) --use-analyzer clang
 
+# https://wiki.termux.com/wiki/Graphical_Environment
+.PHONY: setup_termux_gui
+setup_termux_gui:
+	vncserver :1 -localhost
+
 .PHONY: run
 run:
 	$(call prep_executable, EXEC, ./build/bin/main.out)
-	$(EXEC)
+	DISPLAY=":1" $(EXEC)
 
 llvm_cov = llvm-cov $(1) $(2) -instr-profile=$(3) --ignore-filename-regex="tests/*"
 
