@@ -40,61 +40,9 @@ sf::Vector2f proj(const sf::Vector2f &a, const sf::Vector2f &b) {
     return {k * b.x, k * b.y};
 }
 
-
-/**
- * Returns the distance from line segment AB to point C
- */
-float distance_from_segment_to_point(const sf::Vector2f &A, const sf::Vector2f &B, const sf::Vector2f &C) {
-    // Compute vectors AC and AB
-    sf::Vector2f AC = C - A;
-    sf::Vector2f AB = B - A;
-
-    // Get point D by taking the projection of AC onto AB then adding the offset of A
-    sf::Vector2f D = proj(AC, AB) + A;
-
-    sf::Vector2f AD = D - A;
-    // D might not be on AB so calculate k of D down AB (aka solve AD = k * AB)
-    // We can use either component, but choose larger value to reduce the chance of dividing by zero
-    float k = std::abs(AB.x) > std::abs(AB.y) ? AD.x / AB.x : AD.y / AB.y;
-
-    // Check if D is off either end of the line segment
-    if (k <= 0.0) {
-        return length(C - A);
-    } else if (k >= 1.0) {
-        return length(C - B);
-    }
-
-    return length(C - D);
-}
-
-
-float distance_from_rect_edge_to_circle(const sf::RectangleShape &rect, size_t point1, size_t point2, const sf::CircleShape &circle) {
-    return distance_from_segment_to_point(
-        rect.getPosition() + rect.getPoint(point1),
-        rect.getPosition() + rect.getPoint(point2),
-        circle.getPosition()
-    ) - circle.getRadius();
-}
-
-
-// float distance_from_rect_to_circle(const sf::RectangleShape &rect, const sf::CircleShape &circle) {
-//     return std::min(
-//         std::min(
-//             distance_from_rect_edge_to_circle(rect, 0, 1, circle),
-//             distance_from_rect_edge_to_circle(rect, 1, 2, circle)
-//         ),
-//         std::min(
-//             distance_from_rect_edge_to_circle(rect, 2, 3, circle),
-//             distance_from_rect_edge_to_circle(rect, 3, 0, circle)
-//         )
-//     );
-// }
-
-
-
-float signed_distance_to_axis_aligned_rect(const sf::Vector2f &uv, const sf::Vector2f &tl, const sf::Vector2f &br)
+float signed_distance_to_axis_aligned_rect(const sf::Vector2f &point, const sf::Vector2f &top_left, const sf::Vector2f &bottom_right)
 {
-    sf::Vector2f d = max(tl-uv, uv-br);
+    sf::Vector2f d = max(top_left-point, point-bottom_right);
     return length(max(sf::Vector2f(0, 0), d)) + std::min(0.0f, std::max(d.x, d.y));
 }
 
@@ -103,13 +51,6 @@ float distance_from_rect_to_circle(const sf::RectangleShape &rect, const sf::Cir
     return signed_distance_to_axis_aligned_rect(circle.getPosition(), rect.getPosition() - rect.getSize() / 2.0f, rect.getPosition() + rect.getSize() / 2.0f) - circle.getRadius();
 }
 
-
-////////////////////////////////////////////////////////////
-/// Entry point of application
-///
-/// \return Application exit code
-///
-////////////////////////////////////////////////////////////
 int main()
 {
     std::srand(static_cast<unsigned int>(std::time(NULL)));
@@ -134,7 +75,7 @@ int main()
 
     // Create the SFML logo texture:
     sf::Texture sfmlLogoTexture;
-    if(!sfmlLogoTexture.loadFromFile(resourcesDir() + "rock.jpeg"))
+    if(!sfmlLogoTexture.loadFromFile(resourcesDir() + "rock.png"))
         return EXIT_FAILURE;
     sf::Sprite sfmlLogo;
     sfmlLogo.setTexture(sfmlLogoTexture);
@@ -318,17 +259,9 @@ int main()
                 ball.setPosition(ball.getPosition().x, gameHeight - ballRadius - 0.1f);
             }
 
-            // float d = distance_from_rectagle_to_circle(leftPaddle, ball);
-            // std::cout << "d = " << d << std::endl;
-            // std::cout << "d = " << distance_from_rect_to_circle(leftPaddle, ball) << std::endl;
-
             // Check the collisions between the ball and the paddles
             // Left Paddle
-            // if (ball.getPosition().x - ballRadius < leftPaddle.getPosition().x + paddleSize.x / 2 &&
-            //     ball.getPosition().x - ballRadius > leftPaddle.getPosition().x &&
-            //     ball.getPosition().y + ballRadius >= leftPaddle.getPosition().y - paddleSize.y / 2 &&
-            //     ball.getPosition().y - ballRadius <= leftPaddle.getPosition().y + paddleSize.y / 2)
-            if (distance_from_rect_to_circle(leftPaddle, ball) < 0)
+            if (distance_from_rect_to_circle(leftPaddle, ball) <= 0)
             {
                 if (ball.getPosition().y > leftPaddle.getPosition().y)
                     ballAngle = pi - ballAngle + static_cast<float>(std::rand() % 20) * pi / 180;
@@ -342,15 +275,7 @@ int main()
                 ball.setPosition(leftPaddle.getPosition().x + ballRadius + paddleSize.x / 2 + 0.1f, ball.getPosition().y);
             }
 
-
-            // d = distance_from_rectagle_to_circle(rightPaddle, ball);
-            // std::cout << "d = " << d << std::endl;
-
             // Right Paddle
-            // if (ball.getPosition().x + ballRadius > rightPaddle.getPosition().x - paddleSize.x / 2 &&
-            //     ball.getPosition().x + ballRadius < rightPaddle.getPosition().x &&
-            //     ball.getPosition().y + ballRadius >= rightPaddle.getPosition().y - paddleSize.y / 2 &&
-            //     ball.getPosition().y - ballRadius <= rightPaddle.getPosition().y + paddleSize.y / 2)
             if (distance_from_rect_to_circle(rightPaddle, ball) < 0)
             {
                 if (ball.getPosition().y > rightPaddle.getPosition().y)
