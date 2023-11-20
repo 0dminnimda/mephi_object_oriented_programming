@@ -18,7 +18,7 @@ if(NOT ANDROID)
 endif()
 
 
-add_executable(main src/main.cpp)
+add_executable(main src/main.cpp src/game.cpp)
 set_target_properties(main PROPERTIES SUFFIX ".out")
 target_link_libraries(main PRIVATE sfml-window sfml-system sfml-graphics sfml-audio)
 

@@ -1,13 +1,12 @@
-
-////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
 #include <cmath>
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
+
+#include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+
+#include "game.hpp"
 
 using std::min, std::max;
 
@@ -52,7 +51,7 @@ float signed_distance_from_rect_to_circle(const sf::RectangleShape &rect, const 
     return signed_distance_to_axis_aligned_rect(circle.getPosition(), rect.getPosition() - rect.getSize() / 2.0f, rect.getPosition() + rect.getSize() / 2.0f) - circle.getRadius();
 }
 
-int main()
+int s_main()
 {
     std::srand(static_cast<unsigned int>(std::time(NULL)));
 
@@ -327,3 +326,35 @@ int main()
 
     return EXIT_SUCCESS;
 }
+
+int main() {
+    // const float pi = 3.14159f;
+    // const float gameWidth = 800;
+    // const float gameHeight = 600;
+
+    // sf::RenderWindow window(sf::VideoMode(static_cast<unsigned int>(gameWidth), static_cast<unsigned int>(gameHeight), 32), "Epic Rock Game",
+    //                         sf::Style::Titlebar | sf::Style::Close);
+    // window.setVerticalSyncEnabled(true);
+
+    Game game;
+
+    int result = game.init(800, 600);
+    if (result != EXIT_SUCCESS) return result;
+    return game.run();
+
+    // Define the paddles properties
+    sf::Clock AITimer;
+    const sf::Time AITime   = sf::seconds(0.1f);
+    const float paddleSpeed = 400.f;
+    float rightPaddleSpeed  = 0.f;
+    // const float ballSpeed   = 20.f;
+    float ballSpeed   = 300.f;
+    float ballAngle         = 0.f; // to be changed later
+
+    
+
+    return EXIT_SUCCESS;
+
+    // return s_main();
+}
+

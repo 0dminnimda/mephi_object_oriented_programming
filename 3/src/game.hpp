@@ -297,13 +297,29 @@ private:
     InventoryCanvas inventory_canvas;
     LevelUpCanvas level_up_canvas;
     std::vector<ActorClass> actor_classes;
-    bool is_paused = false;
+    bool is_playing = false;
+
+    sf::RenderWindow window;
+    sf::Clock clock;
+
+    sf::Texture logo_texture;
+    sf::Sprite logo;
 
 public:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
     void pause();
     void unpause();
     void update();
+
+    void add_level(DungeonLevel &level);
+    void load_level(size_t index);
+    void unload_current_level();
+    DungeonLevel *get_current_level();
+
+    void handle_events();
+    void start_playing();
+    int init(unsigned int width, unsigned int height);
+    int run();
 };
 
 #endif  // GAME_H
