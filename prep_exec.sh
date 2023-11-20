@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 
 NAME=$(basename "$1")
-DIR=$(dirname "$1")
-USE_DIR=$(( $2 == "--use_dir" ? 1 : 0 ))
-
+if [[ $2 == "--use_dir" && $3 ]]; then
+    DIR="$3"
+else
+    DIR=""
+fi
 
 if [[ $OSTYPE =~ "android" ]]; then
-    if [[ $USE_DIR ]]; then
-        cp -f -r $DIR ~/
-    else
-        cp -f $1 ~/$NAME
+    if [[ $DIR ]]; then
+        cp -f -r $DIR ~/$DIR
     fi
+    cp -f $1 ~/$NAME
     chmod +x ~/$NAME
 
     echo "~/$NAME"
