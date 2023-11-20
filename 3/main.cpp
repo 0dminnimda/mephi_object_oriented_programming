@@ -7,6 +7,7 @@
 #include <cmath>
 #include <ctime>
 #include <cstdlib>
+#include <iostream>
 
 #ifdef SFML_SYSTEM_IOS
 #include <SFML/Main.hpp>
@@ -20,6 +21,88 @@ std::string resourcesDir()
     return "resources/";
 #endif
 }
+
+
+float dot(const sf::Vector2f &a, const sf::Vector2f &b) {
+    return a.x * b.x + a.y * b.y;
+}
+
+float length(const sf::Vector2f &a) {
+    return std::sqrt(dot(a, a));
+}
+
+sf::Vector2f max(const sf::Vector2f &a, const sf::Vector2f &b) {
+    return {std::max(a.x, b.x), std::max(a.y, b.y)};
+}
+
+sf::Vector2f proj(const sf::Vector2f &a, const sf::Vector2f &b) {
+    float k = dot(a, b) / dot(b, b);
+    return {k * b.x, k * b.y};
+}
+
+
+/**
+ * Returns the distance from line segment AB to point C
+ */
+float distance_from_segment_to_point(const sf::Vector2f &A, const sf::Vector2f &B, const sf::Vector2f &C) {
+    // Compute vectors AC and AB
+    sf::Vector2f AC = C - A;
+    sf::Vector2f AB = B - A;
+
+    // Get point D by taking the projection of AC onto AB then adding the offset of A
+    sf::Vector2f D = proj(AC, AB) + A;
+
+    sf::Vector2f AD = D - A;
+    // D might not be on AB so calculate k of D down AB (aka solve AD = k * AB)
+    // We can use either component, but choose larger value to reduce the chance of dividing by zero
+    float k = std::abs(AB.x) > std::abs(AB.y) ? AD.x / AB.x : AD.y / AB.y;
+
+    // Check if D is off either end of the line segment
+    if (k <= 0.0) {
+        return length(C - A);
+    } else if (k >= 1.0) {
+        return length(C - B);
+    }
+
+    return length(C - D);
+}
+
+
+float distance_from_rect_edge_to_circle(const sf::RectangleShape &rect, size_t point1, size_t point2, const sf::CircleShape &circle) {
+    return distance_from_segment_to_point(
+        rect.getPosition() + rect.getPoint(point1),
+        rect.getPosition() + rect.getPoint(point2),
+        circle.getPosition()
+    ) - circle.getRadius();
+}
+
+
+// float distance_from_rect_to_circle(const sf::RectangleShape &rect, const sf::CircleShape &circle) {
+//     return std::min(
+//         std::min(
+//             distance_from_rect_edge_to_circle(rect, 0, 1, circle),
+//             distance_from_rect_edge_to_circle(rect, 1, 2, circle)
+//         ),
+//         std::min(
+//             distance_from_rect_edge_to_circle(rect, 2, 3, circle),
+//             distance_from_rect_edge_to_circle(rect, 3, 0, circle)
+//         )
+//     );
+// }
+
+
+
+float signed_distance_to_axis_aligned_rect(const sf::Vector2f &uv, const sf::Vector2f &tl, const sf::Vector2f &br)
+{
+    sf::Vector2f d = max(tl-uv, uv-br);
+    return length(max(sf::Vector2f(0, 0), d)) + std::min(0.0f, std::max(d.x, d.y));
+}
+
+
+float distance_from_rect_to_circle(const sf::RectangleShape &rect, const sf::CircleShape &circle) {
+    return signed_distance_to_axis_aligned_rect(circle.getPosition(), rect.getPosition() - rect.getSize() / 2.0f, rect.getPosition() + rect.getSize() / 2.0f) - circle.getRadius();
+}
+
 
 ////////////////////////////////////////////////////////////
 /// Entry point of application
@@ -36,7 +119,7 @@ int main()
     const float gameWidth = 800;
     const float gameHeight = 600;
     sf::Vector2f paddleSize(25, 100);
-    float ballRadius = 10.f;
+    float ballRadius = 100.f;
 
     // Create the window of the application
     sf::RenderWindow window(sf::VideoMode(static_cast<unsigned int>(gameWidth), static_cast<unsigned int>(gameHeight), 32), "SFML Tennis",
@@ -45,13 +128,13 @@ int main()
 
     // Load the sounds used in the game
     sf::SoundBuffer ballSoundBuffer;
-    if (!ballSoundBuffer.loadFromFile(resourcesDir() + "ball.wav"))
+    if (!ballSoundBuffer.loadFromFile(resourcesDir() + "vine-boom.wav"))
         return EXIT_FAILURE;
     sf::Sound ballSound(ballSoundBuffer);
 
     // Create the SFML logo texture:
     sf::Texture sfmlLogoTexture;
-    if(!sfmlLogoTexture.loadFromFile(resourcesDir() + "sfml_logo.png"))
+    if(!sfmlLogoTexture.loadFromFile(resourcesDir() + "rock.jpeg"))
         return EXIT_FAILURE;
     sf::Sprite sfmlLogo;
     sfmlLogo.setTexture(sfmlLogoTexture);
@@ -59,7 +142,7 @@ int main()
 
     // Create the left paddle
     sf::RectangleShape leftPaddle;
-    leftPaddle.setSize(paddleSize - sf::Vector2f(3, 3));
+    leftPaddle.setSize(paddleSize);
     leftPaddle.setOutlineThickness(3);
     leftPaddle.setOutlineColor(sf::Color::Black);
     leftPaddle.setFillColor(sf::Color(100, 100, 200));
@@ -67,7 +150,7 @@ int main()
 
     // Create the right paddle
     sf::RectangleShape rightPaddle;
-    rightPaddle.setSize(paddleSize - sf::Vector2f(3, 3));
+    rightPaddle.setSize(paddleSize);
     rightPaddle.setOutlineThickness(3);
     rightPaddle.setOutlineColor(sf::Color::Black);
     rightPaddle.setFillColor(sf::Color(200, 100, 100));
@@ -75,11 +158,11 @@ int main()
 
     // Create the ball
     sf::CircleShape ball;
-    ball.setRadius(ballRadius - 3);
+    ball.setRadius(ballRadius);
     ball.setOutlineThickness(2);
     ball.setOutlineColor(sf::Color::Black);
     ball.setFillColor(sf::Color::White);
-    ball.setOrigin(ballRadius / 2, ballRadius / 2);
+    ball.setOrigin(ballRadius, ballRadius);
 
     // Load the text font
     sf::Font font;
@@ -104,7 +187,8 @@ int main()
     const sf::Time AITime   = sf::seconds(0.1f);
     const float paddleSpeed = 400.f;
     float rightPaddleSpeed  = 0.f;
-    const float ballSpeed   = 400.f;
+    // const float ballSpeed   = 20.f;
+    float ballSpeed   = 300.f;
     float ballAngle         = 0.f; // to be changed later
 
     sf::Clock clock;
@@ -234,32 +318,48 @@ int main()
                 ball.setPosition(ball.getPosition().x, gameHeight - ballRadius - 0.1f);
             }
 
+            // float d = distance_from_rectagle_to_circle(leftPaddle, ball);
+            // std::cout << "d = " << d << std::endl;
+            // std::cout << "d = " << distance_from_rect_to_circle(leftPaddle, ball) << std::endl;
+
             // Check the collisions between the ball and the paddles
             // Left Paddle
-            if (ball.getPosition().x - ballRadius < leftPaddle.getPosition().x + paddleSize.x / 2 &&
-                ball.getPosition().x - ballRadius > leftPaddle.getPosition().x &&
-                ball.getPosition().y + ballRadius >= leftPaddle.getPosition().y - paddleSize.y / 2 &&
-                ball.getPosition().y - ballRadius <= leftPaddle.getPosition().y + paddleSize.y / 2)
+            // if (ball.getPosition().x - ballRadius < leftPaddle.getPosition().x + paddleSize.x / 2 &&
+            //     ball.getPosition().x - ballRadius > leftPaddle.getPosition().x &&
+            //     ball.getPosition().y + ballRadius >= leftPaddle.getPosition().y - paddleSize.y / 2 &&
+            //     ball.getPosition().y - ballRadius <= leftPaddle.getPosition().y + paddleSize.y / 2)
+            if (distance_from_rect_to_circle(leftPaddle, ball) < 0)
             {
                 if (ball.getPosition().y > leftPaddle.getPosition().y)
                     ballAngle = pi - ballAngle + static_cast<float>(std::rand() % 20) * pi / 180;
                 else
                     ballAngle = pi - ballAngle - static_cast<float>(std::rand() % 20) * pi / 180;
 
+                ballSpeed *= 1.1;
+                // ballRadius *= 0.9;
+
                 ballSound.play();
                 ball.setPosition(leftPaddle.getPosition().x + ballRadius + paddleSize.x / 2 + 0.1f, ball.getPosition().y);
             }
 
+
+            // d = distance_from_rectagle_to_circle(rightPaddle, ball);
+            // std::cout << "d = " << d << std::endl;
+
             // Right Paddle
-            if (ball.getPosition().x + ballRadius > rightPaddle.getPosition().x - paddleSize.x / 2 &&
-                ball.getPosition().x + ballRadius < rightPaddle.getPosition().x &&
-                ball.getPosition().y + ballRadius >= rightPaddle.getPosition().y - paddleSize.y / 2 &&
-                ball.getPosition().y - ballRadius <= rightPaddle.getPosition().y + paddleSize.y / 2)
+            // if (ball.getPosition().x + ballRadius > rightPaddle.getPosition().x - paddleSize.x / 2 &&
+            //     ball.getPosition().x + ballRadius < rightPaddle.getPosition().x &&
+            //     ball.getPosition().y + ballRadius >= rightPaddle.getPosition().y - paddleSize.y / 2 &&
+            //     ball.getPosition().y - ballRadius <= rightPaddle.getPosition().y + paddleSize.y / 2)
+            if (distance_from_rect_to_circle(rightPaddle, ball) < 0)
             {
                 if (ball.getPosition().y > rightPaddle.getPosition().y)
                     ballAngle = pi - ballAngle + static_cast<float>(std::rand() % 20) * pi / 180;
                 else
                     ballAngle = pi - ballAngle - static_cast<float>(std::rand() % 20) * pi / 180;
+
+                ballSpeed *= 1.1;
+                // ballRadius *= 0.9;
 
                 ballSound.play();
                 ball.setPosition(rightPaddle.getPosition().x - ballRadius - paddleSize.x / 2 - 0.1f, ball.getPosition().y);
