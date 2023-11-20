@@ -3,10 +3,6 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <godot_cpp/classes/node.hpp>
-#include <godot_cpp/classes/rigid_body2d.hpp>
-#include <godot_cpp/classes/sprite2d.hpp>
-#include <godot_cpp/variant/vector2.hpp>
 #include <memory>
 #include <optional>
 #include <string>
@@ -14,19 +10,22 @@
 #include <variant>
 #include <vector>
 
-using namespace godot;
+#include "SFML/Graphics/Drawable.hpp"
+#include <SFML/Graphics.hpp>
+
+#include "matrix.hpp"
 
 class Game;
 
-static const Ref<Game> game;
+static const std::shared_ptr<Game> game;
 
 template <typename T>
 class SetAbsoluteValue {
     T value;
 
 public:
-    void apply(T &value) {
-        value = this->value;
+    T apply(T) {
+        return this->value;
     }
 };
 
@@ -35,8 +34,8 @@ class AddToValue {
     T value;
 
 public:
-    void apply(T &value) {
-        value += this->value;
+    T apply(T value) {
+        return value + this->value;
     }
 };
 
@@ -66,10 +65,11 @@ class Actor;
 
 class Item {
     std::string name;
-    Ref<Texture2D> icon;
+    std::shared_ptr<sf::Texture> icon;
 
 public:
-    virtual void use(Actor &target) {}
+    virtual ~Item() = default;
+    virtual void use(Actor &target) = 0;
 };
 
 class Potion : public Item {
@@ -104,7 +104,7 @@ class Weapon : public Item {
 
 public:
     void use(Actor &target) override;
-    void attack(Vector2 pos);
+    void attack(sf::Vector2u pos);
     long get_damage(Actor &target);
 };
 
@@ -146,16 +146,11 @@ public:
     void close_inventory();
 };
 
-class InventoryCanvas : public CanvasItem {
-    GDCLASS(InventoryCanvas, CanvasItem)
-
-protected:
-    static void _bind_methods(){};
-
+class InventoryCanvas : public sf::Drawable {
 public:
     void on_open_inventory(Inventory &inventory);
     void on_close_inventory(Inventory &inventory);
-    void _draw();
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };
 
 class Chest {
@@ -198,20 +193,26 @@ public:
     void level_up();
 };
 
-class LevelUpCanvas : public CanvasItem {
-    GDCLASS(LevelUpCanvas, CanvasItem)
-
-protected:
-    static void _bind_methods(){};
-
+class LevelUpCanvas : public sf::Drawable {
 public:
-    void _draw();
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
     void on_level_up(Experience &exp);
 };
 
 class Equipment {
     std::unordered_map<Wearable::Kind, Wearable> wearable;
-    Weapon weapon;
+    std::optional<Weapon> weapon;
+
+public:
+    Equipment() : wearable(), weapon() {}
+    void equip_wearable(Wearable &item);
+    void equip_weapon(Weapon &item);
+};
+
+class RigidBody {
+protected:
+    sf::Vector2f velocity_;
+    sf::Vector2f position_;
 };
 
 class ActorClass {
@@ -220,29 +221,26 @@ class ActorClass {
 };
 
 // XXX: creature?
-class Actor : public RigidBody2D {
-    GDCLASS(Actor, RigidBody2D)
-
-protected:
-    static void _bind_methods(){};
-
+class Actor : public RigidBody {
 private:
+    // std::string name;
     const size_t actor_class_index_;
     long health_;
     Equipment equipment_;
     Characteristics characteristics_;
 
 public:
-    Actor(size_t class_index, long health, Characteristics characteristics) : health_(health), actor_class_index_(class_index), characteristics_(characteristics) {}
+    Actor(size_t class_index, long health, Characteristics characteristics) : RigidBody(), actor_class_index_(class_index), health_(health), equipment_(), characteristics_(characteristics) {}
+    virtual ~Actor() = default;
 
     size_t actor_class_index() const { return actor_class_index_; };
-    float health() const { return health_; };
+    long health() const { return health_; };
     const Equipment &equipment() const { return equipment_; };
     Characteristics &characteristics() { return characteristics_; };
     const Characteristics &characteristics() const { return characteristics_; };
 
     float chance_to_take_damage();
-    void take_damage(float amount, Actor &source);
+    void take_damage(long amount, Actor &source);
 
     virtual void update();
     virtual void handle_movement();
@@ -251,11 +249,6 @@ public:
 };
 
 class Player : public Actor {
-    GDCLASS(Player, Actor)
-
-protected:
-    static void _bind_methods(){};
-
 private:
     Inventory inventory;
     Experience experience;
@@ -277,50 +270,27 @@ public:
     void die(Actor &reason) override;
 };
 
-class LayingItem : public RigidBody2D {
-    GDCLASS(LayingItem, RigidBody2D)
-
-protected:
-    static void _bind_methods(){};
-
+class LayingItem : public RigidBody {
 public:
     std::unique_ptr<Item> item;
-};
-
-template <typename T>
-class Row {
-    std::vector<T> items;
-
-public:
-    T &operator[](size_t index);
-};
-
-template <typename T>
-class Matrix {
-    std::vector<Row<T>> rows;
-
-public:
-    Row<T> &operator[](size_t index);
 };
 
 class DungeonLevel {
 private:
     std::vector<Actor> actors;
-    std::vector<Ref<LayingItem>> laying_items;
+    std::vector<std::unique_ptr<LayingItem>> laying_items;
     Matrix<Tile> tiles;
 
 public:
+    DungeonLevel(Matrix<Tile> tiles) : actors(), laying_items(), tiles(tiles) {}
+
     void resize_tiles(size_t width, size_t height);
     std::optional<Tile> get_tile_of_an_actor(const Actor &actor);
+    void add_laying_item(std::unique_ptr<LayingItem> item);
     void update();
 };
 
-class Game : public CanvasItem {
-    GDCLASS(Game, CanvasItem)
-
-protected:
-    static void _bind_methods(){};
-
+class Game : public sf::Drawable {
 private:
     int current_level_index = -1;
     std::vector<DungeonLevel> all_levels;
@@ -330,7 +300,7 @@ private:
     bool is_paused = false;
 
 public:
-    void _draw();
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
     void pause();
     void unpause();
     void update();

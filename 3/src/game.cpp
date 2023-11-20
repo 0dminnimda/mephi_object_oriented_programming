@@ -5,15 +5,15 @@
 
 void CharacteristicsModifier::apply(Characteristics &value) {
     if (max_health) {
-        std::visit([&](auto &&v) { v.apply(value.max_health); }, *max_health);
+        value.max_health = std::visit([&](auto &&v) -> auto { return (long)v.apply(value.max_health); }, *max_health);
     }
     
     if (defence) {
-        std::visit([&](auto &&v) { v.apply(value.defence); }, *defence);
+        value.defence = std::visit([&](auto &&v) -> auto { return (long)v.apply(value.defence); }, *defence);
     }
 
     if (speed) {
-        std::visit([&](auto &&v) { v.apply(value.speed); }, *speed);
+        value.speed = std::visit([&](auto &&v) -> auto { return (long)v.apply(value.speed); }, *speed);
     }
 }
 
