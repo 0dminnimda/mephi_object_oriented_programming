@@ -83,6 +83,9 @@ void center_text_origin(sf::Text &text) {
     text.setOrigin(text_rect.left + text_rect.width / 2.0f, text_rect.top  + text_rect.height / 2.0f);
 }
 
+// int Game::update() {
+// }
+
 int Game::init(unsigned int width, unsigned int height) {
     window.create(
         sf::VideoMode(width, height, 32), "Epic Rock Game",
@@ -161,6 +164,9 @@ void Game::handle_events() {
 int Game::run() {
     while (window.isOpen()) {
         handle_events();
+
+        // float delta_time = clock.restart().asSeconds();
+        // AITimer.getElapsedTime() > sf::seconds(0.1f)
 
         window.clear(sf::Color(50, 50, 50));
         draw(window);
