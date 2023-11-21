@@ -48,6 +48,11 @@ sf::Vector2<T> operator/(const sf::Vector2<T> &a, const sf::Vector2<T> &b) {
 }
 
 template <typename T>
+sf::Vector2<T> operator/(T a, const sf::Vector2<T> &b) {
+    return {a / b.x, a / b.y};
+}
+
+template <typename T>
 sf::Vector2<T> operator*(const sf::Vector2<T> &a, const sf::Vector2<T> &b) {
     return {a.x * b.x, a.y * b.y};
 }

@@ -176,15 +176,16 @@ public:
     };
 
 private:
-    Kind kind;
-
     Chest *building;
 
 public:
+    Kind kind;
+
     ~Tile() {
         delete building;
     }
 
+    explicit Tile() : Tile(Flor) {}
     explicit Tile(Kind kind) : kind(kind), building(nullptr) {}
 
     Tile &set_building(std::unique_ptr<Chest> building);
@@ -287,14 +288,15 @@ public:
 };
 
 class DungeonLevel {
-private:
+// private:
+public:
     std::vector<Actor> actors;
     std::vector<LayingItem> laying_items;
     Matrix<Tile> tiles;
 
-public:
     DungeonLevel(Matrix<Tile> tiles) : actors(), laying_items(), tiles(tiles) {}
 
+    void draw(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default);
     void resize_tiles(size_t width, size_t height);
     std::optional<Tile> get_tile_of_an_actor(const Actor &actor);
     void add_laying_item(std::unique_ptr<LayingItem> item);
@@ -316,16 +318,21 @@ private:
     sf::Texture logo_texture;
     sf::Sprite logo;
 
+    sf::Texture flor_tile_texture;
+    sf::Texture open_dor_tile_texture;
+    sf::Sprite tile;
+
     sf::Font font;
     sf::Text menu_message;
+    sf::Text info_message;
 
 public:
-    void draw(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default) const;
+    void draw(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default);
     void pause();
     void unpause();
     void update();
 
-    void add_level(DungeonLevel &level);
+    void add_level(const DungeonLevel &level);
     void load_level(size_t index);
     void unload_current_level();
     DungeonLevel *get_current_level();

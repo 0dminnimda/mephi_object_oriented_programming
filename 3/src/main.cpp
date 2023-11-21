@@ -314,6 +314,10 @@ int s_main()
 int main() {
     Game game;
 
+    Matrix<Tile> tiles(10, 10);
+    tiles[4][4].kind = Tile::OpenDor;
+    game.add_level(DungeonLevel(tiles));
+
     int result = game.init(800, 600);
     if (result != EXIT_SUCCESS) return result;
     return game.run();

@@ -64,8 +64,10 @@ void LevelUpCanvas::draw(sf::RenderTarget& target, sf::RenderStates states) cons
 #endif
 
 static const char * const logo_name = "rock_eyebrow_meme.png";
+static const char * const flor_tile_name = "rock_eyebrow_meme.png";
+static const char * const open_dor_tile_name = "hide_the_plan.jpeg";
 
-void center_text(sf::Text &text) {
+void center_text_origin(sf::Text &text) {
     // const sf::String string = text.getString();
 
     // float max_height = 0;
@@ -87,6 +89,9 @@ int Game::init(unsigned int width, unsigned int height) {
     );
     window.setVerticalSyncEnabled(true);
 
+    if (!flor_tile_texture.loadFromFile(path_to_resources + flor_tile_name)) return EXIT_FAILURE;
+    if (!open_dor_tile_texture.loadFromFile(path_to_resources + open_dor_tile_name)) return EXIT_FAILURE;
+
     if (!logo_texture.loadFromFile(path_to_resources + logo_name)) return EXIT_FAILURE;
     logo.setTexture(logo_texture);
     float scale = min(sf::Vector2f(window.getSize()) / sf::Vector2f(logo_texture.getSize()) / 2.0f);
@@ -95,6 +100,7 @@ int Game::init(unsigned int width, unsigned int height) {
     logo.setPosition({window.getSize().x / 2.0f, window.getSize().y * 2.0f / 3.0f});
 
     if (!font.loadFromFile(path_to_resources + "tuffy.ttf")) return EXIT_FAILURE;
+
     menu_message.setFont(font);
     menu_message.setCharacterSize(40);
     menu_message.setFillColor(sf::Color::White);
@@ -103,8 +109,11 @@ int Game::init(unsigned int width, unsigned int height) {
 #else
     menu_message.setString("Welcome to Epic Lab3 Game!\n\nPress space to start the game.");
 #endif
-    center_text(menu_message);
+    center_text_origin(menu_message);
     menu_message.setPosition({window.getSize().x / 2.0f, window.getSize().y / 6.0f});
+
+    info_message.setFont(font);
+    info_message.setCharacterSize(40);
 
     return EXIT_SUCCESS;
 }
@@ -114,6 +123,7 @@ void Game::start_playing() {
         is_playing = true;
         clock.restart();
 
+        load_level(0);
         // Reset the position of the paddles and ball
         // leftPaddle.setPosition(10.f + paddleSize.x / 2.f, gameHeight / 2.f);
         // rightPaddle.setPosition(gameWidth - 10.f - paddleSize.x / 2.f, gameHeight / 2.f);
@@ -158,18 +168,52 @@ int Game::run() {
     return EXIT_SUCCESS;
 }
 
-void Game::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-    if (is_playing) {
-        // target.draw(leftPaddle);
-        // target.draw(rightPaddle);
-        // target.draw(ball);
-    } else {
+// void DungeonLevel::draw(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default) {
+    
+// }
+
+void Game::draw(sf::RenderTarget& target, sf::RenderStates states) {
+    if (!is_playing) {
         target.draw(logo, states);
         target.draw(menu_message, states);
+        return;
+    }
+
+    DungeonLevel *level_p = get_current_level();
+    if (!level_p) {
+        info_message.setFillColor(sf::Color::White);
+        info_message.setString("No levels are loaded");
+        center_text_origin(info_message);
+        info_message.setPosition({window.getSize().x / 2.0f, window.getSize().y / 2.0f});
+        target.draw(info_message, states);
+        return;
+    }
+    DungeonLevel &level = *level_p;
+
+    float window_size = min(window.getSize());
+    float size = std::max(level.tiles.row_size(), level.tiles.size());
+
+    for (size_t i = 0; i < level.tiles.size(); ++i) {
+        auto &row = level.tiles[i];
+        for (size_t j = 0; j < row.size(); ++j) {
+            sf::Vector2f position = sf::Vector2f(i, j) / size * window_size;
+
+            if (row[j].kind == Tile::Flor) {
+                tile.setTexture(flor_tile_texture);
+            } else if (row[j].kind == Tile::OpenDor) {
+                tile.setTexture(open_dor_tile_texture);
+            }
+
+            float scale = min(sf::Vector2f(window.getSize()) / sf::Vector2f(tile.getTexture()->getSize()) / size);
+            tile.setScale({scale, scale});
+            tile.setOrigin({0, 0});
+            tile.setPosition(position);
+            target.draw(tile, states);
+        }
     }
 }
 
-void Game::add_level(DungeonLevel &level) { all_levels.push_back(level); }
+void Game::add_level(const DungeonLevel &level) { all_levels.push_back(level); }
 
 void Game::load_level(size_t index) { current_level_index = index; }
 
