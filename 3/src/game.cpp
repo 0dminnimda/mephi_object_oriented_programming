@@ -32,7 +32,7 @@ void Potion::apply(Actor &target) { modifier.apply(target.characteristics()); }
 void Potion::use(Actor &target) { apply(target); }
 
 void Weapon::use(Actor &target) {
-    attack(target.position());
+    attack(target.position);
 }
 
 void Weapon::attack(sf::Vector2f position) {
@@ -68,12 +68,6 @@ Game &Game::get() {
 
     return *game;
 }
-
-#ifdef SFML_SYSTEM_IOS
-    static const std::string path_to_resources = "";
-#else
-    static const std::string path_to_resources = "resources/";
-#endif
 
 static const char * const logo_name = "rock_eyebrow_meme.png";
 static const char * const flor_tile_name = "dungeon_floor.jpeg";
@@ -227,7 +221,7 @@ int DungeonLevelView::init() {
     return EXIT_SUCCESS;
 }
 
-void DungeonLevelView::draw(DungeonLevel &level) {
+void DungeonLevelView::draw(const DungeonLevel &level) {
     float window_size = min(window.getSize());
     float size = std::max(level.tiles.row_size(), level.tiles.size());
 
@@ -237,6 +231,11 @@ void DungeonLevelView::draw(DungeonLevel &level) {
             draw_tile(row[j], sf::Vector2f(i, j) / size * window_size, size);
         }
     }
+
+    for (const auto &emeny : level.enemies) {
+        actors_view.draw(emeny);
+    }
+    actors_view.draw(level.player);
 }
 
 void DungeonLevelView::draw_tile(const Tile &tile, sf::Vector2f position, float max_tiles_size) {
@@ -253,6 +252,15 @@ void DungeonLevelView::draw_tile(const Tile &tile, sf::Vector2f position, float 
     tile_sprite.setOrigin({0, 0});
     tile_sprite.setPosition(position);
     window.draw(tile_sprite);
+}
+
+void ActorsView::draw(const Actor &actor) {
+    actor_sprite.setTexture(actor.texture);
+    float scale = min(sf::Vector2f(window.getSize()) / sf::Vector2f(actor_sprite.getTexture()->getSize()));
+    actor_sprite.setScale(sf::Vector2f(scale, scale) / 100.0f * actor.size);
+    actor_sprite.setOrigin(sf::Vector2f(actor_sprite.getTexture()->getSize()) / 2.0f);
+    actor_sprite.setPosition(actor.position * scale);
+    window.draw(actor_sprite);
 }
 
 void Game::add_level(const DungeonLevel &level) { all_levels.push_back(level); }

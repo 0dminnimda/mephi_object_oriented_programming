@@ -15,6 +15,11 @@
 
 #include "matrix.hpp"
 
+#ifdef SFML_SYSTEM_IOS
+    const std::string path_to_resources = "";
+#else
+    const std::string path_to_resources = "resources/";
+#endif
 
 template <typename T>
 class SetAbsoluteValue {
@@ -224,18 +229,16 @@ public:
 class RigidBody {
 protected:
     sf::Vector2f velocity_;
-    sf::Vector2f position_;
 
 public:
-    sf::Vector2f position() { return position_; }
+    sf::Vector2f position;
+    float size = 1.0f;
 };
 
 class ActorClass {
 public:
     std::string name;
     std::string description;
-
-    // ActorClass() : name(), description() {}
 };
 
 // XXX: creature?
@@ -266,6 +269,22 @@ public:
     virtual void handle_movement() {};
     virtual void attack(Actor &target) {};
     virtual void die(Actor &reason) {};
+};
+
+class ActorsView {
+private:
+    sf::RenderWindow &window;
+
+    sf::Sprite actor_sprite;
+
+public:
+    ActorsView(sf::RenderWindow &window) : window(window) {}
+    ~ActorsView() = default;
+
+    void draw(const Actor &actor);
+
+private:
+    void draw_tile(const Tile &tile, sf::Vector2f position, float max_tiles_size);
 };
 
 class Player : public Actor {
@@ -322,12 +341,14 @@ private:
     sf::Texture closed_dor_tile_texture;
     sf::Sprite tile_sprite;
 
+    ActorsView actors_view;
+
 public:
-    DungeonLevelView(sf::RenderWindow &window) : window(window) {}
+    DungeonLevelView(sf::RenderWindow &window) : window(window), actors_view(window) {}
     ~DungeonLevelView() = default;
 
     int init();
-    void draw(DungeonLevel &level);
+    void draw(const DungeonLevel &level);
 
 private:
     void draw_tile(const Tile &tile, sf::Vector2f position, float max_tiles_size);
