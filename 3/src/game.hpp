@@ -265,7 +265,6 @@ public:
     void take_damage(long amount, Actor &source);
 
     virtual void update(float delta_time){};
-    virtual void handle_movement(){};
     virtual void attack(Actor &target){};
     virtual void die(Actor &reason){};
 };
@@ -296,7 +295,6 @@ public:
         : Actor(class_index, health, characteristics) {}
 
     void update(float delta_time) override;
-    void handle_movement() override;
     void attack(Actor &target) override;
     void die(Actor &reason) override;
 
@@ -306,7 +304,6 @@ public:
 class Enemy : public Actor {
 public:
     void update(float delta_time) override;
-    void handle_movement() override;
     void attack(Actor &target) override;
     void die(Actor &reason) override;
 };

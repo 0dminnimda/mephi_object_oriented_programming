@@ -42,7 +42,7 @@ int sub_main() {
     tiles[4][4].kind = Tile::OpenDor;
     tiles[4][5].kind = Tile::ClosedDor;
 
-    Player player(0, 0, Characteristics());
+    Player player(0, 0, Characteristics(0, 0, 30));
     if (!player.texture.loadFromFile(path_to_resources + "hide_the_plan.jpeg")) return EXIT_FAILURE;
     player.position = sf::Vector2f(30, 30);
     player.size = 10.0f;

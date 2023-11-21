@@ -111,6 +111,7 @@ void Game::handle_events() {
             view.setSize(sf::Vector2f(event.size.width, event.size.height));
             view.setCenter(sf::Vector2f(window.getSize()) / 2.0f);
             window.setView(view);
+            // cannot draw in step sadly https://en.sfml-dev.org/forums/index.php?topic=5858.0
         }
     }
 }
@@ -273,9 +274,24 @@ void DungeonLevel::update(float delta_time) {
     player.update(delta_time);
 }
 
-void Player::update(float delta_time) {}
+void Player::update(float delta_time) {
+    auto resulting = sf::Vector2f(0, 0);
 
-void Player::handle_movement() {}
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+        resulting.y -= 1;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+        resulting.y += 1;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+        resulting.x -= 1;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+        resulting.x += 1;
+    }
+
+    position += resulting * (float)characteristics().speed * delta_time;
+}
 
 void Player::attack(Actor &target) {}
 
@@ -284,8 +300,6 @@ void Player::die(Actor &reason) {}
 void Player::pick_up_item(Item &item) {}
 
 void Enemy::update(float delta_time) {}
-
-void Enemy::handle_movement() {}
 
 void Enemy::attack(Actor &target) {}
 
