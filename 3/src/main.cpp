@@ -48,9 +48,9 @@ int sub_main() {
 
     game.add_level(level);
 
-    int result = game.init(800, 600);
-    if (result != EXIT_SUCCESS) return result;
-    return game.run();
+    if (!game.init(800, 600)) return EXIT_FAILURE;
+    if (!game.run()) return EXIT_FAILURE;
+    return EXIT_SUCCESS;
 }
 
 int main() {

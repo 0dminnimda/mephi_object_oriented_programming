@@ -79,7 +79,7 @@ void center_text_origin(sf::Text &text) {
     text.setOrigin(text_rect.left + text_rect.width / 2.0f, text_rect.top  + text_rect.height / 2.0f);
 }
 
-int Game::init(unsigned int width, unsigned int height) {
+bool Game::init(unsigned int width, unsigned int height) {
     return game_view.init(width, height);
 }
 
@@ -130,7 +130,7 @@ void Game::update(float delta_time) {
     }
 }
 
-int Game::run() {
+bool Game::run() {
     while (game_view.is_open()) {
         handle_events();
 
@@ -144,26 +144,26 @@ int Game::run() {
         game_view.display();
     }
 
-    return EXIT_SUCCESS;
+    return true;
 }
 
-int GameView::init(unsigned int width, unsigned int height) {
+bool GameView::init(unsigned int width, unsigned int height) {
     window.create(
         sf::VideoMode(width, height, 32), "Epic Rock Game",
         sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize
     );
     window.setVerticalSyncEnabled(true);
 
-    if (dungeon_level_view.init()) return EXIT_FAILURE;
+    if (!dungeon_level_view.init()) return false;
 
-    if (!logo_texture.loadFromFile(path_to_resources + logo_name)) return EXIT_FAILURE;
+    if (!logo_texture.loadFromFile(path_to_resources + logo_name)) return false;
     logo.setTexture(logo_texture);
     float scale = min(sf::Vector2f(window.getSize()) / sf::Vector2f(logo_texture.getSize()) / 2.0f);
     logo.setScale({scale, scale});
     logo.setOrigin(sf::Vector2f(logo_texture.getSize()) / 2.0f);
     logo.setPosition({window.getSize().x / 2.0f, window.getSize().y * 2.0f / 3.0f});
 
-    if (!font.loadFromFile(path_to_resources + "tuffy.ttf")) return EXIT_FAILURE;
+    if (!font.loadFromFile(path_to_resources + "tuffy.ttf")) return false;
 
     menu_message.setFont(font);
     menu_message.setCharacterSize(40);
@@ -179,7 +179,7 @@ int GameView::init(unsigned int width, unsigned int height) {
     info_message.setFont(font);
     info_message.setCharacterSize(40);
 
-    return EXIT_SUCCESS;
+    return true;
 }
 
 bool GameView::is_open() const {
@@ -214,11 +214,11 @@ void GameView::draw() {
     dungeon_level_view.draw(*level);
 }
 
-int DungeonLevelView::init() {
-    if (!flor_tile_texture.loadFromFile(path_to_resources + flor_tile_name)) return EXIT_FAILURE;
-    if (!open_dor_tile_texture.loadFromFile(path_to_resources + open_dor_tile_name)) return EXIT_FAILURE;
-    if (!closed_dor_tile_texture.loadFromFile(path_to_resources + closed_dor_tile_name)) return EXIT_FAILURE;
-    return EXIT_SUCCESS;
+bool DungeonLevelView::init() {
+    if (!flor_tile_texture.loadFromFile(path_to_resources + flor_tile_name)) return false;
+    if (!open_dor_tile_texture.loadFromFile(path_to_resources + open_dor_tile_name)) return false;
+    if (!closed_dor_tile_texture.loadFromFile(path_to_resources + closed_dor_tile_name)) return false;
+    return true;
 }
 
 void DungeonLevelView::draw(const DungeonLevel &level) {

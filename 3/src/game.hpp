@@ -347,7 +347,7 @@ public:
     DungeonLevelView(sf::RenderWindow &window) : window(window), actors_view(window) {}
     ~DungeonLevelView() = default;
 
-    int init();
+    bool init();
     void draw(const DungeonLevel &level);
 
 private:
@@ -373,7 +373,7 @@ public:
     GameView() : window(), dungeon_level_view(window), inventory_canvas(window), level_up_canvas(window) {}
     ~GameView() = default;
 
-    int init(unsigned int width, unsigned int height);
+    bool init(unsigned int width, unsigned int height);
     void draw();
     bool is_open() const;
     void clear();
@@ -412,8 +412,8 @@ public:
 
     void handle_events();
     void start_playing();
-    int init(unsigned int width, unsigned int height);
-    int run();
+    bool init(unsigned int width, unsigned int height);
+    bool run();
 };
 
 #endif  // GAME_H
