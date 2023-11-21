@@ -320,6 +320,7 @@ private:
 
     sf::Texture flor_tile_texture;
     sf::Texture open_dor_tile_texture;
+    sf::Texture closed_dor_tile_texture;
     sf::Sprite tile;
 
     sf::Font font;

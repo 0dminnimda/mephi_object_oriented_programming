@@ -316,6 +316,7 @@ int main() {
 
     Matrix<Tile> tiles(10, 10);
     tiles[4][4].kind = Tile::OpenDor;
+    tiles[4][5].kind = Tile::ClosedDor;
     game.add_level(DungeonLevel(tiles));
 
     int result = game.init(800, 600);

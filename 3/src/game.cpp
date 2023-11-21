@@ -64,8 +64,9 @@ void LevelUpCanvas::draw(sf::RenderTarget& target, sf::RenderStates states) cons
 #endif
 
 static const char * const logo_name = "rock_eyebrow_meme.png";
-static const char * const flor_tile_name = "rock_eyebrow_meme.png";
-static const char * const open_dor_tile_name = "hide_the_plan.jpeg";
+static const char * const flor_tile_name = "dungeon_floor.jpeg";
+static const char * const open_dor_tile_name = "dungeon_open_door.jpeg";
+static const char * const closed_dor_tile_name = "dungeon_closed_door.jpeg";
 
 void center_text_origin(sf::Text &text) {
     // const sf::String string = text.getString();
@@ -91,6 +92,7 @@ int Game::init(unsigned int width, unsigned int height) {
 
     if (!flor_tile_texture.loadFromFile(path_to_resources + flor_tile_name)) return EXIT_FAILURE;
     if (!open_dor_tile_texture.loadFromFile(path_to_resources + open_dor_tile_name)) return EXIT_FAILURE;
+    if (!closed_dor_tile_texture.loadFromFile(path_to_resources + closed_dor_tile_name)) return EXIT_FAILURE;
 
     if (!logo_texture.loadFromFile(path_to_resources + logo_name)) return EXIT_FAILURE;
     logo.setTexture(logo_texture);
@@ -202,6 +204,8 @@ void Game::draw(sf::RenderTarget& target, sf::RenderStates states) {
                 tile.setTexture(flor_tile_texture);
             } else if (row[j].kind == Tile::OpenDor) {
                 tile.setTexture(open_dor_tile_texture);
+            } else if (row[j].kind == Tile::ClosedDor) {
+                tile.setTexture(closed_dor_tile_texture);
             }
 
             float scale = min(sf::Vector2f(window.getSize()) / sf::Vector2f(tile.getTexture()->getSize()) / size);
