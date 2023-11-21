@@ -88,7 +88,7 @@ void center_text_origin(sf::Text &text) {
 int Game::init(unsigned int width, unsigned int height) {
     window.create(
         sf::VideoMode(width, height, 32), "Epic Rock Game",
-        sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize | sf::Style::Fullscreen
+        sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize
     );
     window.setVerticalSyncEnabled(true);
 
