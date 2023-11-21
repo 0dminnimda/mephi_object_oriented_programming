@@ -81,16 +81,6 @@ static const char * const open_dor_tile_name = "dungeon_open_door.jpeg";
 static const char * const closed_dor_tile_name = "dungeon_closed_door.jpeg";
 
 void center_text_origin(sf::Text &text) {
-    // const sf::String string = text.getString();
-
-    // float max_height = 0;
-    // const sf::Font &font = *text.getFont();
-    // for (size_t characterIndex = 0; characterIndex < string.getSize(); ++characterIndex)
-    // {
-    //     auto bounds = font.getGlyph(string[characterIndex], text.getCharacterSize(), false).bounds;
-    //     max_height = std::max(max_height, bounds.height);
-    // }
-
     sf::FloatRect text_rect = text.getLocalBounds();
     text.setOrigin(text_rect.left + text_rect.width / 2.0f, text_rect.top  + text_rect.height / 2.0f);
 }
