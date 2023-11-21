@@ -15,9 +15,6 @@
 
 #include "matrix.hpp"
 
-class Game;
-
-static const std::shared_ptr<Game> game;
 
 template <typename T>
 class SetAbsoluteValue {
@@ -146,13 +143,16 @@ public:
     void close_inventory();
 };
 
-class InventoryCanvas : public sf::Drawable {
+class InventoryCanvas {
+    sf::RenderWindow &window;
+
 public:
-    ~InventoryCanvas() {}
+    InventoryCanvas(sf::RenderWindow &window) : window(window) {}
+    ~InventoryCanvas() = default;
 
     void on_open_inventory(Inventory &inventory);
     void on_close_inventory(Inventory &inventory);
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+    void draw();
 };
 
 class Chest {
@@ -200,12 +200,15 @@ public:
     void level_up();
 };
 
-class LevelUpCanvas : public sf::Drawable {
-public:
-    ~LevelUpCanvas() {}
+class LevelUpCanvas {
+    sf::RenderWindow &window;
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+public:
+    LevelUpCanvas(sf::RenderWindow &window) : window(window) {}
+    ~LevelUpCanvas() = default;
+
     void on_level_up(Experience &exp);
+    void draw();
 };
 
 class Equipment {
@@ -245,7 +248,9 @@ private:
     Characteristics characteristics_;
 
 public:
-    Actor(size_t class_index, long health, Characteristics characteristics) : RigidBody(), actor_class_index_(class_index), health_(health), equipment_(), characteristics_(characteristics) {}
+    sf::Texture texture;
+
+    Actor(size_t class_index, long health, Characteristics characteristics) : RigidBody(), actor_class_index_(class_index), health_(health), characteristics_(characteristics) {}
     virtual ~Actor() = default;
 
     size_t actor_class_index() const { return actor_class_index_; };
@@ -302,41 +307,79 @@ public:
 
     DungeonLevel(Matrix<Tile> tiles, Player player) : enemies(), player(player), laying_items(), tiles(tiles) {}
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default);
     void resize_tiles(size_t width, size_t height);
     std::optional<Tile> get_tile_of_an_actor(const Actor &actor);
     void add_laying_item(std::unique_ptr<LayingItem> item);
     void update(float delta_time);
 };
 
-class Game {
+class DungeonLevelView {
 private:
-    int current_level_index = -1;
-    std::vector<DungeonLevel> all_levels;
-    InventoryCanvas inventory_canvas;
-    LevelUpCanvas level_up_canvas;
-    std::vector<ActorClass> actor_classes;
-    bool is_playing = false;
-
-    sf::RenderWindow window;
-    sf::Clock clock;
-
-    sf::Texture logo_texture;
-    sf::Sprite logo;
+    sf::RenderWindow &window;
 
     sf::Texture flor_tile_texture;
     sf::Texture open_dor_tile_texture;
     sf::Texture closed_dor_tile_texture;
-    sf::Sprite tile;
+    sf::Sprite tile_sprite;
+
+public:
+    DungeonLevelView(sf::RenderWindow &window) : window(window) {}
+    ~DungeonLevelView() = default;
+
+    int init();
+    void draw(DungeonLevel &level);
+
+private:
+    void draw_tile(const Tile &tile, sf::Vector2f position, float max_tiles_size);
+};
+
+class GameView {
+private:
+    DungeonLevelView dungeon_level_view;
+    InventoryCanvas inventory_canvas;
+    LevelUpCanvas level_up_canvas;
+
+    sf::Texture logo_texture;
+    sf::Sprite logo;
 
     sf::Font font;
     sf::Text menu_message;
     sf::Text info_message;
 
 public:
-    Game(std::vector<ActorClass> actor_classes) : actor_classes(actor_classes) {}
+    sf::RenderWindow window;
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default);
+    GameView() : window(), dungeon_level_view(window), inventory_canvas(window), level_up_canvas(window) {}
+    ~GameView() = default;
+
+    int init(unsigned int width, unsigned int height);
+    void draw();
+    bool is_open() const;
+    void clear();
+    void display();
+
+    friend DungeonLevelView;
+};
+
+class Game {
+private:
+    int current_level_index = -1;
+    std::vector<DungeonLevel> all_levels;
+
+    sf::Clock clock;
+
+    GameView game_view;
+
+public:
+    bool is_playing = false;
+
+    std::vector<ActorClass> actor_classes;
+
+    Game() = default;
+    ~Game() = default;
+
+    static Game &get();
+
     void pause();
     void unpause();
     void update(float delta_time);

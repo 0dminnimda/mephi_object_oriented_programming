@@ -1,9 +1,11 @@
 #include "game.hpp"
+#include <stdlib.h>
 
 #include <algorithm>
 #include <iostream>
 #include <random>
 
+#include "SFML/Graphics.hpp"
 #include "vector_operations.hpp"
 
 
@@ -49,12 +51,22 @@ long RangeOfValues::get_random() {
     return dis(gen);
 }
 
-void InventoryCanvas::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+void InventoryCanvas::draw() {
     
 }
 
-void LevelUpCanvas::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+void LevelUpCanvas::draw() {
     
+}
+
+Game &Game::get() {
+    static std::shared_ptr<Game> game = nullptr;
+
+    if (game == nullptr) {
+        game = std::make_shared<Game>();
+    }
+
+    return *game;
 }
 
 #ifdef SFML_SYSTEM_IOS
@@ -84,40 +96,7 @@ void center_text_origin(sf::Text &text) {
 }
 
 int Game::init(unsigned int width, unsigned int height) {
-    window.create(
-        sf::VideoMode(width, height, 32), "Epic Rock Game",
-        sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize
-    );
-    window.setVerticalSyncEnabled(true);
-
-    if (!flor_tile_texture.loadFromFile(path_to_resources + flor_tile_name)) return EXIT_FAILURE;
-    if (!open_dor_tile_texture.loadFromFile(path_to_resources + open_dor_tile_name)) return EXIT_FAILURE;
-    if (!closed_dor_tile_texture.loadFromFile(path_to_resources + closed_dor_tile_name)) return EXIT_FAILURE;
-
-    if (!logo_texture.loadFromFile(path_to_resources + logo_name)) return EXIT_FAILURE;
-    logo.setTexture(logo_texture);
-    float scale = min(sf::Vector2f(window.getSize()) / sf::Vector2f(logo_texture.getSize()) / 2.0f);
-    logo.setScale({scale, scale});
-    logo.setOrigin(sf::Vector2f(logo_texture.getSize()) / 2.0f);
-    logo.setPosition({window.getSize().x / 2.0f, window.getSize().y * 2.0f / 3.0f});
-
-    if (!font.loadFromFile(path_to_resources + "tuffy.ttf")) return EXIT_FAILURE;
-
-    menu_message.setFont(font);
-    menu_message.setCharacterSize(40);
-    menu_message.setFillColor(sf::Color::White);
-#ifdef SFML_SYSTEM_IOS
-    menu_message.setString("Welcome to Epic Lab3 Game!\nTouch the screen to start the game.");
-#else
-    menu_message.setString("Welcome to Epic Lab3 Game!\n\nPress space to start the game.");
-#endif
-    center_text_origin(menu_message);
-    menu_message.setPosition({window.getSize().x / 2.0f, window.getSize().y / 6.0f});
-
-    info_message.setFont(font);
-    info_message.setCharacterSize(40);
-
-    return EXIT_SUCCESS;
+    return game_view.init(width, height);
 }
 
 void Game::start_playing() {
@@ -134,6 +113,8 @@ void Game::start_playing() {
 }
 
 void Game::handle_events() {
+    sf::RenderWindow &window = game_view.window;
+
     sf::Event event;
     while (window.pollEvent(event)) {
         if ((event.type == sf::Event::Closed) ||
@@ -166,7 +147,7 @@ void Game::update(float delta_time) {
 }
 
 int Game::run() {
-    while (window.isOpen()) {
+    while (game_view.is_open()) {
         handle_events();
 
         float delta_time = clock.restart().asSeconds();
@@ -174,59 +155,114 @@ int Game::run() {
 
         update(delta_time);
 
-        window.clear(sf::Color(50, 50, 50));
-        draw(window);
-        window.display();
+        game_view.clear();
+        game_view.draw();
+        game_view.display();
     }
 
     return EXIT_SUCCESS;
 }
 
-// void DungeonLevel::draw(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default) {
-    
-// }
+int GameView::init(unsigned int width, unsigned int height) {
+    window.create(
+        sf::VideoMode(width, height, 32), "Epic Rock Game",
+        sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize
+    );
+    window.setVerticalSyncEnabled(true);
 
-void Game::draw(sf::RenderTarget& target, sf::RenderStates states) {
-    if (!is_playing) {
-        target.draw(logo, states);
-        target.draw(menu_message, states);
+    if (dungeon_level_view.init()) return EXIT_FAILURE;
+
+    if (!logo_texture.loadFromFile(path_to_resources + logo_name)) return EXIT_FAILURE;
+    logo.setTexture(logo_texture);
+    float scale = min(sf::Vector2f(window.getSize()) / sf::Vector2f(logo_texture.getSize()) / 2.0f);
+    logo.setScale({scale, scale});
+    logo.setOrigin(sf::Vector2f(logo_texture.getSize()) / 2.0f);
+    logo.setPosition({window.getSize().x / 2.0f, window.getSize().y * 2.0f / 3.0f});
+
+    if (!font.loadFromFile(path_to_resources + "tuffy.ttf")) return EXIT_FAILURE;
+
+    menu_message.setFont(font);
+    menu_message.setCharacterSize(40);
+    menu_message.setFillColor(sf::Color::White);
+#ifdef SFML_SYSTEM_IOS
+    menu_message.setString("Welcome to Epic Lab3 Game!\nTouch the screen to start the game.");
+#else
+    menu_message.setString("Welcome to Epic Lab3 Game!\n\nPress space to start the game.");
+#endif
+    center_text_origin(menu_message);
+    menu_message.setPosition({window.getSize().x / 2.0f, window.getSize().y / 6.0f});
+
+    info_message.setFont(font);
+    info_message.setCharacterSize(40);
+
+    return EXIT_SUCCESS;
+}
+
+bool GameView::is_open() const {
+    return window.isOpen();
+}
+
+void GameView::clear() {
+    window.clear(sf::Color(50, 50, 50));
+}
+
+void GameView::display() {
+    window.display();
+}
+
+void GameView::draw() {
+    if (!Game::get().is_playing) {
+        window.draw(logo);
+        window.draw(menu_message);
         return;
     }
 
-    DungeonLevel *level_p = get_current_level();
-    if (!level_p) {
+    DungeonLevel *level = Game::get().get_current_level();
+    if (!level) {
         info_message.setFillColor(sf::Color::White);
         info_message.setString("No levels are loaded");
         center_text_origin(info_message);
         info_message.setPosition({window.getSize().x / 2.0f, window.getSize().y / 2.0f});
-        target.draw(info_message, states);
+        window.draw(info_message);
         return;
     }
-    DungeonLevel &level = *level_p;
 
+    dungeon_level_view.draw(*level);
+}
+
+int DungeonLevelView::init() {
+    if (!flor_tile_texture.loadFromFile(path_to_resources + flor_tile_name)) return EXIT_FAILURE;
+    if (!open_dor_tile_texture.loadFromFile(path_to_resources + open_dor_tile_name)) return EXIT_FAILURE;
+    if (!closed_dor_tile_texture.loadFromFile(path_to_resources + closed_dor_tile_name)) return EXIT_FAILURE;
+    return EXIT_SUCCESS;
+}
+
+void DungeonLevelView::draw(DungeonLevel &level) {
     float window_size = min(window.getSize());
     float size = std::max(level.tiles.row_size(), level.tiles.size());
 
     for (size_t i = 0; i < level.tiles.size(); ++i) {
         auto &row = level.tiles[i];
         for (size_t j = 0; j < row.size(); ++j) {
-            sf::Vector2f position = sf::Vector2f(i, j) / size * window_size;
-
-            if (row[j].kind == Tile::Flor) {
-                tile.setTexture(flor_tile_texture);
-            } else if (row[j].kind == Tile::OpenDor) {
-                tile.setTexture(open_dor_tile_texture);
-            } else if (row[j].kind == Tile::ClosedDor) {
-                tile.setTexture(closed_dor_tile_texture);
-            }
-
-            float scale = min(sf::Vector2f(window.getSize()) / sf::Vector2f(tile.getTexture()->getSize()) / size);
-            tile.setScale({scale, scale});
-            tile.setOrigin({0, 0});
-            tile.setPosition(position);
-            target.draw(tile, states);
+            draw_tile(row[j], sf::Vector2f(i, j) / size * window_size, size);
         }
     }
+}
+
+void DungeonLevelView::draw_tile(const Tile &tile, sf::Vector2f position, float max_tiles_size) {
+    if (tile.kind == Tile::Flor) {
+        tile_sprite.setTexture(flor_tile_texture);
+    } else if (tile.kind == Tile::OpenDor) {
+        tile_sprite.setTexture(open_dor_tile_texture);
+    } else if (tile.kind == Tile::ClosedDor) {
+        tile_sprite.setTexture(closed_dor_tile_texture);
+    }
+
+    float scale = min(sf::Vector2f(window.getSize()) / sf::Vector2f(tile_sprite.getTexture()->getSize()) / max_tiles_size);
+    tile_sprite.setScale({scale, scale});
+    tile_sprite.setOrigin({0, 0});
+    tile_sprite.setPosition(position);
+    window.draw(tile_sprite);
 }
 
 void Game::add_level(const DungeonLevel &level) { all_levels.push_back(level); }
@@ -243,10 +279,10 @@ DungeonLevel *Game::get_current_level() {
 }
 
 void DungeonLevel::update(float delta_time) {
-    // for (auto &enemy : enemies) {
-    //     enemy.update(delta_time);
-    // }
-    // player.update(delta_time);
+    for (auto &enemy : enemies) {
+        enemy.update(delta_time);
+    }
+    player.update(delta_time);
 }
 
 void Player::update(float delta_time) {

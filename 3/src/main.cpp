@@ -27,12 +27,12 @@ float signed_distance_from_rect_to_circle(const sf::RectangleShape &rect, const 
 }
 
 int main() {
-    std::vector<ActorClass> actor_classes;
-    actor_classes.push_back(ActorClass(
+    Game &game = Game::get();
+
+    game.actor_classes.push_back(ActorClass(
         "player",
         "plays"
     ));
-    Game game(actor_classes);
 
     Matrix<Tile> tiles(10, 10);
 
