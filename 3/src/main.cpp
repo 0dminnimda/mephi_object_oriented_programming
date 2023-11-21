@@ -27,12 +27,22 @@ float signed_distance_from_rect_to_circle(const sf::RectangleShape &rect, const 
 }
 
 int main() {
-    Game game;
+    std::vector<ActorClass> actor_classes;
+    actor_classes.push_back(ActorClass(
+        "player",
+        "plays"
+    ));
+    Game game(actor_classes);
 
     Matrix<Tile> tiles(10, 10);
+
+    Player player(0, 0, Characteristics());
+    DungeonLevel level(tiles, player);
+
     tiles[4][4].kind = Tile::OpenDor;
-    tiles[4][5].kind = Tile::ClosedDor;
-    game.add_level(DungeonLevel(tiles));
+    // tiles[4][5].kind = Tile::ClosedDor;
+
+    game.add_level(level);
 
     int result = game.init(800, 600);
     if (result != EXIT_SUCCESS) return result;

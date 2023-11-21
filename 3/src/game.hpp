@@ -228,8 +228,11 @@ public:
 };
 
 class ActorClass {
+public:
     std::string name;
     std::string description;
+
+    // ActorClass() : name(), description() {}
 };
 
 // XXX: creature?
@@ -254,7 +257,7 @@ public:
     float chance_to_take_damage();
     void take_damage(long amount, Actor &source);
 
-    virtual void update() {};
+    virtual void update(float delta_time) {};
     virtual void handle_movement() {};
     virtual void attack(Actor &target) {};
     virtual void die(Actor &reason) {};
@@ -266,7 +269,9 @@ private:
     Experience experience;
 
 public:
-    void update() override;
+    Player(size_t class_index, long health, Characteristics characteristics) : Actor(class_index, health, characteristics) {}
+
+    void update(float delta_time) override;
     void handle_movement() override;
     void attack(Actor &target) override;
     void die(Actor &reason) override;
@@ -276,7 +281,7 @@ public:
 
 class Enemy : public Actor {
 public:
-    void update() override;
+    void update(float delta_time) override;
     void handle_movement() override;
     void attack(Actor &target) override;
     void die(Actor &reason) override;
@@ -290,17 +295,18 @@ public:
 class DungeonLevel {
 // private:
 public:
-    std::vector<Actor> actors;
+    std::vector<Enemy> enemies;
+    Player player;
     std::vector<LayingItem> laying_items;
     Matrix<Tile> tiles;
 
-    DungeonLevel(Matrix<Tile> tiles) : actors(), laying_items(), tiles(tiles) {}
+    DungeonLevel(Matrix<Tile> tiles, Player player) : enemies(), player(player), laying_items(), tiles(tiles) {}
 
     void draw(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default);
     void resize_tiles(size_t width, size_t height);
     std::optional<Tile> get_tile_of_an_actor(const Actor &actor);
     void add_laying_item(std::unique_ptr<LayingItem> item);
-    void update();
+    void update(float delta_time);
 };
 
 class Game {
@@ -328,10 +334,12 @@ private:
     sf::Text info_message;
 
 public:
+    Game(std::vector<ActorClass> actor_classes) : actor_classes(actor_classes) {}
+
     void draw(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default);
     void pause();
     void unpause();
-    void update();
+    void update(float delta_time);
 
     void add_level(const DungeonLevel &level);
     void load_level(size_t index);

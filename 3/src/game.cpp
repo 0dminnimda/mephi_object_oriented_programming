@@ -64,8 +64,10 @@ void LevelUpCanvas::draw(sf::RenderTarget& target, sf::RenderStates states) cons
 #endif
 
 static const char * const logo_name = "rock_eyebrow_meme.png";
-static const char * const flor_tile_name = "dungeon_floor.jpeg";
-static const char * const open_dor_tile_name = "dungeon_open_door.jpeg";
+// static const char * const flor_tile_name = "dungeon_floor.jpeg";
+// static const char * const open_dor_tile_name = "dungeon_open_door.jpeg";
+static const char * const flor_tile_name = "rock_eyebrow_meme.png";
+static const char * const open_dor_tile_name = "hide_the_plan.jpeg";
 static const char * const closed_dor_tile_name = "dungeon_closed_door.jpeg";
 
 void center_text_origin(sf::Text &text) {
@@ -82,9 +84,6 @@ void center_text_origin(sf::Text &text) {
     sf::FloatRect text_rect = text.getLocalBounds();
     text.setOrigin(text_rect.left + text_rect.width / 2.0f, text_rect.top  + text_rect.height / 2.0f);
 }
-
-// int Game::update() {
-// }
 
 int Game::init(unsigned int width, unsigned int height) {
     window.create(
@@ -161,12 +160,21 @@ void Game::handle_events() {
     }
 }
 
+void Game::update(float delta_time) {
+    DungeonLevel *level = get_current_level();
+    if (level) {
+        level->update(delta_time);
+    }
+}
+
 int Game::run() {
     while (window.isOpen()) {
         handle_events();
 
-        // float delta_time = clock.restart().asSeconds();
+        float delta_time = clock.restart().asSeconds();
         // AITimer.getElapsedTime() > sf::seconds(0.1f)
+
+        update(delta_time);
 
         window.clear(sf::Color(50, 50, 50));
         draw(window);
@@ -234,4 +242,11 @@ DungeonLevel *Game::get_current_level() {
         return nullptr;
     }
     return &all_levels[current_level_index];
+}
+
+void DungeonLevel::update(float delta_time) {
+    // for (auto &enemy : enemies) {
+    //     enemy.update(delta_time);
+    // }
+    // player.update(delta_time);
 }
