@@ -64,10 +64,8 @@ void LevelUpCanvas::draw(sf::RenderTarget& target, sf::RenderStates states) cons
 #endif
 
 static const char * const logo_name = "rock_eyebrow_meme.png";
-// static const char * const flor_tile_name = "dungeon_floor.jpeg";
-// static const char * const open_dor_tile_name = "dungeon_open_door.jpeg";
-static const char * const flor_tile_name = "rock_eyebrow_meme.png";
-static const char * const open_dor_tile_name = "hide_the_plan.jpeg";
+static const char * const flor_tile_name = "dungeon_floor.jpeg";
+static const char * const open_dor_tile_name = "dungeon_open_door.jpeg";
 static const char * const closed_dor_tile_name = "dungeon_closed_door.jpeg";
 
 void center_text_origin(sf::Text &text) {
@@ -249,4 +247,40 @@ void DungeonLevel::update(float delta_time) {
     //     enemy.update(delta_time);
     // }
     // player.update(delta_time);
+}
+
+void Player::update(float delta_time) {
+
+}
+
+void Player::handle_movement() {
+
+}
+
+void Player::attack(Actor &target) {
+
+}
+
+void Player::die(Actor &reason) {
+
+}
+
+void Player::pick_up_item(Item &item) {
+
+}
+
+void Enemy::update(float delta_time) {
+
+}
+
+void Enemy::handle_movement() {
+
+}
+
+void Enemy::attack(Actor &target) {
+
+}
+
+void Enemy::die(Actor &reason) {
+
 }

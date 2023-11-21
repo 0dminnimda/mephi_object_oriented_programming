@@ -138,7 +138,7 @@ struct LockPickingResult {
 
 class Inventory {
 private:
-    std::vector<std::unique_ptr<Item>> items;
+    std::vector<std::shared_ptr<Item>> items;
 
 public:
     void add_item(Item &item);

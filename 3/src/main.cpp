@@ -36,11 +36,11 @@ int main() {
 
     Matrix<Tile> tiles(10, 10);
 
+    tiles[4][4].kind = Tile::OpenDor;
+    tiles[4][5].kind = Tile::ClosedDor;
+
     Player player(0, 0, Characteristics());
     DungeonLevel level(tiles, player);
-
-    tiles[4][4].kind = Tile::OpenDor;
-    // tiles[4][5].kind = Tile::ClosedDor;
 
     game.add_level(level);
 
