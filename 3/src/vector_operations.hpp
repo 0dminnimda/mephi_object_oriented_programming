@@ -28,8 +28,28 @@ sf::Vector2<T> min(const sf::Vector2<T> &a, const sf::Vector2<T> &b) {
 }
 
 template <typename T>
+T max(const sf::Vector2<T> &a) {
+    return std::max(a.x, a.y);
+}
+
+template <typename T>
+T min(const sf::Vector2<T> &a) {
+    return std::min(a.x, a.y);
+}
+
+template <typename T>
 sf::Vector2<T> proj(const sf::Vector2<T> &a, const sf::Vector2<T> &b) {
     return b * (dot(a, b) / dot(b, b));
+}
+
+template <typename T>
+sf::Vector2<T> operator/(const sf::Vector2<T> &a, const sf::Vector2<T> &b) {
+    return {a.x / b.x, a.y / b.y};
+}
+
+template <typename T>
+sf::Vector2<T> operator*(const sf::Vector2<T> &a, const sf::Vector2<T> &b) {
+    return {a.x * b.x, a.y * b.y};
 }
 
 #endif // VECTOR_OPERATIONS_H

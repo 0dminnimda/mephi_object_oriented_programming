@@ -316,6 +316,9 @@ private:
     sf::Texture logo_texture;
     sf::Sprite logo;
 
+    sf::Font font;
+    sf::Text menu_message;
+
 public:
     void draw(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default) const;
     void pause();

@@ -1,5 +1,6 @@
 #include "game.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <random>
 
@@ -56,15 +57,28 @@ void LevelUpCanvas::draw(sf::RenderTarget& target, sf::RenderStates states) cons
     
 }
 
-std::string path_to_resources() {
 #ifdef SFML_SYSTEM_IOS
-    return "";
+    static const std::string path_to_resources = "";
 #else
-    return "resources/";
+    static const std::string path_to_resources = "resources/";
 #endif
-}
 
-static const char * const logo_name = "rock_eyebrow_meme_.png";
+static const char * const logo_name = "rock_eyebrow_meme.png";
+
+void center_text(sf::Text &text) {
+    // const sf::String string = text.getString();
+
+    // float max_height = 0;
+    // const sf::Font &font = *text.getFont();
+    // for (size_t characterIndex = 0; characterIndex < string.getSize(); ++characterIndex)
+    // {
+    //     auto bounds = font.getGlyph(string[characterIndex], text.getCharacterSize(), false).bounds;
+    //     max_height = std::max(max_height, bounds.height);
+    // }
+
+    sf::FloatRect text_rect = text.getLocalBounds();
+    text.setOrigin(text_rect.left + text_rect.width / 2.0f, text_rect.top  + text_rect.height / 2.0f);
+}
 
 int Game::init(unsigned int width, unsigned int height) {
     window.create(
@@ -73,18 +87,27 @@ int Game::init(unsigned int width, unsigned int height) {
     );
     window.setVerticalSyncEnabled(true);
 
-    if (!logo_texture.loadFromFile(path_to_resources() + logo_name)) return EXIT_FAILURE;
+    if (!logo_texture.loadFromFile(path_to_resources + logo_name)) return EXIT_FAILURE;
     logo.setTexture(logo_texture);
+    float scale = min(sf::Vector2f(window.getSize()) / sf::Vector2f(logo_texture.getSize()) / 2.0f);
+    logo.setScale({scale, scale});
     logo.setOrigin(sf::Vector2f(logo_texture.getSize()) / 2.0f);
-    logo.setPosition(sf::Vector2f(window.getSize()) / 2.0f);
-    logo.setScale({0.5, 0.5});
+    logo.setPosition({window.getSize().x / 2.0f, window.getSize().y * 2.0f / 3.0f});
+
+    if (!font.loadFromFile(path_to_resources + "tuffy.ttf")) return EXIT_FAILURE;
+    menu_message.setFont(font);
+    menu_message.setCharacterSize(40);
+    menu_message.setFillColor(sf::Color::White);
+#ifdef SFML_SYSTEM_IOS
+    menu_message.setString("Welcome to Epic Lab3 Game!\nTouch the screen to start the game.");
+#else
+    menu_message.setString("Welcome to Epic Lab3 Game!\n\nPress space to start the game.");
+#endif
+    center_text(menu_message);
+    menu_message.setPosition({window.getSize().x / 2.0f, window.getSize().y / 6.0f});
 
     return EXIT_SUCCESS;
 }
-
-// void Game::draw(sf::RenderTarget& target, sf::RenderStates states) {
-//     target.draw(logo, states);
-// }
 
 void Game::start_playing() {
     if (!is_playing) {
@@ -142,7 +165,7 @@ void Game::draw(sf::RenderTarget& target, sf::RenderStates states) const {
         // target.draw(ball);
     } else {
         target.draw(logo, states);
-        // target.draw(pauseMessage);
+        target.draw(menu_message, states);
     }
 }
 

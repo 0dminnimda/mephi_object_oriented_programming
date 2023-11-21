@@ -9,7 +9,8 @@ fi
 
 if [[ $OSTYPE =~ "android" ]]; then
     if [[ $DIR ]]; then
-        cp -f -r $DIR ~/$DIR
+        mkdir -p ~/$DIR
+        cp -f $DIR/* ~/$DIR
     fi
     cp -f $1 ~/$NAME
     chmod +x ~/$NAME
