@@ -3,16 +3,17 @@
 #include <cstdlib>
 #include <iostream>
 
+using std::min, std::max;
+
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
-
-#include "game.hpp"
-
-using std::min, std::max;
 
 #ifdef SFML_SYSTEM_IOS
 #include <SFML/Main.hpp>
 #endif
+
+#include "game.hpp"
+#include "vector_operations.hpp"
 
 std::string resourcesDir()
 {
@@ -21,23 +22,6 @@ std::string resourcesDir()
 #else
     return "resources/";
 #endif
-}
-
-
-float dot(const sf::Vector2f &a, const sf::Vector2f &b) {
-    return a.x * b.x + a.y * b.y;
-}
-
-float length(const sf::Vector2f &a) {
-    return std::sqrt(dot(a, a));
-}
-
-sf::Vector2f max(const sf::Vector2f &a, const sf::Vector2f &b) {
-    return {max(a.x, b.x), max(a.y, b.y)};
-}
-
-sf::Vector2f proj(const sf::Vector2f &a, const sf::Vector2f &b) {
-    return b * (dot(a, b) / dot(b, b));
 }
 
 float signed_distance_to_axis_aligned_rect(const sf::Vector2f &point, const sf::Vector2f &top_left, const sf::Vector2f &bottom_right)
@@ -328,30 +312,12 @@ int s_main()
 }
 
 int main() {
-    // const float pi = 3.14159f;
-    // const float gameWidth = 800;
-    // const float gameHeight = 600;
-
-    // sf::RenderWindow window(sf::VideoMode(static_cast<unsigned int>(gameWidth), static_cast<unsigned int>(gameHeight), 32), "Epic Rock Game",
-    //                         sf::Style::Titlebar | sf::Style::Close);
-    // window.setVerticalSyncEnabled(true);
-
     Game game;
 
     int result = game.init(800, 600);
     if (result != EXIT_SUCCESS) return result;
     return game.run();
 
-    // Define the paddles properties
-    sf::Clock AITimer;
-    const sf::Time AITime   = sf::seconds(0.1f);
-    const float paddleSpeed = 400.f;
-    float rightPaddleSpeed  = 0.f;
-    // const float ballSpeed   = 20.f;
-    float ballSpeed   = 300.f;
-    float ballAngle         = 0.f; // to be changed later
-
-    
 
     return EXIT_SUCCESS;
 

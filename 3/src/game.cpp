@@ -1,6 +1,10 @@
 #include "game.hpp"
 
+#include <iostream>
 #include <random>
+
+#include "vector_operations.hpp"
+
 
 void CharacteristicsModifier::apply(Characteristics &value) {
     if (max_health) {
@@ -24,8 +28,16 @@ void Potion::apply(Actor &target) { modifier.apply(target.characteristics()); }
 
 void Potion::use(Actor &target) { apply(target); }
 
+void Weapon::use(Actor &target) {
+    attack(target.position());
+}
+
+void Weapon::attack(sf::Vector2f position) {
+    
+}
+
 Tile &Tile::set_building(std::unique_ptr<Chest> building) {
-    this->building = std::move(building);
+    this->building = building.get();
     return *this;
 }
 
@@ -36,27 +48,23 @@ long RangeOfValues::get_random() {
     return dis(gen);
 }
 
-// Game::Game(unsigned int width, unsigned int height)
-//     : window(
-//           sf::VideoMode(width, height, 32), "Epic Rock Game",
-//           sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize | sf::Style::Fullscreen
-//       ) {
-//     window.setVerticalSyncEnabled(true);
+void InventoryCanvas::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+    
+}
 
-//     if(!gameLogoTexture.loadFromFile(resourcesDir() + "rock.jpeg"))
-//         return EXIT_FAILURE;
-//     gameLogo.setTexture(gameLogoTexture);
-//     gameLogo.setPosition(sf::Vector2f(window.getSize() / 2u - gameLogoTexture.getSize() / 2u));
+void LevelUpCanvas::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+    
+}
 
-// }
-
-std::string resourcesDir() {
+std::string path_to_resources() {
 #ifdef SFML_SYSTEM_IOS
     return "";
 #else
     return "resources/";
 #endif
 }
+
+static const char * const logo_name = "rock_eyebrow_meme_.png";
 
 int Game::init(unsigned int width, unsigned int height) {
     window.create(
@@ -65,9 +73,11 @@ int Game::init(unsigned int width, unsigned int height) {
     );
     window.setVerticalSyncEnabled(true);
 
-    if (!logo_texture.loadFromFile(resourcesDir() + "rock_eyebrow_meme.png")) return EXIT_FAILURE;
+    if (!logo_texture.loadFromFile(path_to_resources() + logo_name)) return EXIT_FAILURE;
     logo.setTexture(logo_texture);
-    logo.setPosition(sf::Vector2f(window.getSize() / 2u - logo_texture.getSize() / 2u));
+    logo.setOrigin(sf::Vector2f(logo_texture.getSize()) / 2.0f);
+    logo.setPosition(sf::Vector2f(window.getSize()) / 2.0f);
+    logo.setScale({0.5, 0.5});
 
     return EXIT_SUCCESS;
 }
@@ -115,21 +125,25 @@ void Game::handle_events() {
 
 int Game::run() {
     while (window.isOpen()) {
+        handle_events();
+
         window.clear(sf::Color(50, 50, 50));
-
-        if (is_playing) {
-            // window.draw(leftPaddle);
-            // window.draw(rightPaddle);
-            // window.draw(ball);
-        } else {
-            window.draw(logo);
-            // window.draw(pauseMessage);
-        }
-
+        draw(window);
         window.display();
     }
 
     return EXIT_SUCCESS;
+}
+
+void Game::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+    if (is_playing) {
+        // target.draw(leftPaddle);
+        // target.draw(rightPaddle);
+        // target.draw(ball);
+    } else {
+        target.draw(logo, states);
+        // target.draw(pauseMessage);
+    }
 }
 
 void Game::add_level(DungeonLevel &level) { all_levels.push_back(level); }

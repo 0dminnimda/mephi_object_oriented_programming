@@ -69,7 +69,7 @@ class Item {
 
 public:
     virtual ~Item() = default;
-    virtual void use(Actor &target) = 0;
+    virtual void use(Actor &target) {};
 };
 
 class Potion : public Item {
@@ -104,7 +104,7 @@ class Weapon : public Item {
 
 public:
     void use(Actor &target) override;
-    void attack(sf::Vector2u pos);
+    void attack(sf::Vector2f position);
     long get_damage(Actor &target);
 };
 
@@ -148,6 +148,8 @@ public:
 
 class InventoryCanvas : public sf::Drawable {
 public:
+    ~InventoryCanvas() {}
+
     void on_open_inventory(Inventory &inventory);
     void on_close_inventory(Inventory &inventory);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -176,9 +178,13 @@ public:
 private:
     Kind kind;
 
-    std::unique_ptr<Chest> building;
+    Chest *building;
 
 public:
+    ~Tile() {
+        delete building;
+    }
+
     explicit Tile(Kind kind) : kind(kind), building(nullptr) {}
 
     Tile &set_building(std::unique_ptr<Chest> building);
@@ -195,6 +201,8 @@ public:
 
 class LevelUpCanvas : public sf::Drawable {
 public:
+    ~LevelUpCanvas() {}
+
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
     void on_level_up(Experience &exp);
 };
@@ -213,6 +221,9 @@ class RigidBody {
 protected:
     sf::Vector2f velocity_;
     sf::Vector2f position_;
+
+public:
+    sf::Vector2f position() { return position_; }
 };
 
 class ActorClass {
@@ -242,10 +253,10 @@ public:
     float chance_to_take_damage();
     void take_damage(long amount, Actor &source);
 
-    virtual void update();
-    virtual void handle_movement();
-    virtual void attack(Actor &target);
-    virtual void die(Actor &reason);
+    virtual void update() {};
+    virtual void handle_movement() {};
+    virtual void attack(Actor &target) {};
+    virtual void die(Actor &reason) {};
 };
 
 class Player : public Actor {
@@ -272,13 +283,13 @@ public:
 
 class LayingItem : public RigidBody {
 public:
-    std::unique_ptr<Item> item;
+    std::shared_ptr<Item> item;
 };
 
 class DungeonLevel {
 private:
     std::vector<Actor> actors;
-    std::vector<std::unique_ptr<LayingItem>> laying_items;
+    std::vector<LayingItem> laying_items;
     Matrix<Tile> tiles;
 
 public:
@@ -290,7 +301,7 @@ public:
     void update();
 };
 
-class Game : public sf::Drawable {
+class Game {
 private:
     int current_level_index = -1;
     std::vector<DungeonLevel> all_levels;
@@ -306,7 +317,7 @@ private:
     sf::Sprite logo;
 
 public:
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+    void draw(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default) const;
     void pause();
     void unpause();
     void update();
