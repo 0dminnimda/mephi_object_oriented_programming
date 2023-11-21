@@ -28,7 +28,6 @@ public:
     const_iterator cend() const { return items.cend(); }
 };
 
-
 template <typename T>
 class Matrix {
     std::vector<Row<T>> rows;
@@ -41,9 +40,7 @@ public:
     Matrix(size_t rows, size_t cols, T initialValue) {
         this->rows.resize(rows, Row<T>(cols, initialValue));
     }
-    Matrix(size_t rows, size_t cols) {
-        this->rows.resize(rows, Row<T>(cols));
-    }
+    Matrix(size_t rows, size_t cols) { this->rows.resize(rows, Row<T>(cols)); }
 
     size_t size() const { return rows.size(); }
     size_t row_size() const {
@@ -54,9 +51,7 @@ public:
     void resize(size_t rows, size_t cols, T initialValue) {
         this->rows.resize(rows, Row<T>(cols, initialValue));
     }
-    void resize(size_t rows, size_t cols) {
-        this->rows.resize(rows, Row<T>(cols));
-    }
+    void resize(size_t rows, size_t cols) { this->rows.resize(rows, Row<T>(cols)); }
 
     Row<T> &operator[](size_t index) { return rows[index]; }
 

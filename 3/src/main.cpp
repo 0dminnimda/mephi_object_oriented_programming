@@ -1,12 +1,12 @@
 #include <cmath>
-#include <ctime>
 #include <cstdlib>
+#include <ctime>
 #include <iostream>
 
 using std::min, std::max;
 
-#include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
+#include <SFML/Graphics.hpp>
 
 #ifdef SFML_SYSTEM_IOS
 #include <SFML/Main.hpp>
@@ -15,24 +15,27 @@ using std::min, std::max;
 #include "game.hpp"
 #include "vector_operations.hpp"
 
-float signed_distance_to_axis_aligned_rect(const sf::Vector2f &point, const sf::Vector2f &top_left, const sf::Vector2f &bottom_right)
-{
-    sf::Vector2f d = max(top_left-point, point-bottom_right);
+float signed_distance_to_axis_aligned_rect(
+    const sf::Vector2f &point, const sf::Vector2f &top_left, const sf::Vector2f &bottom_right
+) {
+    sf::Vector2f d = max(top_left - point, point - bottom_right);
     return length(max(sf::Vector2f(0, 0), d)) + min(0.0f, max(d.x, d.y));
 }
 
-
-float signed_distance_from_rect_to_circle(const sf::RectangleShape &rect, const sf::CircleShape &circle) {
-    return signed_distance_to_axis_aligned_rect(circle.getPosition(), rect.getPosition() - rect.getSize() / 2.0f, rect.getPosition() + rect.getSize() / 2.0f) - circle.getRadius();
+float signed_distance_from_rect_to_circle(
+    const sf::RectangleShape &rect, const sf::CircleShape &circle
+) {
+    return signed_distance_to_axis_aligned_rect(
+               circle.getPosition(), rect.getPosition() - rect.getSize() / 2.0f,
+               rect.getPosition() + rect.getSize() / 2.0f
+           ) -
+           circle.getRadius();
 }
 
 int sub_main() {
     Game &game = Game::get();
 
-    game.actor_classes.push_back(ActorClass(
-        "player",
-        "plays"
-    ));
+    game.actor_classes.push_back(ActorClass("player", "plays"));
 
     Matrix<Tile> tiles(20, 20);
 

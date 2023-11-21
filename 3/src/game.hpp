@@ -3,6 +3,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <SFML/Graphics.hpp>
 #include <memory>
 #include <optional>
 #include <string>
@@ -11,14 +12,12 @@
 #include <vector>
 
 #include "SFML/Graphics/Drawable.hpp"
-#include <SFML/Graphics.hpp>
-
 #include "matrix.hpp"
 
 #ifdef SFML_SYSTEM_IOS
-    const std::string path_to_resources = "";
+const std::string path_to_resources = "";
 #else
-    const std::string path_to_resources = "resources/";
+const std::string path_to_resources = "resources/";
 #endif
 
 template <typename T>
@@ -26,9 +25,7 @@ class SetAbsoluteValue {
     T value;
 
 public:
-    T apply(T) {
-        return this->value;
-    }
+    T apply(T) { return this->value; }
 };
 
 template <typename T>
@@ -36,9 +33,7 @@ class AddToValue {
     T value;
 
 public:
-    T apply(T value) {
-        return value + this->value;
-    }
+    T apply(T value) { return value + this->value; }
 };
 
 template <typename T>
@@ -57,8 +52,10 @@ class CharacteristicsModifier {
     std::optional<ValueModifier<float>> speed;
 
 public:
-    CharacteristicsModifier(ValueModifier<float> max_health, ValueModifier<float> defence, ValueModifier<float> speed) :
-        max_health(max_health), defence(defence), speed(speed) {}
+    CharacteristicsModifier(
+        ValueModifier<float> max_health, ValueModifier<float> defence, ValueModifier<float> speed
+    )
+        : max_health(max_health), defence(defence), speed(speed) {}
 
     void apply(Characteristics &value);
 };
@@ -71,14 +68,14 @@ class Item {
 
 public:
     virtual ~Item() = default;
-    virtual void use(Actor &target) {};
+    virtual void use(Actor &target){};
 };
 
 class Potion : public Item {
     CharacteristicsModifier modifier;
 
 public:
-    Potion(CharacteristicsModifier modifier) : modifier(modifier) {} 
+    Potion(CharacteristicsModifier modifier) : modifier(modifier) {}
 
     void use(Actor &target) override;
     void apply(Actor &target);
@@ -186,9 +183,7 @@ private:
 public:
     Kind kind;
 
-    ~Tile() {
-        delete building;
-    }
+    ~Tile() { delete building; }
 
     explicit Tile() : Tile(Flor) {}
     explicit Tile(Kind kind) : kind(kind), building(nullptr) {}
@@ -253,7 +248,11 @@ private:
 public:
     sf::Texture texture;
 
-    Actor(size_t class_index, long health, Characteristics characteristics) : RigidBody(), actor_class_index_(class_index), health_(health), characteristics_(characteristics) {}
+    Actor(size_t class_index, long health, Characteristics characteristics)
+        : RigidBody(),
+          actor_class_index_(class_index),
+          health_(health),
+          characteristics_(characteristics) {}
     virtual ~Actor() = default;
 
     size_t actor_class_index() const { return actor_class_index_; };
@@ -265,10 +264,10 @@ public:
     float chance_to_take_damage();
     void take_damage(long amount, Actor &source);
 
-    virtual void update(float delta_time) {};
-    virtual void handle_movement() {};
-    virtual void attack(Actor &target) {};
-    virtual void die(Actor &reason) {};
+    virtual void update(float delta_time){};
+    virtual void handle_movement(){};
+    virtual void attack(Actor &target){};
+    virtual void die(Actor &reason){};
 };
 
 class ActorsView {
@@ -293,7 +292,8 @@ private:
     Experience experience;
 
 public:
-    Player(size_t class_index, long health, Characteristics characteristics) : Actor(class_index, health, characteristics) {}
+    Player(size_t class_index, long health, Characteristics characteristics)
+        : Actor(class_index, health, characteristics) {}
 
     void update(float delta_time) override;
     void handle_movement() override;
@@ -317,14 +317,15 @@ public:
 };
 
 class DungeonLevel {
-// private:
+    // private:
 public:
     std::vector<Enemy> enemies;
     Player player;
     std::vector<LayingItem> laying_items;
     Matrix<Tile> tiles;
 
-    DungeonLevel(Matrix<Tile> tiles, Player player) : enemies(), player(player), laying_items(), tiles(tiles) {}
+    DungeonLevel(Matrix<Tile> tiles, Player player)
+        : enemies(), player(player), laying_items(), tiles(tiles) {}
 
     void resize_tiles(size_t width, size_t height);
     std::optional<Tile> get_tile_of_an_actor(const Actor &actor);
@@ -370,7 +371,8 @@ private:
 public:
     sf::RenderWindow window;
 
-    GameView() : window(), dungeon_level_view(window), inventory_canvas(window), level_up_canvas(window) {}
+    GameView()
+        : window(), dungeon_level_view(window), inventory_canvas(window), level_up_canvas(window) {}
     ~GameView() = default;
 
     bool init(unsigned int width, unsigned int height);

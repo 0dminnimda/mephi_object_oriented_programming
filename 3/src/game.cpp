@@ -1,4 +1,5 @@
 #include "game.hpp"
+
 #include <stdlib.h>
 
 #include <algorithm>
@@ -7,7 +8,6 @@
 
 #include "SFML/Graphics.hpp"
 #include "vector_operations.hpp"
-
 
 void CharacteristicsModifier::apply(Characteristics &value) {
     if (max_health) {
@@ -31,13 +31,9 @@ void Potion::apply(Actor &target) { modifier.apply(target.characteristics()); }
 
 void Potion::use(Actor &target) { apply(target); }
 
-void Weapon::use(Actor &target) {
-    attack(target.position);
-}
+void Weapon::use(Actor &target) { attack(target.position); }
 
-void Weapon::attack(sf::Vector2f position) {
-    
-}
+void Weapon::attack(sf::Vector2f position) {}
 
 Tile &Tile::set_building(std::unique_ptr<Chest> building) {
     this->building = building.get();
@@ -51,13 +47,9 @@ long RangeOfValues::get_random() {
     return dis(gen);
 }
 
-void InventoryCanvas::draw() {
-    
-}
+void InventoryCanvas::draw() {}
 
-void LevelUpCanvas::draw() {
-    
-}
+void LevelUpCanvas::draw() {}
 
 Game &Game::get() {
     static std::shared_ptr<Game> game = nullptr;
@@ -69,19 +61,19 @@ Game &Game::get() {
     return *game;
 }
 
-static const char * const logo_name = "rock_eyebrow_meme.png";
-static const char * const flor_tile_name = "dungeon_floor.jpeg";
-static const char * const open_dor_tile_name = "dungeon_open_door.jpeg";
-static const char * const closed_dor_tile_name = "dungeon_closed_door.jpeg";
+static const char *const logo_name = "rock_eyebrow_meme.png";
+static const char *const flor_tile_name = "dungeon_floor.jpeg";
+static const char *const open_dor_tile_name = "dungeon_open_door.jpeg";
+static const char *const closed_dor_tile_name = "dungeon_closed_door.jpeg";
 
 void center_text_origin(sf::Text &text) {
     sf::FloatRect text_rect = text.getLocalBounds();
-    text.setOrigin(text_rect.left + text_rect.width / 2.0f, text_rect.top  + text_rect.height / 2.0f);
+    text.setOrigin(
+        text_rect.left + text_rect.width / 2.0f, text_rect.top + text_rect.height / 2.0f
+    );
 }
 
-bool Game::init(unsigned int width, unsigned int height) {
-    return game_view.init(width, height);
-}
+bool Game::init(unsigned int width, unsigned int height) { return game_view.init(width, height); }
 
 void Game::start_playing() {
     if (!is_playing) {
@@ -182,17 +174,11 @@ bool GameView::init(unsigned int width, unsigned int height) {
     return true;
 }
 
-bool GameView::is_open() const {
-    return window.isOpen();
-}
+bool GameView::is_open() const { return window.isOpen(); }
 
-void GameView::clear() {
-    window.clear(sf::Color(50, 50, 50));
-}
+void GameView::clear() { window.clear(sf::Color(50, 50, 50)); }
 
-void GameView::display() {
-    window.display();
-}
+void GameView::display() { window.display(); }
 
 void GameView::draw() {
     if (!Game::get().is_playing) {
@@ -217,7 +203,8 @@ void GameView::draw() {
 bool DungeonLevelView::init() {
     if (!flor_tile_texture.loadFromFile(path_to_resources + flor_tile_name)) return false;
     if (!open_dor_tile_texture.loadFromFile(path_to_resources + open_dor_tile_name)) return false;
-    if (!closed_dor_tile_texture.loadFromFile(path_to_resources + closed_dor_tile_name)) return false;
+    if (!closed_dor_tile_texture.loadFromFile(path_to_resources + closed_dor_tile_name))
+        return false;
     return true;
 }
 
@@ -247,7 +234,9 @@ void DungeonLevelView::draw_tile(const Tile &tile, sf::Vector2f position, float 
         tile_sprite.setTexture(closed_dor_tile_texture);
     }
 
-    float scale = min(sf::Vector2f(window.getSize()) / sf::Vector2f(tile_sprite.getTexture()->getSize()) / max_tiles_size);
+    float scale =
+        min(sf::Vector2f(window.getSize()) / sf::Vector2f(tile_sprite.getTexture()->getSize()) /
+            max_tiles_size);
     tile_sprite.setScale({scale, scale});
     tile_sprite.setOrigin({0, 0});
     tile_sprite.setPosition(position);
@@ -256,7 +245,8 @@ void DungeonLevelView::draw_tile(const Tile &tile, sf::Vector2f position, float 
 
 void ActorsView::draw(const Actor &actor) {
     actor_sprite.setTexture(actor.texture);
-    float scale = min(sf::Vector2f(window.getSize()) / sf::Vector2f(actor_sprite.getTexture()->getSize()));
+    float scale =
+        min(sf::Vector2f(window.getSize()) / sf::Vector2f(actor_sprite.getTexture()->getSize()));
     actor_sprite.setScale(sf::Vector2f(scale, scale) / 100.0f * actor.size);
     actor_sprite.setOrigin(sf::Vector2f(actor_sprite.getTexture()->getSize()) / 2.0f);
     actor_sprite.setPosition(actor.position * scale);
@@ -283,38 +273,20 @@ void DungeonLevel::update(float delta_time) {
     player.update(delta_time);
 }
 
-void Player::update(float delta_time) {
+void Player::update(float delta_time) {}
 
-}
+void Player::handle_movement() {}
 
-void Player::handle_movement() {
+void Player::attack(Actor &target) {}
 
-}
+void Player::die(Actor &reason) {}
 
-void Player::attack(Actor &target) {
+void Player::pick_up_item(Item &item) {}
 
-}
+void Enemy::update(float delta_time) {}
 
-void Player::die(Actor &reason) {
+void Enemy::handle_movement() {}
 
-}
+void Enemy::attack(Actor &target) {}
 
-void Player::pick_up_item(Item &item) {
-
-}
-
-void Enemy::update(float delta_time) {
-
-}
-
-void Enemy::handle_movement() {
-
-}
-
-void Enemy::attack(Actor &target) {
-
-}
-
-void Enemy::die(Actor &reason) {
-
-}
+void Enemy::die(Actor &reason) {}
