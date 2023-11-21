@@ -151,12 +151,12 @@ void Game::handle_events() {
             start_playing();
         }
 
-        // if (event.type == sf::Event::Resized) {
-        //     sf::View view;
-        //     view.setSize(gameWidth, gameHeight);
-        //     view.setCenter(gameWidth / 2.f, gameHeight / 2.f);
-        //     window.setView(view);
-        // }
+        if (event.type == sf::Event::Resized) {
+            sf::View view;
+            view.setSize(sf::Vector2f(event.size.width, event.size.height));
+            view.setCenter(sf::Vector2f(window.getSize()) / 2.0f);
+            window.setView(view);
+        }
     }
 }
 
