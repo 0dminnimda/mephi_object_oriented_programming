@@ -5,6 +5,10 @@ class Row {
     std::vector<T> items;
 
 public:
+    using iterator = typename std::vector<T>::iterator;
+    using const_iterator = typename std::vector<T>::const_iterator;
+    using reverse_iterator = typename std::vector<T>::reverse_iterator;
+
     Row(size_t size, T initialValue) : items(size, initialValue) {}
     Row(size_t size) : items(size) {}
 
@@ -14,12 +18,14 @@ public:
 
     const T &operator[](size_t index) const { return items[index]; }
 
-    typename std::vector<T>::iterator begin() { return items.begin(); }
-    typename std::vector<T>::iterator end() { return items.end(); }
-    typename std::vector<T>::reverse_iterator rbegin() { return items.rbegin(); }
-    typename std::vector<T>::reverse_iterator rend() { return items.rend(); }
-    typename std::vector<T>::const_iterator cbegin() const { return items.cbegin(); }
-    typename std::vector<T>::const_iterator cend() const { return items.cend(); }
+    iterator begin() { return items.begin(); }
+    iterator end() { return items.end(); }
+    reverse_iterator rbegin() { return items.rbegin(); }
+    reverse_iterator rend() { return items.rend(); }
+    const_iterator begin() const { return items.begin(); }
+    const_iterator end() const { return items.end(); }
+    const_iterator cbegin() const { return items.cbegin(); }
+    const_iterator cend() const { return items.cend(); }
 };
 
 
@@ -28,6 +34,10 @@ class Matrix {
     std::vector<Row<T>> rows;
 
 public:
+    using iterator = typename std::vector<Row<T>>::iterator;
+    using const_iterator = typename std::vector<Row<T>>::const_iterator;
+    using reverse_iterator = typename std::vector<Row<T>>::reverse_iterator;
+
     Matrix(size_t rows, size_t cols, T initialValue) {
         this->rows.resize(rows, Row<T>(cols, initialValue));
     }
@@ -52,10 +62,12 @@ public:
 
     const Row<T> &operator[](size_t index) const { return rows[index]; }
 
-    typename std::vector<Row<T>>::iterator begin() { return rows.begin(); }
-    typename std::vector<Row<T>>::iterator end() { return rows.end(); }
-    typename std::vector<Row<T>>::reverse_iterator rbegin() { return rows.rbegin(); }
-    typename std::vector<Row<T>>::reverse_iterator rend() { return rows.rend(); }
-    typename std::vector<Row<T>>::const_iterator cbegin() const { return rows.cbegin(); }
-    typename std::vector<Row<T>>::const_iterator cend() const { return rows.cend(); }
+    iterator begin() { return rows.begin(); }
+    iterator end() { return rows.end(); }
+    reverse_iterator rbegin() { return rows.rbegin(); }
+    reverse_iterator rend() { return rows.rend(); }
+    const_iterator begin() const { return rows.begin(); }
+    const_iterator end() const { return rows.end(); }
+    const_iterator cbegin() const { return rows.cbegin(); }
+    const_iterator cend() const { return rows.cend(); }
 };
