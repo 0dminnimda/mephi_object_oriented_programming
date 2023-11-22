@@ -219,6 +219,7 @@ class Equipment {
 
 public:
     Equipment() : wearable(), weapon() {}
+
     void equip_wearable(Wearable &item);
     void equip_weapon(Weapon &item);
 };
@@ -241,7 +242,8 @@ public:
     sf::Texture texture;
     sf::Sprite sprite;
 
-    ActorClass(std::string name, std::string description, std::string texture_name) : name(name), description(description), texture_name(texture_name) {}
+    ActorClass(std::string name, std::string description, std::string texture_name)
+        : name(name), description(description), texture_name(texture_name) {}
     ~ActorClass() = default;
 
     bool init();
@@ -251,7 +253,7 @@ public:
 class Actor : public RigidBody {
 private:
     // std::string name;
-    const size_t actor_class_index_;
+    size_t actor_class_index_;
     float health_;
     Equipment equipment_;
     Characteristics characteristics_;
@@ -407,8 +409,8 @@ public:
 
 class Game {
 private:
-    int current_level_index = -1;
     std::vector<DungeonLevel> all_levels;
+    std::optional<DungeonLevel> current_level;
 
     sf::Clock clock;
 
@@ -430,7 +432,7 @@ public:
     void update(float delta_time);
 
     void add_level(const DungeonLevel &level);
-    void load_level(size_t index);
+    bool load_level(size_t index);
     void unload_current_level();
     DungeonLevel *get_current_level();
 

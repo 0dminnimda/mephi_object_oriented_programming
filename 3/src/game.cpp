@@ -7,6 +7,7 @@
 #include <random>
 
 #include "SFML/Graphics.hpp"
+#include "SFML/System.hpp"
 #include "vector_operations.hpp"
 
 void center_text_origin(sf::Text &text) {
@@ -317,15 +318,23 @@ void ActorsView::draw(const Actor &actor) {
 
 void Game::add_level(const DungeonLevel &level) { all_levels.push_back(level); }
 
-void Game::load_level(size_t index) { current_level_index = index; }
+bool Game::load_level(size_t index) {
+    if (index < 0 || index >= all_levels.size()) {
+        return false;
+    }
+    current_level = all_levels[index];
+    return true;
+}
 
-void Game::unload_current_level() { current_level_index = -1; }
+void Game::unload_current_level() {
+    current_level = std::nullopt;
+}
 
 DungeonLevel *Game::get_current_level() {
-    if (current_level_index < 0 || current_level_index >= all_levels.size()) {
+    if (!current_level) {
         return nullptr;
     }
-    return &all_levels[current_level_index];
+    return &(*current_level);  // some funky C++ with it's * for std::optional
 }
 
 void DungeonLevel::handle_collitions() {}
