@@ -416,6 +416,7 @@ private:
 
 public:
     bool is_playing = false;
+    static constexpr float virtual_size = 10.0f;
 
     std::vector<ActorClass> actor_classes;
 
@@ -435,6 +436,7 @@ public:
 
     void handle_events();
     void start_playing();
+    void stop_playing();
     bool init(unsigned int width, unsigned int height);
     bool run();
     size_t add_actor_class(const ActorClass &cls);

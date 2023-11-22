@@ -101,6 +101,18 @@ void Game::start_playing() {
     level->player.position = level->initial_player_position;
 }
 
+void Game::stop_playing() {
+    if (!is_playing) return;
+
+    is_playing = false;
+
+    unload_current_level();
+}
+
+bool is_pressed(const sf::Event &event, sf::Keyboard::Key key) {
+    return (event.type == sf::Event::KeyPressed) && (event.key.code == key);
+}
+
 void Game::handle_events() {
     sf::RenderWindow &window = game_view.window;
     sf::View &view = game_view.view;
@@ -108,21 +120,23 @@ void Game::handle_events() {
     sf::Event event;
     while (window.pollEvent(event)) {
         if ((event.type == sf::Event::Closed) ||
-            ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape)))
+            (!is_playing && is_pressed(event, sf::Keyboard::Escape)))
         {
             window.close();
             break;
         }
 
-        if (((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Space)) ||
-            (event.type == sf::Event::TouchBegan))
-        {
+        if (is_playing && is_pressed(event, sf::Keyboard::Escape)) {
+            stop_playing();
+        }
+
+        if (is_pressed(event, sf::Keyboard::Space) || (event.type == sf::Event::TouchBegan)) {
             start_playing();
         }
 
         if (event.type == sf::Event::Resized) {
-            view.setSize(sf::Vector2f(event.size.width, event.size.height));
-            view.setCenter(sf::Vector2f(window.getSize()) / 2.0f);
+            float ratio = (float)event.size.width / (float)event.size.height;
+            view.setSize(sf::Vector2f(Game::virtual_size * ratio, Game::virtual_size));
             window.setView(view);
             // cannot draw in step sadly https://en.sfml-dev.org/forums/index.php?topic=5858.0
         }
@@ -166,15 +180,16 @@ bool GameView::init(unsigned int width, unsigned int height) {
     );
     window.setVerticalSyncEnabled(true);
 
-    view.setSize(sf::Vector2f(window.getSize()));
-    view.setCenter(sf::Vector2f(window.getSize()) / 2.0f);
+    float ratio = (float)window.getSize().x / (float)window.getSize().y;
+    view.setSize(sf::Vector2f(Game::virtual_size * ratio, Game::virtual_size));
+    view.setCenter(sf::Vector2f(view.getSize()) / 2.0f);
     window.setView(view);
 
     if (!dungeon_level_view.init()) return false;
 
     if (!logo_texture.loadFromFile(path_to_resources + logo_name)) return false;
-    setup_sprite(logo_texture, logo, sf::Vector2f(window.getSize()) / 2.0f);
-    logo.setPosition({window.getSize().x / 2.0f, window.getSize().y * 2.0f / 3.0f});
+    setup_sprite(logo_texture, logo, sf::Vector2f(view.getSize()) / 2.0f);
+    logo.setPosition({view.getSize().x / 2.0f, view.getSize().y * 2.0f / 3.0f});
 
     if (!font.loadFromFile(path_to_resources + "tuffy.ttf")) return false;
 
@@ -187,10 +202,12 @@ bool GameView::init(unsigned int width, unsigned int height) {
     menu_message.setString("Welcome to Epic Lab3 Game!\n\nPress space to start the game.");
 #endif
     center_text_origin(menu_message);
-    menu_message.setPosition({window.getSize().x / 2.0f, window.getSize().y / 6.0f});
+    menu_message.setPosition({view.getSize().x / 2.0f, view.getSize().y / 6.0f});
+    menu_message.setScale(sf::Vector2f(Game::virtual_size, Game::virtual_size) / (float)std::min(width, height));
 
     info_message.setFont(font);
     info_message.setCharacterSize(40);
+    info_message.setScale(sf::Vector2f(Game::virtual_size, Game::virtual_size) / (float)std::min(width, height));
 
     return true;
 }
@@ -205,6 +222,9 @@ void GameView::draw() {
     if (!Game::get().is_playing) {
         window.draw(logo);
         window.draw(menu_message);
+
+        view.setCenter(sf::Vector2f(view.getSize()) / 2.0f);
+        window.setView(view);
         return;
     }
 
@@ -215,6 +235,9 @@ void GameView::draw() {
         center_text_origin(info_message);
         info_message.setPosition({window.getSize().x / 2.0f, window.getSize().y / 2.0f});
         window.draw(info_message);
+
+        view.setCenter(sf::Vector2f(view.getSize()) / 2.0f);
+        window.setView(view);
         return;
     }
 
@@ -223,7 +246,7 @@ void GameView::draw() {
     Player &player = level->player;
 
     float ratio = (float)window.getSize().x / (float)window.getSize().y;
-    view.setSize(sf::Vector2f(10.0f * ratio, 10.0f));
+    view.setSize(sf::Vector2f(Game::virtual_size * ratio, Game::virtual_size));
     view.setCenter(sf::Vector2f(player.position));
     window.setView(view);
 }
