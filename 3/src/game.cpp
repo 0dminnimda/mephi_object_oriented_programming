@@ -6,8 +6,6 @@
 #include <iostream>
 #include <random>
 
-#include "SFML/Graphics.hpp"
-#include "SFML/System.hpp"
 #include "vector_operations.hpp"
 
 void center_text_origin(sf::Text &text) {
@@ -256,6 +254,28 @@ void DungeonLevel::init() {
     for (auto &emeny : enemies) {
         emeny.init();
     }
+}
+
+sf::Vector2f DungeonLevel::center() const {
+    return sf::Vector2f(tiles.size(), tiles.row_size()) / 2.0f;
+}
+
+void DungeonLevel::resize_tiles(size_t width, size_t height) {
+    tiles.resize(width, height);
+}
+
+void DungeonLevel::regenerate() {
+    for (size_t i = 0; i < tiles.size(); ++i) {
+        for (size_t j = 0; j < tiles.row_size(); ++j) {
+            if (i == 0 || i == tiles.size() - 1 || j == 0 || j == tiles.row_size() - 1)
+                tiles[i][j].kind = Tile::Barrier;
+            else
+                tiles[i][j].kind = Tile::Flor;
+        }
+    }
+
+    tiles[4][4].kind = Tile::OpenDor;
+    tiles[4][5].kind = Tile::ClosedDor;
 }
 
 bool DungeonLevelView::init() {

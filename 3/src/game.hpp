@@ -4,6 +4,7 @@
 #define GAME_H
 
 #include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
 #include <memory>
 #include <optional>
 #include <string>
@@ -12,8 +13,8 @@
 #include <variant>
 #include <vector>
 
-#include "SFML/Graphics/Drawable.hpp"
 #include "matrix.hpp"
+
 
 #ifdef SFML_SYSTEM_IOS
 const std::string path_to_resources = "";
@@ -337,11 +338,12 @@ public:
     Matrix<Tile> tiles;
     sf::Vector2f initial_player_position;
 
-    DungeonLevel(Matrix<Tile> tiles, Player player)
-        : enemies(), player(player), laying_items(), tiles(tiles) {}
+    DungeonLevel(Player player) : player(player) {}
 
     void init();
+    sf::Vector2f center() const;
     void resize_tiles(size_t width, size_t height);
+    void regenerate();
     std::optional<Tile> get_tile_of_an_actor(const Actor &actor);
     void add_laying_item(std::unique_ptr<LayingItem> item);
     void update(float delta_time);

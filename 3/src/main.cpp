@@ -40,20 +40,13 @@ int sub_main() {
     size_t goblin_id = game.add_actor_class(ActorClass("goblin", "deez nuts", "rock_smiling.jpeg"));
     size_t pepe_id = game.add_actor_class(ActorClass("pepe", "hes angy", "pepe_angry.jpeg"));
 
-    Matrix<Tile> tiles(30, 30);
-
-    for (size_t i = 1; i < tiles.size() - 1; ++i) {
-        for (size_t j = 1; j < tiles.row_size() - 1; ++j) {
-            tiles[i][j].kind = Tile::Flor;
-        }
-    }
-    tiles[4][4].kind = Tile::OpenDor;
-    tiles[4][5].kind = Tile::ClosedDor;
-
     Player player(player_id, 100.0f, 10.0f, Characteristics(0.0f, 0.0f, 5.0f));
+    DungeonLevel level(player);
 
-    DungeonLevel level(tiles, player);
-    level.initial_player_position = sf::Vector2f(level.tiles.size(), level.tiles.row_size()) / 2.0f;
+    level.resize_tiles(30, 30);
+    level.regenerate();
+
+    level.initial_player_position = level.center();
 
     for (size_t i = 0; i < 10; ++i) {
         Enemy enemy(goblin_id, 20.0f, 5.0f, Characteristics(0.0f, 0.0f, 2.0f));
