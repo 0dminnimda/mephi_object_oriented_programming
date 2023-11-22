@@ -338,9 +338,13 @@ private:
     sf::RenderWindow &window;
 
     sf::Texture flor_tile_texture;
+    sf::Sprite flor_tile_sprite;
+
     sf::Texture open_dor_tile_texture;
+    sf::Sprite open_dor_tile_sprite;
+
     sf::Texture closed_dor_tile_texture;
-    sf::Sprite tile_sprite;
+    sf::Sprite closed_dor_tile_sprite;
 
     ActorsView actors_view;
 
@@ -352,7 +356,7 @@ public:
     void draw(const DungeonLevel &level);
 
 private:
-    void draw_tile(const Tile &tile, sf::Vector2f position, float max_tiles_size);
+    void draw_tile(const Tile &tile, sf::Vector2f position);
 };
 
 class GameView {
@@ -369,13 +373,17 @@ private:
     sf::Text info_message;
 
 public:
+    sf::Vector2f initial_window_size;
+
     sf::RenderWindow window;
+    sf::View view;
 
     GameView()
         : window(), dungeon_level_view(window), inventory_canvas(window), level_up_canvas(window) {}
     ~GameView() = default;
 
     bool init(unsigned int width, unsigned int height);
+    void start_playing();
     void draw();
     bool is_open() const;
     void clear();

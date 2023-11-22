@@ -9,6 +9,20 @@
 #include "SFML/Graphics.hpp"
 #include "vector_operations.hpp"
 
+void center_text_origin(sf::Text &text) {
+    sf::FloatRect text_rect = text.getLocalBounds();
+    text.setOrigin(
+        text_rect.left + text_rect.width / 2.0f, text_rect.top + text_rect.height / 2.0f
+    );
+}
+
+void setup_sprite(const sf::Texture &texture, sf::Sprite &sprite, sf::Vector2f relative_scale = {1.0f, 1.0f}) {
+    sprite.setTexture(texture);
+    float scale = min(relative_scale / sf::Vector2f(texture.getSize()));
+    sprite.setScale({scale, scale});
+    sprite.setOrigin(sf::Vector2f(texture.getSize()) / 2.0f);
+}
+
 void CharacteristicsModifier::apply(Characteristics &value) {
     if (max_health) {
         value.max_health = std::visit(
@@ -66,13 +80,6 @@ static const char *const flor_tile_name = "dungeon_floor.jpeg";
 static const char *const open_dor_tile_name = "dungeon_open_door.jpeg";
 static const char *const closed_dor_tile_name = "dungeon_closed_door.jpeg";
 
-void center_text_origin(sf::Text &text) {
-    sf::FloatRect text_rect = text.getLocalBounds();
-    text.setOrigin(
-        text_rect.left + text_rect.width / 2.0f, text_rect.top + text_rect.height / 2.0f
-    );
-}
-
 bool Game::init(unsigned int width, unsigned int height) { return game_view.init(width, height); }
 
 void Game::start_playing() {
@@ -81,6 +88,9 @@ void Game::start_playing() {
         clock.restart();
 
         load_level(0);
+
+        game_view.start_playing();
+
         // Reset the position of the paddles and ball
         // leftPaddle.setPosition(10.f + paddleSize.x / 2.f, gameHeight / 2.f);
         // rightPaddle.setPosition(gameWidth - 10.f - paddleSize.x / 2.f, gameHeight / 2.f);
@@ -90,6 +100,7 @@ void Game::start_playing() {
 
 void Game::handle_events() {
     sf::RenderWindow &window = game_view.window;
+    sf::View &view = game_view.view;
 
     sf::Event event;
     while (window.pollEvent(event)) {
@@ -107,7 +118,6 @@ void Game::handle_events() {
         }
 
         if (event.type == sf::Event::Resized) {
-            sf::View view;
             view.setSize(sf::Vector2f(event.size.width, event.size.height));
             view.setCenter(sf::Vector2f(window.getSize()) / 2.0f);
             window.setView(view);
@@ -141,6 +151,8 @@ bool Game::run() {
 }
 
 bool GameView::init(unsigned int width, unsigned int height) {
+    initial_window_size = sf::Vector2f(width, height);
+
     window.create(
         sf::VideoMode(width, height, 32), "Epic Rock Game",
         sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize
@@ -150,10 +162,7 @@ bool GameView::init(unsigned int width, unsigned int height) {
     if (!dungeon_level_view.init()) return false;
 
     if (!logo_texture.loadFromFile(path_to_resources + logo_name)) return false;
-    logo.setTexture(logo_texture);
-    float scale = min(sf::Vector2f(window.getSize()) / sf::Vector2f(logo_texture.getSize()) / 2.0f);
-    logo.setScale({scale, scale});
-    logo.setOrigin(sf::Vector2f(logo_texture.getSize()) / 2.0f);
+    setup_sprite(logo_texture, logo, sf::Vector2f(window.getSize()) / 2.0f);
     logo.setPosition({window.getSize().x / 2.0f, window.getSize().y * 2.0f / 3.0f});
 
     if (!font.loadFromFile(path_to_resources + "tuffy.ttf")) return false;
@@ -173,6 +182,12 @@ bool GameView::init(unsigned int width, unsigned int height) {
     info_message.setCharacterSize(40);
 
     return true;
+}
+
+void GameView::start_playing() {
+    view.setSize(sf::Vector2f(10.0f, 10.0f));
+    view.setCenter(sf::Vector2f(window.getSize()) / 2.0f);
+    window.setView(view);
 }
 
 bool GameView::is_open() const { return window.isOpen(); }
@@ -199,6 +214,12 @@ void GameView::draw() {
     }
 
     dungeon_level_view.draw(*level);
+
+    Player &player = level->player;
+
+    // view.setSize(sf::Vector2f(event.size.width, event.size.height));
+    view.setCenter(sf::Vector2f(player.position));
+    window.setView(view);
 }
 
 bool DungeonLevelView::init() {
@@ -206,17 +227,24 @@ bool DungeonLevelView::init() {
     if (!open_dor_tile_texture.loadFromFile(path_to_resources + open_dor_tile_name)) return false;
     if (!closed_dor_tile_texture.loadFromFile(path_to_resources + closed_dor_tile_name))
         return false;
+
+    setup_sprite(flor_tile_texture, flor_tile_sprite);
+    flor_tile_sprite.setOrigin({0, 0});
+    
+    setup_sprite(open_dor_tile_texture, open_dor_tile_sprite);
+    open_dor_tile_sprite.setOrigin({0, 0});
+
+    setup_sprite(closed_dor_tile_texture, closed_dor_tile_sprite);
+    closed_dor_tile_sprite.setOrigin({0, 0});
+
     return true;
 }
 
 void DungeonLevelView::draw(const DungeonLevel &level) {
-    float window_size = min(window.getSize());
-    float size = std::max(level.tiles.row_size(), level.tiles.size());
-
     for (size_t i = 0; i < level.tiles.size(); ++i) {
         auto &row = level.tiles[i];
         for (size_t j = 0; j < row.size(); ++j) {
-            draw_tile(row[j], sf::Vector2f(i, j) / size * window_size, size);
+            draw_tile(row[j], sf::Vector2f(i, j));
         }
     }
 
@@ -226,31 +254,25 @@ void DungeonLevelView::draw(const DungeonLevel &level) {
     actors_view.draw(level.player);
 }
 
-void DungeonLevelView::draw_tile(const Tile &tile, sf::Vector2f position, float max_tiles_size) {
+void DungeonLevelView::draw_tile(const Tile &tile, sf::Vector2f position) {
+    sf::Sprite sprite;
     if (tile.kind == Tile::Flor) {
-        tile_sprite.setTexture(flor_tile_texture);
+        sprite = flor_tile_sprite;
     } else if (tile.kind == Tile::OpenDor) {
-        tile_sprite.setTexture(open_dor_tile_texture);
+        sprite = open_dor_tile_sprite;
     } else if (tile.kind == Tile::ClosedDor) {
-        tile_sprite.setTexture(closed_dor_tile_texture);
+        sprite = closed_dor_tile_sprite;
     }
 
-    float scale =
-        min(sf::Vector2f(window.getSize()) / sf::Vector2f(tile_sprite.getTexture()->getSize()) /
-            max_tiles_size);
-    tile_sprite.setScale({scale, scale});
-    tile_sprite.setOrigin({0, 0});
-    tile_sprite.setPosition(position);
-    window.draw(tile_sprite);
+    sprite.setPosition(position);
+    window.draw(sprite);
 }
 
 void ActorsView::draw(const Actor &actor) {
-    actor_sprite.setTexture(actor.texture);
-    float scale =
-        min(sf::Vector2f(window.getSize()) / sf::Vector2f(actor_sprite.getTexture()->getSize()));
-    actor_sprite.setScale(sf::Vector2f(scale, scale) / 100.0f * actor.size);
-    actor_sprite.setOrigin(sf::Vector2f(actor_sprite.getTexture()->getSize()) / 2.0f);
-    actor_sprite.setPosition(actor.position * scale);
+    setup_sprite(actor.texture, actor_sprite);
+
+    // actor_sprite.setPosition(actor.position * scale);
+    actor_sprite.setPosition(actor.position);
     window.draw(actor_sprite);
 }
 
