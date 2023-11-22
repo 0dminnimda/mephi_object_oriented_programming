@@ -7,6 +7,7 @@
 #include <iostream>
 #include <random>
 
+#include "SFML/System/Vector2.hpp"
 #include "vector_operations.hpp"
 
 void center_text_origin(sf::Text &text) {
@@ -136,7 +137,7 @@ void Game::handle_events() {
 
         if (event.type == sf::Event::Resized) {
             float ratio = (float)event.size.width / (float)event.size.height;
-            view.setSize(sf::Vector2f(Game::virtual_size * ratio, Game::virtual_size));
+            view.setSize(sf::Vector2f(Game::view_size * ratio, Game::view_size));
             window.setView(view);
             // cannot draw in step sadly https://en.sfml-dev.org/forums/index.php?topic=5858.0
         }
@@ -185,7 +186,7 @@ bool GameView::init(unsigned int width, unsigned int height) {
     window.setVerticalSyncEnabled(true);
 
     float ratio = (float)window.getSize().x / (float)window.getSize().y;
-    view.setSize(sf::Vector2f(Game::virtual_size * ratio, Game::virtual_size));
+    view.setSize(sf::Vector2f(Game::view_size * ratio, Game::view_size));
     view.setCenter(sf::Vector2f(view.getSize()) / 2.0f);
     window.setView(view);
 
@@ -208,14 +209,14 @@ bool GameView::init(unsigned int width, unsigned int height) {
     center_text_origin(menu_message);
     menu_message.setPosition({view.getSize().x / 2.0f, view.getSize().y / 6.0f});
     menu_message.setScale(
-        sf::Vector2f(Game::virtual_size, Game::virtual_size) / (float)std::min(width, height)
+        sf::Vector2f(Game::view_size, Game::view_size) / (float)std::min(width, height)
     );
 
     info_message.setFont(font);
     info_message.setCharacterSize(40);
     info_message.setPosition(sf::Vector2f(view.getSize()) / 2.0f);
     info_message.setScale(
-        sf::Vector2f(Game::virtual_size, Game::virtual_size) / (float)std::min(width, height)
+        sf::Vector2f(Game::view_size, Game::view_size) / (float)std::min(width, height)
     );
 
     return true;
@@ -252,7 +253,7 @@ void GameView::draw() {
     dungeon_level_view.draw(*level);
 
     float ratio = (float)window.getSize().x / (float)window.getSize().y;
-    view.setSize(sf::Vector2f(Game::virtual_size * ratio, Game::virtual_size));
+    view.setSize(sf::Vector2f(Game::view_size * ratio, Game::view_size));
     view.setCenter(sf::Vector2f(Game::get().player.position));
     window.setView(view);
 }
@@ -263,8 +264,23 @@ void DungeonLevel::init() {
     }
 }
 
+float DungeonLevel::tile_coords_to_world_coords_factor() const {
+    return tile_size / Game::world_size;
+}
+
 sf::Vector2f DungeonLevel::center() const {
-    return sf::Vector2f(tiles.size(), tiles.row_size()) / 2.0f;
+    return sf::Vector2f(tiles.size(), tiles.row_size()) * tile_coords_to_world_coords_factor() /
+           2.0f;
+}
+
+std::optional<std::pair<size_t, size_t>> DungeonLevel::get_tile_coordinates(
+    const sf::Vector2f &position
+) const {
+    sf::Vector2f world_coords = position / tile_coords_to_world_coords_factor();
+    if (position.x < 0 || position.x >= tiles.size() || position.y < 0 ||
+        position.y >= tiles.row_size())
+        return std::nullopt;
+    return std::make_pair(position.x, position.y);
 }
 
 void DungeonLevel::resize_tiles(size_t width, size_t height) { tiles.resize(width, height); }
@@ -292,7 +308,8 @@ void DungeonLevel::regenerate_enemies() {
     for (size_t class_index = 1; class_index < Game::get().actor_classes.size(); ++class_index) {
         for (size_t i = 0; i < 10; ++i) {
             Enemy &enemy = enemies.emplace_back(Game::get().make_enemy(class_index));
-            enemy.position = sf::Vector2f(range_x.get_random(), range_y.get_random());
+            enemy.position = sf::Vector2f(range_x.get_random(), range_y.get_random()) *
+                             tile_coords_to_world_coords_factor();
         }
     }
 }
@@ -323,7 +340,7 @@ void DungeonLevelView::draw(const DungeonLevel &level) {
     for (size_t i = 0; i < level.tiles.size(); ++i) {
         auto &row = level.tiles[i];
         for (size_t j = 0; j < row.size(); ++j) {
-            draw_tile(row[j], sf::Vector2f(i, j));
+            draw_tile(row[j], sf::Vector2f(i, j), level.tile_coords_to_world_coords_factor());
         }
     }
 
@@ -333,7 +350,7 @@ void DungeonLevelView::draw(const DungeonLevel &level) {
     actors_view.draw(Game::get().player);
 }
 
-void DungeonLevelView::draw_tile(const Tile &tile, sf::Vector2f position) {
+void DungeonLevelView::draw_tile(const Tile &tile, sf::Vector2f position, float factor) {
     sf::Sprite sprite;
     if (tile.kind == Tile::Flor) {
         sprite = flor_tile_sprite;
@@ -345,14 +362,20 @@ void DungeonLevelView::draw_tile(const Tile &tile, sf::Vector2f position) {
         sprite = barrier_tile_sprite;
     }
 
-    sprite.setPosition(position);
+    sf::Vector2f saved = sprite.getScale();
+    sprite.setScale(saved * factor);
+    sprite.setPosition(position * factor);
     window.draw(sprite);
+    sprite.setScale(saved);
 }
 
 void ActorsView::draw(const Actor &actor) {
     sf::Sprite &sprite = Game::get().actor_classes[actor.actor_class_index()].sprite;
+    sf::Vector2f saved = sprite.getScale();
+    sprite.setScale(saved / Game::world_size * actor.size);
     sprite.setPosition(actor.position);
     window.draw(sprite);
+    sprite.setScale(saved);
 }
 
 void Game::add_level(const DungeonLevel &level) { all_levels.push_back(level); }
@@ -444,10 +467,8 @@ void Enemy::die(Actor &reason) {}
 
 Enemy Enemy::copy() const { return Enemy(*this); }
 
+float Weapon::get_damage(Actor &target) { return damage_range.get_random(); }
+
 void Hammer::attack(sf::Vector2f position) {}
 
-float Hammer::get_damage(Actor &target) { return damage_range.get_random(); }
-
-std::shared_ptr<Item> Hammer::copy() const {
-    return std::make_shared<Hammer>(*this);
-}
+std::shared_ptr<Item> Hammer::copy() const { return std::make_shared<Hammer>(*this); }

@@ -5,6 +5,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
+#include <SFML/System/Vector2.hpp>
 #include <memory>
 #include <optional>
 #include <string>
@@ -14,6 +15,7 @@
 #include <vector>
 
 #include "matrix.hpp"
+
 
 #ifdef SFML_SYSTEM_IOS
 const std::string path_to_resources = "";
@@ -109,17 +111,16 @@ public:
 
     void use(Actor &target) override;
     virtual void attack(sf::Vector2f position) = 0;
-    virtual float get_damage(Actor &target) = 0;
+    virtual float get_damage(Actor &target);
 };
 
 class Hammer : public Weapon {
 public:
     Hammer(RangeOfValues damage_range) : Weapon(damage_range) {}
 
-    void attack(sf::Vector2f position) override;
-    float get_damage(Actor &target) override;
-
     std::shared_ptr<Item> copy() const override;
+
+    void attack(sf::Vector2f position) override;
 };
 
 // aka armour or equipment
@@ -356,13 +357,16 @@ public:
     std::vector<LayingItem> laying_items;
     Matrix<Tile> tiles;
     sf::Vector2f initial_player_position;
+    float tile_size;
 
     void init();
+    float tile_coords_to_world_coords_factor() const;
     sf::Vector2f center() const;
     void resize_tiles(size_t width, size_t height);
     void regenerate_tiles();
     void regenerate_enemies();
-    std::optional<Tile> get_tile_of_an_actor(const Actor &actor);
+    std::optional<std::pair<size_t, size_t>> get_tile_coordinates(const sf::Vector2f &position
+    ) const;
     void add_laying_item(std::unique_ptr<LayingItem> item);
     void update(float delta_time);
     void handle_collitions();
@@ -394,7 +398,7 @@ public:
     void draw(const DungeonLevel &level);
 
 private:
-    void draw_tile(const Tile &tile, sf::Vector2f position);
+    void draw_tile(const Tile &tile, sf::Vector2f position, float size);
 };
 
 class GameView {
@@ -438,10 +442,11 @@ private:
 
 public:
     bool is_playing = false;
-    static constexpr float virtual_size = 10.0f;
+    static constexpr float view_size = 10.0f;   // sets up the view size
+    static constexpr float world_size = 10.0f;  // adjusts the sizes of the objects
 
     std::vector<ActorClass> actor_classes;  // the first entry should be a player class
-    std::vector<Enemy> enemy_templates;  // follows the actor_class_index
+    std::vector<Enemy> enemy_templates;     // follows the actor_class_index
 
     std::vector<std::unique_ptr<Item>> item_templates;
 

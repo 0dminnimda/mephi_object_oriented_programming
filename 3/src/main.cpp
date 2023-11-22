@@ -53,6 +53,8 @@ int sub_main() {
     std::shared_ptr<Item> hammer = game.item_templates[hammer_id]->copy();
     game.player.pick_up_item(*hammer);
 
+    level.tile_size = 10;
+
     level.resize_tiles(30, 30);
     level.regenerate_tiles();
 
