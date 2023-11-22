@@ -373,8 +373,6 @@ private:
     sf::Text info_message;
 
 public:
-    sf::Vector2f initial_window_size;
-
     sf::RenderWindow window;
     sf::View view;
 
@@ -383,7 +381,6 @@ public:
     ~GameView() = default;
 
     bool init(unsigned int width, unsigned int height);
-    void start_playing();
     void draw();
     bool is_open() const;
     void clear();

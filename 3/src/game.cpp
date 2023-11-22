@@ -18,8 +18,7 @@ void center_text_origin(sf::Text &text) {
 
 void setup_sprite(const sf::Texture &texture, sf::Sprite &sprite, sf::Vector2f relative_scale = {1.0f, 1.0f}) {
     sprite.setTexture(texture);
-    float scale = min(relative_scale / sf::Vector2f(texture.getSize()));
-    sprite.setScale({scale, scale});
+    sprite.setScale(relative_scale / sf::Vector2f(texture.getSize()));
     sprite.setOrigin(sf::Vector2f(texture.getSize()) / 2.0f);
 }
 
@@ -83,19 +82,17 @@ static const char *const closed_dor_tile_name = "dungeon_closed_door.jpeg";
 bool Game::init(unsigned int width, unsigned int height) { return game_view.init(width, height); }
 
 void Game::start_playing() {
-    if (!is_playing) {
-        is_playing = true;
-        clock.restart();
+    if (is_playing) return;
 
-        load_level(0);
+    is_playing = true;
+    clock.restart();
 
-        game_view.start_playing();
+    load_level(0);
 
-        // Reset the position of the paddles and ball
-        // leftPaddle.setPosition(10.f + paddleSize.x / 2.f, gameHeight / 2.f);
-        // rightPaddle.setPosition(gameWidth - 10.f - paddleSize.x / 2.f, gameHeight / 2.f);
-        // ball.setPosition(gameWidth / 2.f, gameHeight / 2.f);
-    }
+    DungeonLevel *level = Game::get().get_current_level();
+    if (!level) return;
+
+    level->player.position = sf::Vector2f(level->tiles.size(), level->tiles.row_size()) / 2.0f;
 }
 
 void Game::handle_events() {
@@ -151,13 +148,15 @@ bool Game::run() {
 }
 
 bool GameView::init(unsigned int width, unsigned int height) {
-    initial_window_size = sf::Vector2f(width, height);
-
     window.create(
         sf::VideoMode(width, height, 32), "Epic Rock Game",
         sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize
     );
     window.setVerticalSyncEnabled(true);
+
+    view.setSize(sf::Vector2f(window.getSize()));
+    view.setCenter(sf::Vector2f(window.getSize()) / 2.0f);
+    window.setView(view);
 
     if (!dungeon_level_view.init()) return false;
 
@@ -182,12 +181,6 @@ bool GameView::init(unsigned int width, unsigned int height) {
     info_message.setCharacterSize(40);
 
     return true;
-}
-
-void GameView::start_playing() {
-    view.setSize(sf::Vector2f(10.0f, 10.0f));
-    view.setCenter(sf::Vector2f(window.getSize()) / 2.0f);
-    window.setView(view);
 }
 
 bool GameView::is_open() const { return window.isOpen(); }
@@ -217,7 +210,8 @@ void GameView::draw() {
 
     Player &player = level->player;
 
-    // view.setSize(sf::Vector2f(event.size.width, event.size.height));
+    float ratio = (float)window.getSize().x / (float)window.getSize().y;
+    view.setSize(sf::Vector2f(10.0f * ratio, 10.0f));
     view.setCenter(sf::Vector2f(player.position));
     window.setView(view);
 }
@@ -270,8 +264,6 @@ void DungeonLevelView::draw_tile(const Tile &tile, sf::Vector2f position) {
 
 void ActorsView::draw(const Actor &actor) {
     setup_sprite(actor.texture, actor_sprite);
-
-    // actor_sprite.setPosition(actor.position * scale);
     actor_sprite.setPosition(actor.position);
     window.draw(actor_sprite);
 }
