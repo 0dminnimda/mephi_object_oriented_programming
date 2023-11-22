@@ -70,6 +70,7 @@ class Item {
 public:
     virtual ~Item() = default;
     virtual void use(Actor &target){};
+    virtual std::shared_ptr<Item> copy() const = 0;
 };
 
 class Potion : public Item {
@@ -117,6 +118,8 @@ public:
 
     void attack(sf::Vector2f position) override;
     float get_damage(Actor &target) override;
+
+    std::shared_ptr<Item> copy() const override;
 };
 
 // aka armour or equipment
@@ -440,6 +443,8 @@ public:
     std::vector<ActorClass> actor_classes;  // the first entry should be a player class
     std::vector<Enemy> enemy_templates;  // follows the actor_class_index
 
+    std::vector<std::unique_ptr<Item>> item_templates;
+
     Player player;
 
     Game() = default;
@@ -464,6 +469,8 @@ public:
 
     size_t add_actor_class(const ActorClass &cls);
     Enemy make_enemy(size_t actor_class_index) const;
+
+    size_t add_item_template(std::unique_ptr<Item> item);
 };
 
 #endif  // GAME_H

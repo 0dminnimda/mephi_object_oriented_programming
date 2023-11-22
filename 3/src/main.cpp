@@ -46,10 +46,12 @@ int sub_main() {
     game.enemy_templates[goblin_id] = Enemy(goblin_id, 5.0f, Characteristics(20.0f, 0.0f, 2.0f));
     game.enemy_templates[pepe_id] = Enemy(pepe_id, 3.0f, Characteristics(10.0f, 0.0f, 4.0f));
 
+    size_t hammer_id = game.add_item_template(std::make_unique<Hammer>(RangeOfValues(100, 120)));
+
     DungeonLevel level;
 
-    Hammer item(RangeOfValues(100, 120));
-    game.player.pick_up_item(item);
+    std::shared_ptr<Item> hammer = game.item_templates[hammer_id]->copy();
+    game.player.pick_up_item(*hammer);
 
     level.resize_tiles(30, 30);
     level.regenerate_tiles();

@@ -168,9 +168,13 @@ bool Game::run() {
 }
 
 size_t Game::add_actor_class(const ActorClass &cls) {
-    size_t id = actor_classes.size();
     actor_classes.push_back(cls);
-    return id;
+    return actor_classes.size() - 1;
+}
+
+size_t Game::add_item_template(std::unique_ptr<Item> item) {
+    item_templates.push_back(std::move(item));
+    return item_templates.size() - 1;
 }
 
 bool GameView::init(unsigned int width, unsigned int height) {
@@ -443,3 +447,7 @@ Enemy Enemy::copy() const { return Enemy(*this); }
 void Hammer::attack(sf::Vector2f position) {}
 
 float Hammer::get_damage(Actor &target) { return damage_range.get_random(); }
+
+std::shared_ptr<Item> Hammer::copy() const {
+    return std::make_shared<Hammer>(*this);
+}
