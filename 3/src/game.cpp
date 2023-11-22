@@ -304,6 +304,10 @@ void Player::update(float delta_time) {
         resulting.x += 1;
     }
 
+    float len = length(resulting);
+    if (len)
+        resulting = resulting / len;
+
     position += resulting * (float)characteristics().speed * delta_time;
 }
 
