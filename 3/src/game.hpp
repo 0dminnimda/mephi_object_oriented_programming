@@ -15,7 +15,6 @@
 
 #include "matrix.hpp"
 
-
 #ifdef SFML_SYSTEM_IOS
 const std::string path_to_resources = "";
 #else
@@ -260,10 +259,10 @@ private:
     Characteristics characteristics_;
 
 public:
-    Actor(size_t class_index, float size, float health, Characteristics characteristics)
+    Actor(size_t class_index, float size, Characteristics characteristics)
         : RigidBody(size),
           actor_class_index_(class_index),
-          health_(health),
+          health_(characteristics.max_health),
           characteristics_(characteristics) {}
     virtual ~Actor() = default;
 
@@ -302,8 +301,8 @@ private:
     Experience experience;
 
 public:
-    Player(size_t class_index, float size, float health, Characteristics characteristics)
-        : Actor(class_index, size, health, characteristics) {}
+    Player(size_t class_index, float size, Characteristics characteristics)
+        : Actor(class_index, size, characteristics) {}
 
     void init() override;
     void update(float delta_time) override;
@@ -315,8 +314,8 @@ public:
 
 class Enemy : public Actor {
 public:
-    Enemy(size_t class_index, float size, float health, Characteristics characteristics)
-        : Actor(class_index, size, health, characteristics) {}
+    Enemy(size_t class_index, float size, Characteristics characteristics)
+        : Actor(class_index, size, characteristics) {}
 
     void init() override;
     void update(float delta_time) override;
