@@ -37,7 +37,7 @@ int sub_main() {
 
     size_t player_id = game.add_actor_class(ActorClass("player", "plays the game", "hide_the_plan.jpeg"));
     size_t goblin_id = game.add_actor_class(ActorClass("goblin", "deez nuts", "rock_smiling.jpeg"));
-    // size_t goblin_id = game.add_actor_class(ActorClass("goblin", "deez nuts", "pepe_angry.jpeg"));
+    size_t pepe_id = game.add_actor_class(ActorClass("pepe", "hes angy", "pepe_angry.jpeg"));
 
     Matrix<Tile> tiles(30, 30);
 
@@ -54,10 +54,17 @@ int sub_main() {
     DungeonLevel level(tiles, player);
 
     for (size_t i = 0; i < 10; ++i) {
-        Enemy enemy(goblin_id, 20, 5.0f, Characteristics(0, 0, 4));
+        Enemy enemy(goblin_id, 20, 5.0f, Characteristics(0, 0, 2));
         enemy.position.x = i;
         enemy.position.y = i;
         enemy.characteristics().speed += (i % 2 == 0 ? 0 : -1);
+        level.enemies.push_back(enemy);
+    }
+
+    for (size_t i = 0; i < 10; ++i) {
+        Enemy enemy(pepe_id, 10, 3.0f, Characteristics(0, 0, 4));
+        enemy.position.x = 2*i;
+        enemy.position.y = i;
         level.enemies.push_back(enemy);
     }
 
