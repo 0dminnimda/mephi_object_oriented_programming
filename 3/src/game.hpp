@@ -234,6 +234,9 @@ class ActorClass {
 public:
     std::string name;
     std::string description;
+
+    ActorClass(std::string name, std::string description) : name(name), description(description) {}
+    ~ActorClass() = default;
 };
 
 // XXX: creature?
