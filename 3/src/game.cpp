@@ -207,6 +207,7 @@ bool GameView::init(unsigned int width, unsigned int height) {
 
     info_message.setFont(font);
     info_message.setCharacterSize(40);
+    info_message.setPosition(sf::Vector2f(view.getSize()) / 2.0f);
     info_message.setScale(sf::Vector2f(Game::virtual_size, Game::virtual_size) / (float)std::min(width, height));
 
     return true;
@@ -233,7 +234,6 @@ void GameView::draw() {
         info_message.setFillColor(sf::Color::White);
         info_message.setString("No levels are loaded");
         center_text_origin(info_message);
-        info_message.setPosition({window.getSize().x / 2.0f, window.getSize().y / 2.0f});
         window.draw(info_message);
 
         view.setCenter(sf::Vector2f(view.getSize()) / 2.0f);
