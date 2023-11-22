@@ -98,7 +98,7 @@ void Game::start_playing() {
     DungeonLevel *level = Game::get().get_current_level();
     if (!level) return;
 
-    level->player.position = level->initial_player_position;
+    Game::get().player.position = level->initial_player_position;
 }
 
 void Game::stop_playing() {
@@ -247,15 +247,11 @@ void GameView::draw() {
 
     dungeon_level_view.draw(*level);
 
-    Player &player = level->player;
-
     float ratio = (float)window.getSize().x / (float)window.getSize().y;
     view.setSize(sf::Vector2f(Game::virtual_size * ratio, Game::virtual_size));
-    view.setCenter(sf::Vector2f(player.position));
+    view.setCenter(sf::Vector2f(Game::get().player.position));
     window.setView(view);
 }
-
-DungeonLevel::DungeonLevel() : player(Game::get().make_actor(0)) {}
 
 void DungeonLevel::init() {
     for (auto &emeny : enemies) {
@@ -289,13 +285,10 @@ void DungeonLevel::regenerate_enemies() {
     RangeOfValues range_x(0, tiles.size());
     RangeOfValues range_y(0, tiles.row_size());
 
-    for (size_t actor_class_index = 1; actor_class_index < Game::get().actor_classes.size();
-         ++actor_class_index)
-    {
+    for (size_t class_index = 1; class_index < Game::get().actor_classes.size(); ++class_index) {
         for (size_t i = 0; i < 10; ++i) {
-            Enemy enemy(Game::get().make_actor(actor_class_index));
+            Enemy &enemy = enemies.emplace_back(Game::get().make_enemy(class_index));
             enemy.position = sf::Vector2f(range_x.get_random(), range_y.get_random());
-            enemies.push_back(enemy);
         }
     }
 }
@@ -333,7 +326,7 @@ void DungeonLevelView::draw(const DungeonLevel &level) {
     for (const auto &emeny : level.enemies) {
         actors_view.draw(emeny);
     }
-    actors_view.draw(level.player);
+    actors_view.draw(Game::get().player);
 }
 
 void DungeonLevelView::draw_tile(const Tile &tile, sf::Vector2f position) {
@@ -370,8 +363,8 @@ bool Game::load_level(size_t index) {
 
 void Game::unload_current_level() { current_level = std::nullopt; }
 
-Actor Game::make_actor(size_t actor_class_index) const {
-    return actor_classes.at(actor_class_index).make_actor(actor_class_index);
+Enemy Game::make_enemy(size_t actor_class_index) const {
+    return enemy_templates.at(actor_class_index).copy();
 }
 
 DungeonLevel *Game::get_current_level() {
@@ -387,7 +380,7 @@ void DungeonLevel::update(float delta_time) {
     for (auto &enemy : enemies) {
         enemy.update(delta_time);
     }
-    player.update(delta_time);
+    Game::get().player.update(delta_time);
 
     handle_collitions();
 }
@@ -398,13 +391,7 @@ bool ActorClass::init() {
     return true;
 }
 
-Actor ActorClass::make_actor(size_t actor_class_index) const {
-    return Actor(actor_class_index, default_size, default_characteristics);
-}
-
-void Equipment::equip_weapon(std::shared_ptr<Weapon> weapon) {
-    this->weapon = weapon;
-}
+void Equipment::equip_weapon(std::shared_ptr<Weapon> weapon) { this->weapon = weapon; }
 
 void Player::init() {}
 
@@ -443,11 +430,7 @@ void Player::pick_up_item(Item &item) {}
 void Enemy::init() {}
 
 void Enemy::update(float delta_time) {
-    DungeonLevel *level = Game::get().get_current_level();
-    if (!level) return;
-    Player &player = level->player;
-
-    sf::Vector2f direction = player.position - position;
+    sf::Vector2f direction = Game::get().player.position - position;
     position += normalized(direction) * (float)characteristics().speed * delta_time;
 }
 
@@ -455,10 +438,8 @@ void Enemy::attack(Actor &target) {}
 
 void Enemy::die(Actor &reason) {}
 
-void Hammer::attack(sf::Vector2f position) {
-    
-}
+Enemy Enemy::copy() const { return Enemy(*this); }
 
-float Hammer::get_damage(Actor &target) {
-    return damage_range.get_random();
-}
+void Hammer::attack(sf::Vector2f position) {}
+
+float Hammer::get_damage(Actor &target) { return damage_range.get_random(); }

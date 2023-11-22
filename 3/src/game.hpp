@@ -253,23 +253,11 @@ public:
     sf::Texture texture;
     sf::Sprite sprite;
 
-    // factory fields
-    float default_size;
-    Characteristics default_characteristics;
-
-    ActorClass(
-        std::string name, std::string description, std::string texture_name, float default_size,
-        Characteristics default_characteristics
-    )
-        : name(name),
-          description(description),
-          texture_name(texture_name),
-          default_size(default_size),
-          default_characteristics(default_characteristics) {}
+    ActorClass(std::string name, std::string description, std::string texture_name)
+        : name(name), description(description), texture_name(texture_name) {}
     ~ActorClass() = default;
 
     bool init();
-    Actor make_actor(size_t actor_class_index) const;
 };
 
 class Actor : public RigidBody {
@@ -280,6 +268,7 @@ private:
     Characteristics characteristics_;
 
 public:
+    Actor() = default;
     Actor(size_t class_index, float size, Characteristics characteristics)
         : RigidBody(size),
           actor_class_index_(class_index),
@@ -322,6 +311,7 @@ private:
     Experience experience;
 
 public:
+    Player() = default;
     Player(size_t class_index, float size, Characteristics characteristics)
         : Actor(class_index, size, characteristics) {}
     Player(const Actor &actor) : Actor(actor) {}
@@ -337,10 +327,13 @@ public:
 
 class Enemy : public Actor {
 public:
+    Enemy() = default;
     Enemy(size_t class_index, float size, Characteristics characteristics)
         : Actor(class_index, size, characteristics) {}
     Enemy(const Actor &actor) : Actor(actor) {}
     Enemy(Actor &&actor) : Actor(actor) {}
+
+    Enemy copy() const;
 
     void init() override;
     void update(float delta_time) override;
@@ -357,12 +350,9 @@ class DungeonLevel {
     // private:
 public:
     std::vector<Enemy> enemies;
-    Player player;
     std::vector<LayingItem> laying_items;
     Matrix<Tile> tiles;
     sf::Vector2f initial_player_position;
-
-    DungeonLevel();
 
     void init();
     sf::Vector2f center() const;
@@ -448,6 +438,9 @@ public:
     static constexpr float virtual_size = 10.0f;
 
     std::vector<ActorClass> actor_classes;  // the first entry should be a player class
+    std::vector<Enemy> enemy_templates;  // follows the actor_class_index
+
+    Player player;
 
     Game() = default;
     ~Game() = default;
@@ -470,7 +463,7 @@ public:
     bool run();
 
     size_t add_actor_class(const ActorClass &cls);
-    Actor make_actor(size_t actor_class_index) const;
+    Enemy make_enemy(size_t actor_class_index) const;
 };
 
 #endif  // GAME_H

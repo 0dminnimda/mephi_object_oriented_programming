@@ -35,20 +35,21 @@ float signed_distance_from_rect_to_circle(
 int sub_main() {
     Game &game = Game::get();
 
-    size_t player_id = game.add_actor_class(ActorClass(
-        "player", "plays the game", "hide_the_plan.jpeg", 10.0f, Characteristics(100.0f, 0.0f, 5.0f)
-    ));
-    size_t goblin_id = game.add_actor_class(ActorClass(
-        "goblin", "deez nuts", "rock_smiling.jpeg", 5.0f, Characteristics(20.0f, 0.0f, 2.0f)
-    ));
-    size_t pepe_id = game.add_actor_class(
-        ActorClass("pepe", "hes angy", "pepe_angry.jpeg", 3.0f, Characteristics(10.0f, 0.0f, 4.0f))
-    );
+    size_t player_id =
+        game.add_actor_class(ActorClass("player", "plays the game", "hide_the_plan.jpeg"));
+    size_t goblin_id = game.add_actor_class(ActorClass("goblin", "deez nuts", "rock_smiling.jpeg"));
+    size_t pepe_id = game.add_actor_class(ActorClass("pepe", "hes angy", "pepe_angry.jpeg"));
+
+    game.player = Player(player_id, 10.0f, Characteristics(100.0f, 0.0f, 5.0f));
+
+    game.enemy_templates.resize(game.actor_classes.size());
+    game.enemy_templates[goblin_id] = Enemy(goblin_id, 5.0f, Characteristics(20.0f, 0.0f, 2.0f));
+    game.enemy_templates[pepe_id] = Enemy(pepe_id, 3.0f, Characteristics(10.0f, 0.0f, 4.0f));
 
     DungeonLevel level;
 
     Hammer item(RangeOfValues(100, 120));
-    level.player.pick_up_item(item);
+    game.player.pick_up_item(item);
 
     level.resize_tiles(30, 30);
     level.regenerate_tiles();
