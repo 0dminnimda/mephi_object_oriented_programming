@@ -402,6 +402,10 @@ Actor ActorClass::make_actor(size_t actor_class_index) const {
     return Actor(actor_class_index, default_size, default_characteristics);
 }
 
+void Equipment::equip_weapon(std::shared_ptr<Weapon> weapon) {
+    this->weapon = weapon;
+}
+
 void Player::init() {}
 
 void Player::update(float delta_time) {
@@ -450,3 +454,11 @@ void Enemy::update(float delta_time) {
 void Enemy::attack(Actor &target) {}
 
 void Enemy::die(Actor &reason) {}
+
+void Hammer::attack(sf::Vector2f position) {
+    
+}
+
+float Hammer::get_damage(Actor &target) {
+    return damage_range.get_random();
+}

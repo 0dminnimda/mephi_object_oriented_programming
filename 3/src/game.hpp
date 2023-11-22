@@ -98,14 +98,25 @@ class Enchantment {
 };
 
 class Weapon : public Item {
+protected:
     std::optional<CharacteristicsModifier> artefact;
     std::optional<Enchantment> enchantment;
     RangeOfValues damage_range;
 
 public:
+    Weapon(RangeOfValues damage_range) : damage_range(damage_range) {}
+
     void use(Actor &target) override;
-    void attack(sf::Vector2f position);
-    long get_damage(Actor &target);
+    virtual void attack(sf::Vector2f position) = 0;
+    virtual float get_damage(Actor &target) = 0;
+};
+
+class Hammer : public Weapon {
+public:
+    Hammer(RangeOfValues damage_range) : Weapon(damage_range) {}
+
+    void attack(sf::Vector2f position) override;
+    float get_damage(Actor &target) override;
 };
 
 // aka armour or equipment
@@ -214,14 +225,14 @@ public:
 };
 
 class Equipment {
-    std::unordered_map<Wearable::Kind, Wearable> wearable;
-    std::optional<Weapon> weapon;
+    std::unordered_map<Wearable::Kind, std::shared_ptr<Wearable>> wearable;
+    std::shared_ptr<Weapon> weapon;
 
 public:
     Equipment() : wearable(), weapon() {}
 
-    void equip_wearable(Wearable &item);
-    void equip_weapon(Weapon &item);
+    void equip_wearable(std::shared_ptr<Wearable> item);
+    void equip_weapon(std::shared_ptr<Weapon> weapon);
 };
 
 class RigidBody {

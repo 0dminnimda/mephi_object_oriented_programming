@@ -47,6 +47,9 @@ int sub_main() {
 
     DungeonLevel level;
 
+    Hammer item(RangeOfValues(100, 120));
+    level.player.pick_up_item(item);
+
     level.resize_tiles(30, 30);
     level.regenerate_tiles();
 
