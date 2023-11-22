@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 
+#include <SFML/System.hpp>
 #include <algorithm>
 #include <iostream>
 #include <random>
@@ -202,12 +203,16 @@ bool GameView::init(unsigned int width, unsigned int height) {
 #endif
     center_text_origin(menu_message);
     menu_message.setPosition({view.getSize().x / 2.0f, view.getSize().y / 6.0f});
-    menu_message.setScale(sf::Vector2f(Game::virtual_size, Game::virtual_size) / (float)std::min(width, height));
+    menu_message.setScale(
+        sf::Vector2f(Game::virtual_size, Game::virtual_size) / (float)std::min(width, height)
+    );
 
     info_message.setFont(font);
     info_message.setCharacterSize(40);
     info_message.setPosition(sf::Vector2f(view.getSize()) / 2.0f);
-    info_message.setScale(sf::Vector2f(Game::virtual_size, Game::virtual_size) / (float)std::min(width, height));
+    info_message.setScale(
+        sf::Vector2f(Game::virtual_size, Game::virtual_size) / (float)std::min(width, height)
+    );
 
     return true;
 }
@@ -250,6 +255,8 @@ void GameView::draw() {
     window.setView(view);
 }
 
+DungeonLevel::DungeonLevel() : player(Game::get().make_actor(0)) {}
+
 void DungeonLevel::init() {
     for (auto &emeny : enemies) {
         emeny.init();
@@ -260,11 +267,9 @@ sf::Vector2f DungeonLevel::center() const {
     return sf::Vector2f(tiles.size(), tiles.row_size()) / 2.0f;
 }
 
-void DungeonLevel::resize_tiles(size_t width, size_t height) {
-    tiles.resize(width, height);
-}
+void DungeonLevel::resize_tiles(size_t width, size_t height) { tiles.resize(width, height); }
 
-void DungeonLevel::regenerate() {
+void DungeonLevel::regenerate_tiles() {
     for (size_t i = 0; i < tiles.size(); ++i) {
         for (size_t j = 0; j < tiles.row_size(); ++j) {
             if (i == 0 || i == tiles.size() - 1 || j == 0 || j == tiles.row_size() - 1)
@@ -276,6 +281,23 @@ void DungeonLevel::regenerate() {
 
     tiles[4][4].kind = Tile::OpenDor;
     tiles[4][5].kind = Tile::ClosedDor;
+}
+
+void DungeonLevel::regenerate_enemies() {
+    enemies.clear();
+
+    RangeOfValues range_x(0, tiles.size());
+    RangeOfValues range_y(0, tiles.row_size());
+
+    for (size_t actor_class_index = 1; actor_class_index < Game::get().actor_classes.size();
+         ++actor_class_index)
+    {
+        for (size_t i = 0; i < 10; ++i) {
+            Enemy enemy(Game::get().make_actor(actor_class_index));
+            enemy.position = sf::Vector2f(range_x.get_random(), range_y.get_random());
+            enemies.push_back(enemy);
+        }
+    }
 }
 
 bool DungeonLevelView::init() {
@@ -346,8 +368,10 @@ bool Game::load_level(size_t index) {
     return true;
 }
 
-void Game::unload_current_level() {
-    current_level = std::nullopt;
+void Game::unload_current_level() { current_level = std::nullopt; }
+
+Actor Game::make_actor(size_t actor_class_index) const {
+    return actor_classes.at(actor_class_index).make_actor(actor_class_index);
 }
 
 DungeonLevel *Game::get_current_level() {
@@ -372,6 +396,10 @@ bool ActorClass::init() {
     if (!texture.loadFromFile(path_to_resources + texture_name)) return false;
     setup_sprite(texture, sprite);
     return true;
+}
+
+Actor ActorClass::make_actor(size_t actor_class_index) const {
+    return Actor(actor_class_index, default_size, default_characteristics);
 }
 
 void Player::init() {}

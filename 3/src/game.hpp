@@ -242,17 +242,27 @@ public:
     sf::Texture texture;
     sf::Sprite sprite;
 
-    ActorClass(std::string name, std::string description, std::string texture_name)
-        : name(name), description(description), texture_name(texture_name) {}
+    // factory fields
+    float default_size;
+    Characteristics default_characteristics;
+
+    ActorClass(
+        std::string name, std::string description, std::string texture_name, float default_size,
+        Characteristics default_characteristics
+    )
+        : name(name),
+          description(description),
+          texture_name(texture_name),
+          default_size(default_size),
+          default_characteristics(default_characteristics) {}
     ~ActorClass() = default;
 
     bool init();
+    Actor make_actor(size_t actor_class_index) const;
 };
 
-// XXX: creature?
 class Actor : public RigidBody {
 private:
-    // std::string name;
     size_t actor_class_index_;
     float health_;
     Equipment equipment_;
@@ -303,6 +313,8 @@ private:
 public:
     Player(size_t class_index, float size, Characteristics characteristics)
         : Actor(class_index, size, characteristics) {}
+    Player(const Actor &actor) : Actor(actor) {}
+    Player(Actor &&actor) : Actor(actor) {}
 
     void init() override;
     void update(float delta_time) override;
@@ -316,6 +328,8 @@ class Enemy : public Actor {
 public:
     Enemy(size_t class_index, float size, Characteristics characteristics)
         : Actor(class_index, size, characteristics) {}
+    Enemy(const Actor &actor) : Actor(actor) {}
+    Enemy(Actor &&actor) : Actor(actor) {}
 
     void init() override;
     void update(float delta_time) override;
@@ -337,12 +351,13 @@ public:
     Matrix<Tile> tiles;
     sf::Vector2f initial_player_position;
 
-    DungeonLevel(Player player) : player(player) {}
+    DungeonLevel();
 
     void init();
     sf::Vector2f center() const;
     void resize_tiles(size_t width, size_t height);
-    void regenerate();
+    void regenerate_tiles();
+    void regenerate_enemies();
     std::optional<Tile> get_tile_of_an_actor(const Actor &actor);
     void add_laying_item(std::unique_ptr<LayingItem> item);
     void update(float delta_time);
@@ -421,7 +436,7 @@ public:
     bool is_playing = false;
     static constexpr float virtual_size = 10.0f;
 
-    std::vector<ActorClass> actor_classes;
+    std::vector<ActorClass> actor_classes;  // the first entry should be a player class
 
     Game() = default;
     ~Game() = default;
@@ -442,7 +457,9 @@ public:
     void stop_playing();
     bool init(unsigned int width, unsigned int height);
     bool run();
+
     size_t add_actor_class(const ActorClass &cls);
+    Actor make_actor(size_t actor_class_index) const;
 };
 
 #endif  // GAME_H

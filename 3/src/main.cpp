@@ -35,33 +35,24 @@ float signed_distance_from_rect_to_circle(
 int sub_main() {
     Game &game = Game::get();
 
-    size_t player_id =
-        game.add_actor_class(ActorClass("player", "plays the game", "hide_the_plan.jpeg"));
-    size_t goblin_id = game.add_actor_class(ActorClass("goblin", "deez nuts", "rock_smiling.jpeg"));
-    size_t pepe_id = game.add_actor_class(ActorClass("pepe", "hes angy", "pepe_angry.jpeg"));
+    size_t player_id = game.add_actor_class(ActorClass(
+        "player", "plays the game", "hide_the_plan.jpeg", 10.0f, Characteristics(100.0f, 0.0f, 5.0f)
+    ));
+    size_t goblin_id = game.add_actor_class(ActorClass(
+        "goblin", "deez nuts", "rock_smiling.jpeg", 5.0f, Characteristics(20.0f, 0.0f, 2.0f)
+    ));
+    size_t pepe_id = game.add_actor_class(
+        ActorClass("pepe", "hes angy", "pepe_angry.jpeg", 3.0f, Characteristics(10.0f, 0.0f, 4.0f))
+    );
 
-    Player player(player_id, 10.0f, Characteristics(100.0f, 0.0f, 5.0f));
-    DungeonLevel level(player);
+    DungeonLevel level;
 
     level.resize_tiles(30, 30);
-    level.regenerate();
+    level.regenerate_tiles();
 
     level.initial_player_position = level.center();
 
-    for (size_t i = 0; i < 10; ++i) {
-        Enemy enemy(goblin_id, 5.0f, Characteristics(20.0f, 0.0f, 2.0f));
-        enemy.position.x = i;
-        enemy.position.y = i;
-        enemy.characteristics().speed += (i % 2 == 0 ? 0 : -1);
-        level.enemies.push_back(enemy);
-    }
-
-    for (size_t i = 0; i < 10; ++i) {
-        Enemy enemy(pepe_id, 3.0f, Characteristics(10.0f, 0.0f, 4.0f));
-        enemy.position.x = 2 * i;
-        enemy.position.y = i;
-        level.enemies.push_back(enemy);
-    }
+    level.regenerate_enemies();
 
     game.add_level(level);
 
