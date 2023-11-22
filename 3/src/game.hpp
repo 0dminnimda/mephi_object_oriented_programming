@@ -315,6 +315,7 @@ public:
     Enemy(size_t class_index, float size, long health, Characteristics characteristics)
         : Actor(class_index, size, health, characteristics) {}
 
+    void init();
     void update(float delta_time) override;
     void attack(Actor &target) override;
     void die(Actor &reason) override;
@@ -336,6 +337,7 @@ public:
     DungeonLevel(Matrix<Tile> tiles, Player player)
         : enemies(), player(player), laying_items(), tiles(tiles) {}
 
+    void init();
     void resize_tiles(size_t width, size_t height);
     std::optional<Tile> get_tile_of_an_actor(const Actor &actor);
     void add_laying_item(std::unique_ptr<LayingItem> item);

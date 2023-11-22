@@ -54,9 +54,10 @@ int sub_main() {
     DungeonLevel level(tiles, player);
 
     for (size_t i = 0; i < 10; ++i) {
-        Enemy enemy(goblin_id, 20, 5.0f, Characteristics(0, 0, 5));
+        Enemy enemy(goblin_id, 20, 5.0f, Characteristics(0, 0, 4));
         enemy.position.x = i;
         enemy.position.y = i;
+        enemy.characteristics().speed += (i % 2 == 0 ? 0 : -1);
         level.enemies.push_back(enemy);
     }
 

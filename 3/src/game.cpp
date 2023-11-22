@@ -228,6 +228,12 @@ void GameView::draw() {
     window.setView(view);
 }
 
+void DungeonLevel::init() {
+    for (auto &emeny : enemies) {
+        emeny.init();
+    }
+}
+
 bool DungeonLevelView::init() {
     if (!flor_tile_texture.loadFromFile(path_to_resources + flor_tile_name)) return false;
     if (!open_dor_tile_texture.loadFromFile(path_to_resources + open_dor_tile_name)) return false;
@@ -334,11 +340,7 @@ void Player::update(float delta_time) {
         resulting.x += 1;
     }
 
-    float len = length(resulting);
-    if (len)
-        resulting = resulting / len;
-
-    position += resulting * (float)characteristics().speed * delta_time;
+    position += normalized(resulting) * (float)characteristics().speed * delta_time;
 }
 
 void Player::attack(Actor &target) {}
@@ -347,7 +349,17 @@ void Player::die(Actor &reason) {}
 
 void Player::pick_up_item(Item &item) {}
 
-void Enemy::update(float delta_time) {}
+void Enemy::init() {
+}
+
+void Enemy::update(float delta_time) {
+    DungeonLevel *level = Game::get().get_current_level();
+    if (!level) return;
+    Player &player = level->player;
+
+    sf::Vector2f direction = player.position - position;
+    position += normalized(direction) * (float)characteristics().speed * delta_time;
+}
 
 void Enemy::attack(Actor &target) {}
 
