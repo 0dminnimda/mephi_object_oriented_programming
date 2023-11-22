@@ -35,7 +35,8 @@ float signed_distance_from_rect_to_circle(
 int sub_main() {
     Game &game = Game::get();
 
-    size_t player_id = game.add_actor_class(ActorClass("player", "plays the game", "hide_the_plan.jpeg"));
+    size_t player_id =
+        game.add_actor_class(ActorClass("player", "plays the game", "hide_the_plan.jpeg"));
     size_t goblin_id = game.add_actor_class(ActorClass("goblin", "deez nuts", "rock_smiling.jpeg"));
     size_t pepe_id = game.add_actor_class(ActorClass("pepe", "hes angy", "pepe_angry.jpeg"));
 
@@ -63,7 +64,7 @@ int sub_main() {
 
     for (size_t i = 0; i < 10; ++i) {
         Enemy enemy(pepe_id, 10.0f, 3.0f, Characteristics(0.0f, 0.0f, 4.0f));
-        enemy.position.x = 2*i;
+        enemy.position.x = 2 * i;
         enemy.position.y = i;
         level.enemies.push_back(enemy);
     }

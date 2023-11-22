@@ -16,7 +16,9 @@ void center_text_origin(sf::Text &text) {
     );
 }
 
-void setup_sprite(const sf::Texture &texture, sf::Sprite &sprite, sf::Vector2f relative_scale = {1.0f, 1.0f}) {
+void setup_sprite(
+    const sf::Texture &texture, sf::Sprite &sprite, sf::Vector2f relative_scale = {1.0f, 1.0f}
+) {
     sprite.setTexture(texture);
     sprite.setScale(relative_scale / sf::Vector2f(texture.getSize()));
     sprite.setOrigin(sf::Vector2f(texture.getSize()) / 2.0f);
@@ -24,9 +26,8 @@ void setup_sprite(const sf::Texture &texture, sf::Sprite &sprite, sf::Vector2f r
 
 void CharacteristicsModifier::apply(Characteristics &value) {
     if (max_health) {
-        value.max_health = std::visit(
-            [&](auto &&v) -> auto { return v.apply(value.max_health); }, *max_health
-        );
+        value.max_health =
+            std::visit([&](auto &&v) -> auto { return v.apply(value.max_health); }, *max_health);
     }
 
     if (defence) {
@@ -35,8 +36,7 @@ void CharacteristicsModifier::apply(Characteristics &value) {
     }
 
     if (speed) {
-        value.speed =
-            std::visit([&](auto &&v) -> auto { return v.apply(value.speed); }, *speed);
+        value.speed = std::visit([&](auto &&v) -> auto { return v.apply(value.speed); }, *speed);
     }
 }
 
@@ -161,7 +161,7 @@ size_t Game::add_actor_class(const ActorClass &cls) {
 
 bool GameView::init(unsigned int width, unsigned int height) {
     window.create(
-        sf::VideoMode(width, height, 32), "Epic Rock Game",
+        sf::VideoMode(width, height, 32), "Epic Lab3 Game",
         sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize
     );
     window.setVerticalSyncEnabled(true);
@@ -243,7 +243,7 @@ bool DungeonLevelView::init() {
 
     setup_sprite(flor_tile_texture, flor_tile_sprite);
     flor_tile_sprite.setOrigin({0, 0});
-    
+
     setup_sprite(open_dor_tile_texture, open_dor_tile_sprite);
     open_dor_tile_sprite.setOrigin({0, 0});
 
@@ -305,9 +305,7 @@ DungeonLevel *Game::get_current_level() {
     return &all_levels[current_level_index];
 }
 
-void DungeonLevel::handle_collitions() {
-    
-}
+void DungeonLevel::handle_collitions() {}
 
 void DungeonLevel::update(float delta_time) {
     for (auto &enemy : enemies) {
@@ -324,19 +322,28 @@ bool ActorClass::init() {
     return true;
 }
 
+void Player::init() {}
+
 void Player::update(float delta_time) {
     auto resulting = sf::Vector2f(0, 0);
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+    {
         resulting.y -= 1;
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) ||
+        sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+    {
         resulting.y += 1;
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ||
+        sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+    {
         resulting.x -= 1;
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) ||
+        sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+    {
         resulting.x += 1;
     }
 
@@ -349,8 +356,7 @@ void Player::die(Actor &reason) {}
 
 void Player::pick_up_item(Item &item) {}
 
-void Enemy::init() {
-}
+void Enemy::init() {}
 
 void Enemy::update(float delta_time) {
     DungeonLevel *level = Game::get().get_current_level();

@@ -302,7 +302,7 @@ public:
     Player(size_t class_index, float size, float health, Characteristics characteristics)
         : Actor(class_index, size, health, characteristics) {}
 
-    void init() overide;
+    void init() override;
     void update(float delta_time) override;
     void attack(Actor &target) override;
     void die(Actor &reason) override;
@@ -315,7 +315,7 @@ public:
     Enemy(size_t class_index, float size, float health, Characteristics characteristics)
         : Actor(class_index, size, health, characteristics) {}
 
-    void init() overide;
+    void init() override;
     void update(float delta_time) override;
     void attack(Actor &target) override;
     void die(Actor &reason) override;
