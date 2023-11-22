@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef MATRIX_H
+#define MATRIX_H
+
 #include <vector>
 
 template <typename T>
@@ -37,6 +42,7 @@ public:
     using const_iterator = typename std::vector<Row<T>>::const_iterator;
     using reverse_iterator = typename std::vector<Row<T>>::reverse_iterator;
 
+    Matrix() : Matrix(0, 0) {}
     Matrix(size_t rows, size_t cols, T initialValue) {
         this->rows.resize(rows, Row<T>(cols, initialValue));
     }
@@ -66,3 +72,5 @@ public:
     const_iterator cbegin() const { return rows.cbegin(); }
     const_iterator cend() const { return rows.cend(); }
 };
+
+#endif // MATRIX_H
