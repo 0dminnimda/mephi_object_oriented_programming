@@ -333,6 +333,7 @@ public:
     Player player;
     std::vector<LayingItem> laying_items;
     Matrix<Tile> tiles;
+    sf::Vector2f initial_player_position;
 
     DungeonLevel(Matrix<Tile> tiles, Player player)
         : enemies(), player(player), laying_items(), tiles(tiles) {}

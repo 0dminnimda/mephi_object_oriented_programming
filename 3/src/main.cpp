@@ -53,6 +53,7 @@ int sub_main() {
     Player player(player_id, 100.0f, 10.0f, Characteristics(0.0f, 0.0f, 5.0f));
 
     DungeonLevel level(tiles, player);
+    level.initial_player_position = sf::Vector2f(level.tiles.size(), level.tiles.row_size()) / 2.0f;
 
     for (size_t i = 0; i < 10; ++i) {
         Enemy enemy(goblin_id, 20.0f, 5.0f, Characteristics(0.0f, 0.0f, 2.0f));

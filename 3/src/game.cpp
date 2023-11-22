@@ -98,7 +98,7 @@ void Game::start_playing() {
     DungeonLevel *level = Game::get().get_current_level();
     if (!level) return;
 
-    level->player.position = sf::Vector2f(level->tiles.size(), level->tiles.row_size()) / 2.0f;
+    level->player.position = level->initial_player_position;
 }
 
 void Game::handle_events() {
