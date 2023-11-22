@@ -42,9 +42,9 @@ using ValueModifier = std::variant<SetAbsoluteValue<T>, AddToValue<T>>;
 
 class Characteristics {
 public:
-    long max_health;
-    long defence;
-    long speed;
+    float max_health;
+    float defence;
+    float speed;
 };
 
 class CharacteristicsModifier {
@@ -224,10 +224,8 @@ public:
 };
 
 class RigidBody {
-protected:
-    sf::Vector2f velocity_;
-
 public:
+    // sf::Vector2f velocity_;
     sf::Vector2f position;
     float size = 1.0f;
 
@@ -254,12 +252,12 @@ class Actor : public RigidBody {
 private:
     // std::string name;
     const size_t actor_class_index_;
-    long health_;
+    float health_;
     Equipment equipment_;
     Characteristics characteristics_;
 
 public:
-    Actor(size_t class_index, float size, long health, Characteristics characteristics)
+    Actor(size_t class_index, float size, float health, Characteristics characteristics)
         : RigidBody(size),
           actor_class_index_(class_index),
           health_(health),
@@ -267,13 +265,13 @@ public:
     virtual ~Actor() = default;
 
     size_t actor_class_index() const { return actor_class_index_; };
-    long health() const { return health_; };
+    float health() const { return health_; };
     const Equipment &equipment() const { return equipment_; };
     Characteristics &characteristics() { return characteristics_; };
     const Characteristics &characteristics() const { return characteristics_; };
 
     float chance_to_take_damage();
-    void take_damage(long amount, Actor &source);
+    void take_damage(float amount, Actor &source);
 
     virtual void update(float delta_time){};
     virtual void attack(Actor &target){};
@@ -300,7 +298,7 @@ private:
     Experience experience;
 
 public:
-    Player(size_t class_index, float size, long health, Characteristics characteristics)
+    Player(size_t class_index, float size, float health, Characteristics characteristics)
         : Actor(class_index, size, health, characteristics) {}
 
     void update(float delta_time) override;
@@ -312,7 +310,7 @@ public:
 
 class Enemy : public Actor {
 public:
-    Enemy(size_t class_index, float size, long health, Characteristics characteristics)
+    Enemy(size_t class_index, float size, float health, Characteristics characteristics)
         : Actor(class_index, size, health, characteristics) {}
 
     void init();

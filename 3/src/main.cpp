@@ -49,12 +49,12 @@ int sub_main() {
     tiles[4][4].kind = Tile::OpenDor;
     tiles[4][5].kind = Tile::ClosedDor;
 
-    Player player(player_id, 100, 10.0f, Characteristics(0, 0, 5));
+    Player player(player_id, 100.0f, 10.0f, Characteristics(0.0f, 0.0f, 5.0f));
 
     DungeonLevel level(tiles, player);
 
     for (size_t i = 0; i < 10; ++i) {
-        Enemy enemy(goblin_id, 20, 5.0f, Characteristics(0, 0, 2));
+        Enemy enemy(goblin_id, 20.0f, 5.0f, Characteristics(0.0f, 0.0f, 2.0f));
         enemy.position.x = i;
         enemy.position.y = i;
         enemy.characteristics().speed += (i % 2 == 0 ? 0 : -1);
@@ -62,7 +62,7 @@ int sub_main() {
     }
 
     for (size_t i = 0; i < 10; ++i) {
-        Enemy enemy(pepe_id, 10, 3.0f, Characteristics(0, 0, 4));
+        Enemy enemy(pepe_id, 10.0f, 3.0f, Characteristics(0.0f, 0.0f, 4.0f));
         enemy.position.x = 2*i;
         enemy.position.y = i;
         level.enemies.push_back(enemy);

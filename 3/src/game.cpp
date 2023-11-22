@@ -25,18 +25,18 @@ void setup_sprite(const sf::Texture &texture, sf::Sprite &sprite, sf::Vector2f r
 void CharacteristicsModifier::apply(Characteristics &value) {
     if (max_health) {
         value.max_health = std::visit(
-            [&](auto &&v) -> auto { return (long)v.apply(value.max_health); }, *max_health
+            [&](auto &&v) -> auto { return v.apply(value.max_health); }, *max_health
         );
     }
 
     if (defence) {
         value.defence =
-            std::visit([&](auto &&v) -> auto { return (long)v.apply(value.defence); }, *defence);
+            std::visit([&](auto &&v) -> auto { return v.apply(value.defence); }, *defence);
     }
 
     if (speed) {
         value.speed =
-            std::visit([&](auto &&v) -> auto { return (long)v.apply(value.speed); }, *speed);
+            std::visit([&](auto &&v) -> auto { return v.apply(value.speed); }, *speed);
     }
 }
 
