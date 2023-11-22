@@ -78,6 +78,7 @@ static const char *const logo_name = "rock_eyebrow_meme.png";
 static const char *const flor_tile_name = "dungeon_floor.jpeg";
 static const char *const open_dor_tile_name = "dungeon_open_door.jpeg";
 static const char *const closed_dor_tile_name = "dungeon_closed_door.jpeg";
+static const char *const barrier_tile_name = "black.jpeg";
 
 bool Game::init(unsigned int width, unsigned int height) { return game_view.init(width, height); }
 
@@ -221,6 +222,7 @@ bool DungeonLevelView::init() {
     if (!open_dor_tile_texture.loadFromFile(path_to_resources + open_dor_tile_name)) return false;
     if (!closed_dor_tile_texture.loadFromFile(path_to_resources + closed_dor_tile_name))
         return false;
+    if (!barrier_tile_texture.loadFromFile(path_to_resources + barrier_tile_name)) return false;
 
     setup_sprite(flor_tile_texture, flor_tile_sprite);
     flor_tile_sprite.setOrigin({0, 0});
@@ -230,6 +232,9 @@ bool DungeonLevelView::init() {
 
     setup_sprite(closed_dor_tile_texture, closed_dor_tile_sprite);
     closed_dor_tile_sprite.setOrigin({0, 0});
+
+    setup_sprite(barrier_tile_texture, barrier_tile_sprite);
+    barrier_tile_sprite.setOrigin({0, 0});
 
     return true;
 }
@@ -256,6 +261,8 @@ void DungeonLevelView::draw_tile(const Tile &tile, sf::Vector2f position) {
         sprite = open_dor_tile_sprite;
     } else if (tile.kind == Tile::ClosedDor) {
         sprite = closed_dor_tile_sprite;
+    } else if (tile.kind == Tile::Barrier) {
+        sprite = barrier_tile_sprite;
     }
 
     sprite.setPosition(position);
@@ -281,11 +288,17 @@ DungeonLevel *Game::get_current_level() {
     return &all_levels[current_level_index];
 }
 
+void DungeonLevel::handle_collitions() {
+    
+}
+
 void DungeonLevel::update(float delta_time) {
     for (auto &enemy : enemies) {
         enemy.update(delta_time);
     }
     player.update(delta_time);
+
+    handle_collitions();
 }
 
 void Player::update(float delta_time) {

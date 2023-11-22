@@ -170,6 +170,7 @@ public:
 class Tile {
 public:
     enum Kind {
+        Barrier,
         Flor,
         OpenDor,
         ClosedDor,
@@ -185,7 +186,7 @@ public:
 
     ~Tile() { delete building; }
 
-    explicit Tile() : Tile(Flor) {}
+    explicit Tile() : Tile(Barrier) {}
     explicit Tile(Kind kind) : kind(kind), building(nullptr) {}
 
     Tile &set_building(std::unique_ptr<Chest> building);
@@ -331,6 +332,7 @@ public:
     std::optional<Tile> get_tile_of_an_actor(const Actor &actor);
     void add_laying_item(std::unique_ptr<LayingItem> item);
     void update(float delta_time);
+    void handle_collitions();
 };
 
 class DungeonLevelView {
@@ -345,6 +347,9 @@ private:
 
     sf::Texture closed_dor_tile_texture;
     sf::Sprite closed_dor_tile_sprite;
+
+    sf::Texture barrier_tile_texture;
+    sf::Sprite barrier_tile_sprite;
 
     ActorsView actors_view;
 

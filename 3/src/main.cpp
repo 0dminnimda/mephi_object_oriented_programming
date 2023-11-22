@@ -37,8 +37,13 @@ int sub_main() {
 
     game.actor_classes.push_back(ActorClass("player", "plays"));
 
-    Matrix<Tile> tiles(10, 10);
+    Matrix<Tile> tiles(100, 100);
 
+    for (size_t i = 1; i < tiles.size() - 1; ++i) {
+        for (size_t j = 1; j < tiles.row_size() - 1; ++j) {
+            tiles[i][j].kind = Tile::Flor;
+        }
+    }
     tiles[4][4].kind = Tile::OpenDor;
     tiles[4][5].kind = Tile::ClosedDor;
 
