@@ -8,6 +8,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -229,15 +230,23 @@ protected:
 public:
     sf::Vector2f position;
     float size = 1.0f;
+
+    RigidBody() = default;
+    RigidBody(float size) : size(size) {}
 };
 
 class ActorClass {
 public:
     std::string name;
     std::string description;
+    std::string texture_name;
+    sf::Texture texture;
+    sf::Sprite sprite;
 
-    ActorClass(std::string name, std::string description) : name(name), description(description) {}
+    ActorClass(std::string name, std::string description, std::string texture_name) : name(name), description(description), texture_name(texture_name) {}
     ~ActorClass() = default;
+
+    bool init();
 };
 
 // XXX: creature?
@@ -250,10 +259,8 @@ private:
     Characteristics characteristics_;
 
 public:
-    sf::Texture texture;
-
-    Actor(size_t class_index, long health, Characteristics characteristics)
-        : RigidBody(),
+    Actor(size_t class_index, float size, long health, Characteristics characteristics)
+        : RigidBody(size),
           actor_class_index_(class_index),
           health_(health),
           characteristics_(characteristics) {}
@@ -277,8 +284,6 @@ class ActorsView {
 private:
     sf::RenderWindow &window;
 
-    sf::Sprite actor_sprite;
-
 public:
     ActorsView(sf::RenderWindow &window) : window(window) {}
     ~ActorsView() = default;
@@ -295,8 +300,8 @@ private:
     Experience experience;
 
 public:
-    Player(size_t class_index, long health, Characteristics characteristics)
-        : Actor(class_index, health, characteristics) {}
+    Player(size_t class_index, float size, long health, Characteristics characteristics)
+        : Actor(class_index, size, health, characteristics) {}
 
     void update(float delta_time) override;
     void attack(Actor &target) override;
@@ -307,6 +312,9 @@ public:
 
 class Enemy : public Actor {
 public:
+    Enemy(size_t class_index, float size, long health, Characteristics characteristics)
+        : Actor(class_index, size, health, characteristics) {}
+
     void update(float delta_time) override;
     void attack(Actor &target) override;
     void die(Actor &reason) override;
@@ -426,6 +434,7 @@ public:
     void start_playing();
     bool init(unsigned int width, unsigned int height);
     bool run();
+    size_t add_actor_class(const ActorClass &cls);
 };
 
 #endif  // GAME_H

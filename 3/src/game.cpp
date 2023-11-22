@@ -80,7 +80,12 @@ static const char *const open_dor_tile_name = "dungeon_open_door.jpeg";
 static const char *const closed_dor_tile_name = "dungeon_closed_door.jpeg";
 static const char *const barrier_tile_name = "black.jpeg";
 
-bool Game::init(unsigned int width, unsigned int height) { return game_view.init(width, height); }
+bool Game::init(unsigned int width, unsigned int height) {
+    for (auto &cls : actor_classes) {
+        if (!cls.init()) return false;
+    }
+    return game_view.init(width, height);
+}
 
 void Game::start_playing() {
     if (is_playing) return;
@@ -146,6 +151,12 @@ bool Game::run() {
     }
 
     return true;
+}
+
+size_t Game::add_actor_class(const ActorClass &cls) {
+    size_t id = actor_classes.size();
+    actor_classes.push_back(cls);
+    return id;
 }
 
 bool GameView::init(unsigned int width, unsigned int height) {
@@ -270,9 +281,9 @@ void DungeonLevelView::draw_tile(const Tile &tile, sf::Vector2f position) {
 }
 
 void ActorsView::draw(const Actor &actor) {
-    setup_sprite(actor.texture, actor_sprite);
-    actor_sprite.setPosition(actor.position);
-    window.draw(actor_sprite);
+    sf::Sprite &sprite = Game::get().actor_classes[actor.actor_class_index()].sprite;
+    sprite.setPosition(actor.position);
+    window.draw(sprite);
 }
 
 void Game::add_level(const DungeonLevel &level) { all_levels.push_back(level); }
@@ -299,6 +310,12 @@ void DungeonLevel::update(float delta_time) {
     player.update(delta_time);
 
     handle_collitions();
+}
+
+bool ActorClass::init() {
+    if (!texture.loadFromFile(path_to_resources + texture_name)) return false;
+    setup_sprite(texture, sprite);
+    return true;
 }
 
 void Player::update(float delta_time) {

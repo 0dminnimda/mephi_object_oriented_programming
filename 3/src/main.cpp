@@ -35,9 +35,11 @@ float signed_distance_from_rect_to_circle(
 int sub_main() {
     Game &game = Game::get();
 
-    game.actor_classes.push_back(ActorClass("player", "plays"));
+    size_t player_id = game.add_actor_class(ActorClass("player", "plays the game", "hide_the_plan.jpeg"));
+    size_t goblin_id = game.add_actor_class(ActorClass("goblin", "deez nuts", "rock_smiling.jpeg"));
+    // size_t goblin_id = game.add_actor_class(ActorClass("goblin", "deez nuts", "pepe_angry.jpeg"));
 
-    Matrix<Tile> tiles(100, 100);
+    Matrix<Tile> tiles(30, 30);
 
     for (size_t i = 1; i < tiles.size() - 1; ++i) {
         for (size_t j = 1; j < tiles.row_size() - 1; ++j) {
@@ -47,11 +49,16 @@ int sub_main() {
     tiles[4][4].kind = Tile::OpenDor;
     tiles[4][5].kind = Tile::ClosedDor;
 
-    Player player(0, 0, Characteristics(0, 0, 5));
-    if (!player.texture.loadFromFile(path_to_resources + "hide_the_plan.jpeg")) return EXIT_FAILURE;
-    player.size = 10.0f;
+    Player player(player_id, 100, 10.0f, Characteristics(0, 0, 5));
 
     DungeonLevel level(tiles, player);
+
+    for (size_t i = 0; i < 10; ++i) {
+        Enemy enemy(goblin_id, 20, 5.0f, Characteristics(0, 0, 5));
+        enemy.position.x = i;
+        enemy.position.y = i;
+        level.enemies.push_back(enemy);
+    }
 
     game.add_level(level);
 
