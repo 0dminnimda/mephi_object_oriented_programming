@@ -273,6 +273,7 @@ public:
     float chance_to_take_damage();
     void take_damage(float amount, Actor &source);
 
+    virtual void init(){};
     virtual void update(float delta_time){};
     virtual void attack(Actor &target){};
     virtual void die(Actor &reason){};
@@ -301,6 +302,7 @@ public:
     Player(size_t class_index, float size, float health, Characteristics characteristics)
         : Actor(class_index, size, health, characteristics) {}
 
+    void init() overide;
     void update(float delta_time) override;
     void attack(Actor &target) override;
     void die(Actor &reason) override;
@@ -313,7 +315,7 @@ public:
     Enemy(size_t class_index, float size, float health, Characteristics characteristics)
         : Actor(class_index, size, health, characteristics) {}
 
-    void init();
+    void init() overide;
     void update(float delta_time) override;
     void attack(Actor &target) override;
     void die(Actor &reason) override;
