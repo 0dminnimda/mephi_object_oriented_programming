@@ -54,8 +54,11 @@ static const char *const closed_dor_tile_name = "dungeon_closed_door.jpeg";
 static const char *const barrier_tile_name = "black.jpeg";
 
 bool Game::init(unsigned int width, unsigned int height) {
-    for (auto &cls : actor_classes) {
-        if (!cls.init()) return false;
+    for (auto &it : actor_classes) {
+        if (!it.init()) return false;
+    }
+    for (auto &it : item_classes) {
+        if (!it.init()) return false;
     }
     return game_view.init(width, height);
 }
@@ -145,9 +148,9 @@ size_t Game::add_actor_class(const ActorClass &cls) {
     return actor_classes.size() - 1;
 }
 
-size_t Game::add_item_template(std::unique_ptr<Item> item) {
-    item_templates.push_back(std::move(item));
-    return item_templates.size() - 1;
+size_t Game::add_item_class(const ItemClass &cls) {
+    item_classes.push_back(cls);
+    return item_classes.size() - 1;
 }
 
 bool GameView::init(unsigned int width, unsigned int height) {
@@ -352,6 +355,19 @@ void ActorsView::draw(const Actor &actor) {
     sprite.setPosition(actor.position);
     window.draw(sprite);
     sprite.setScale(saved);
+
+    if (actor.equipment.weapon)
+        items_view.draw(*actor.equipment.weapon, actor.position);
+}
+
+void ItemsView::draw(const Item &item, sf::Vector2f position) {
+    auto &cls = Game::get().item_classes[item.item_class_index];
+    sf::Sprite &sprite = cls.sprite;
+    sf::Vector2f saved = sprite.getScale();
+    sprite.setScale(saved / Game::world_size * cls.size);
+    sprite.setPosition(position);
+    window.draw(sprite);
+    sprite.setScale(saved);
 }
 
 void Game::add_level(const DungeonLevel &level) { all_levels.push_back(level); }
@@ -401,6 +417,12 @@ void DungeonLevel::update(float delta_time) {
 }
 
 bool ActorClass::init() {
+    if (!texture.loadFromFile(path_to_resources + texture_name)) return false;
+    setup_sprite(texture, sprite);
+    return true;
+}
+
+bool ItemClass::init() {
     if (!texture.loadFromFile(path_to_resources + texture_name)) return false;
     setup_sprite(texture, sprite);
     return true;

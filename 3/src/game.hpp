@@ -64,21 +64,50 @@ public:
 
 class Actor;
 
-class Item {
-    std::string name;
-    std::shared_ptr<sf::Texture> icon;
-
+class ItemClass {
 public:
+    std::string name;
+    std::string description;
+    std::string texture_name;
+    sf::Texture texture;
+    sf::Sprite sprite;
+    float size;
+
+    ItemClass(std::string name, std::string description, std::string texture_name, float size)
+        : name(name), description(description), texture_name(texture_name), size(size) {}
+    ~ItemClass() = default;
+
+    bool init();
+};
+
+class Item {
+public:
+    size_t item_class_index;
+
+    Item(size_t item_class_index) : item_class_index(item_class_index) {}
+
     virtual ~Item() = default;
     virtual void use(Actor &target){};
     virtual std::shared_ptr<Item> copy() const = 0;
+};
+
+class ItemsView {
+private:
+    sf::RenderWindow &window;
+
+public:
+    ItemsView(sf::RenderWindow &window) : window(window) {}
+    ~ItemsView() = default;
+
+    void draw(const Item &item, sf::Vector2f position);
 };
 
 class Potion : public Item {
     CharacteristicsModifier modifier;
 
 public:
-    Potion(CharacteristicsModifier modifier) : modifier(modifier) {}
+    Potion(size_t item_class_index, CharacteristicsModifier modifier)
+        : Item(item_class_index), modifier(modifier) {}
 
     void use(Actor &target) override;
     void apply(Actor &target);
@@ -109,7 +138,8 @@ protected:
     RangeOfValues damage_range;
 
 public:
-    Weapon(RangeOfValues damage_range) : damage_range(damage_range) {}
+    Weapon(size_t item_class_index, RangeOfValues damage_range)
+        : Item(item_class_index), damage_range(damage_range) {}
 
     void use(Actor &target) override;
     virtual void attack(Actor &source) = 0;
@@ -125,8 +155,13 @@ public:
     sf::Time cooldown_time;
     bool on_cooldown = false;
 
-    Hammer(RangeOfValues damage_range, float hit_range, sf::Time cooldown_time = sf::seconds(1.0f))
-        : Weapon(damage_range), hit_range(hit_range), cooldown_time(cooldown_time) {}
+    Hammer(
+        size_t item_class_index, RangeOfValues damage_range, float hit_range,
+        sf::Time cooldown_time = sf::seconds(1.0f)
+    )
+        : Weapon(item_class_index, damage_range),
+          hit_range(hit_range),
+          cooldown_time(cooldown_time) {}
 
     std::shared_ptr<Item> copy() const override;
 
@@ -303,14 +338,13 @@ class ActorsView {
 private:
     sf::RenderWindow &window;
 
+    ItemsView items_view;
+
 public:
-    ActorsView(sf::RenderWindow &window) : window(window) {}
+    ActorsView(sf::RenderWindow &window) : window(window), items_view(window) {}
     ~ActorsView() = default;
 
     void draw(const Actor &actor);
-
-private:
-    void draw_tile(const Tile &tile, sf::Vector2f position, float max_tiles_size);
 };
 
 class Player : public Actor {
@@ -426,7 +460,8 @@ private:
     sf::Text info_message;
 
 public:
-    GameView() : window(), dungeon_level_view(window), inventory_canvas(window), level_up_canvas(window) {}
+    GameView()
+        : window(), dungeon_level_view(window), inventory_canvas(window), level_up_canvas(window) {}
     ~GameView() = default;
 
     bool init(unsigned int width, unsigned int height);
@@ -452,11 +487,12 @@ public:
     static constexpr float view_size = 10.0f;   // sets up the view size
     static constexpr float world_size = 10.0f;  // adjusts the sizes of the objects
 
-    std::vector<ActorClass> actor_classes;           // the first entry should be a player class
-    std::vector<Enemy> enemy_templates;              // follows the actor_class_index
-    static constexpr size_t player_class_index = 0;  // adjusts the sizes of the objects
+    std::vector<ActorClass> actor_classes;  // the first entry should be a player class
+    std::vector<Enemy> enemy_templates;     // follows the actor_class_index
+    static constexpr size_t player_class_index = 0;
 
-    std::vector<std::unique_ptr<Item>> item_templates;
+    std::vector<ItemClass> item_classes;
+    std::vector<std::unique_ptr<Item>> item_templates;  // follows the item_classes
 
     Player player;
 
@@ -483,7 +519,8 @@ public:
     size_t add_actor_class(const ActorClass &cls);
     Enemy make_enemy(size_t actor_class_index) const;
 
-    size_t add_item_template(std::unique_ptr<Item> item);
+    size_t add_item_class(const ItemClass &cls);
+    // size_t add_item_template(std::unique_ptr<Item> item);
 };
 
 #endif  // GAME_H
