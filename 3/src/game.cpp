@@ -380,9 +380,14 @@ DungeonLevel *Game::get_current_level() {
 void DungeonLevel::handle_collitions() {}
 
 void DungeonLevel::delete_the_dead() {
-    enemies.erase(std::remove_if(enemies.begin(), enemies.end(), [](const Enemy &enemy) {
-        return !enemy.alive;
-    }));
+    size_t c = 0;
+    for (size_t i = 0; i < enemies.size(); ++i, ++c) {
+        if (!enemies[i].alive) {
+            if (i != c) enemies[c] = enemies[i];
+            --c;
+        }
+    }
+    enemies.erase(enemies.begin() + c, enemies.end());
 }
 
 void DungeonLevel::update(float delta_time) {
@@ -431,6 +436,10 @@ void Actor::take_damage(float amount, Actor &source) {
     if (health <= 0) {
         die(source);
     }
+
+    std::cout << "Enemy (" << actor_class_index << ") took " << amount << " damage from ("
+              << source.actor_class_index << ") resulting with " << health << " health"
+              << std::endl;
 }
 
 void Player::init() {}
@@ -490,7 +499,8 @@ void Enemy::update(float delta_time) {
 void Enemy::attack(Actor &target) {}
 
 void Enemy::die(Actor &reason) {
-    std::cout << "Enemy (" << actor_class_index << ") died from (" << reason.actor_class_index << ") with " << health << " health" << std::endl;
+    std::cout << "Enemy (" << actor_class_index << ") died from (" << reason.actor_class_index
+              << ") with " << health << " health" << std::endl;
     alive = false;
 }
 
@@ -518,8 +528,7 @@ void Hammer::try_to_attack(Actor &source, Actor &target) {
     if (!is_in_range(source, target.position)) return;
 
     float damage = get_damage(target);
-    if (enchantment)
-        damage = enchantment->apply(damage, target);
+    if (enchantment) damage = enchantment->apply(damage, target);
 
     target.take_damage(damage, source);
 }
