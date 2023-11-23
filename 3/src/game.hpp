@@ -291,7 +291,6 @@ public:
           characteristics(characteristics) {}
     virtual ~Actor() = default;
 
-    float chance_to_take_damage();
     virtual void take_damage(float amount, Actor &source);
 
     virtual void init(){};

@@ -432,7 +432,7 @@ float Enchantment::apply(float value, const Actor &target) const {
 void Equipment::equip_weapon(std::shared_ptr<Weapon> weapon) { this->weapon = weapon; }
 
 void Actor::take_damage(float amount, Actor &source) {
-    health -= amount;
+    health -= amount - source.characteristics.defence;
     if (health <= 0) {
         die(source);
     }

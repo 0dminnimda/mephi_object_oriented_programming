@@ -56,7 +56,7 @@ int sub_main() {
     game.player = Player(player_id, 10.0f, Characteristics(100.0f, 0.0f, 5.0f));
 
     game.enemy_templates.resize(game.actor_classes.size());
-    game.enemy_templates[goblin_id] = Enemy(goblin_id, 5.0f, Characteristics(20.0f, 0.0f, 2.0f));
+    game.enemy_templates[goblin_id] = Enemy(goblin_id, 5.0f, Characteristics(10.0f, 2.0f, 2.0f));
     game.enemy_templates[pepe_id] = Enemy(pepe_id, 3.0f, Characteristics(10.0f, 0.0f, 4.0f));
 
     size_t hammer_id = game.add_item_template(std::make_unique<Hammer>(RangeOfValues(3, 5), 1.0f));
