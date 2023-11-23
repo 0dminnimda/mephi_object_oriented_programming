@@ -433,10 +433,11 @@ void DungeonLevel::handle_collitions() {}
 
 void DungeonLevel::delete_the_dead() {
     size_t c = 0;
-    for (size_t i = 0; i < enemies.size(); ++i, ++c) {
+    for (size_t i = 0; i < enemies.size(); ++i) {
         if (!enemies[i].alive) {
             if (i != c) enemies[c] = enemies[i];
-            --c;
+        } else {
+            ++c;
         }
     }
     enemies.erase(enemies.begin() + c, enemies.end());
@@ -529,6 +530,27 @@ void Actor::take_damage(float amount, Actor &source) {
     std::cout << "Enemy (" << actor_class_index << ") took " << amount << " damage from ("
               << source.actor_class_index << ") resulting with " << health << " health"
               << std::endl;
+}
+
+void Experience::gain(size_t amount, Actor &actor) {
+    value += amount;
+    for (;;) {
+        size_t needs = needs_exp_for_level(level);
+        if (needs <= value) {
+            value -= needs;
+            level_up();
+        } else {
+            break;
+        }
+    }
+}
+
+size_t Experience::needs_exp_for_level(size_t level) {
+    return 4 * level * level + 10 * level + 10;
+}
+
+void Experience::level_up() {
+    level += 1;
 }
 
 void Player::init() {}

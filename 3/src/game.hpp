@@ -253,11 +253,12 @@ public:
 };
 
 class Experience {
-    int level;
-    int value;
+    size_t level;
+    size_t value;
 
 public:
-    void gain(int amount, Actor &actor);
+    void gain(size_t amount, Actor &actor);
+    static size_t needs_exp_for_level(size_t level);
     void level_up();
 };
 
@@ -283,7 +284,6 @@ public:
 
 class RigidBody {
 public:
-    // sf::Vector2f velocity_;
     sf::Vector2f position;
     float size = 1.0f;
 

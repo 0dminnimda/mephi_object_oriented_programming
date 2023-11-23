@@ -62,7 +62,7 @@ int sub_main() {
     size_t hammer_id = game.add_item_class(ItemClass("hammer", "smashes in the face", "hammer.png", 13.0f));
 
     game.item_templates.resize(game.item_classes.size());
-    game.item_templates[hammer_id] = std::make_unique<Hammer>(hammer_id, RangeOfValues(3, 5), 1.0f);
+    game.item_templates[hammer_id] = std::make_unique<Hammer>(hammer_id, RangeOfValues(3, 500), 1.0f);
 
     DungeonLevel level;
 
