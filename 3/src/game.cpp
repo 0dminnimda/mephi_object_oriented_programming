@@ -347,7 +347,7 @@ void DungeonLevelView::draw(const DungeonLevel &level) {
         }
     }
 
-    for (const auto &laying_item : level.laying_items) {
+    for (const LayingItem &laying_item : level.laying_items) {
         actors_view.items_view.draw(*(laying_item.item), laying_item.position);
     }
 
@@ -483,17 +483,14 @@ void Chest::try_to_pick(const Actor &source, LockPicks &picks, size_t i, size_t 
 
     DungeonLevel *level = Game::get().get_current_level();
     if (!level) return;
-    std::cout << "got level" << std::endl;
 
-    // auto tile_position = sf::Vector2f(i, j) * level->tile_coords_to_world_coords_factor();
+    auto tile_position = sf::Vector2f(i, j) * level->tile_coords_to_world_coords_factor();
     if (result.lock_picked) {
-    //     std::cout << "droppin" << std::endl;
-    //     for (std::shared_ptr<Item> item : inventory.items) {
-    //         std::cout << "item " << (item ? 1 : 0) << std::endl;
-    //         LayingItem laying_item(item);
-    //         laying_item.position = tile_position;
-    //         level->laying_items.push_back(laying_item);
-    //     }
+        for (std::shared_ptr<Item> item : inventory.items) {
+            LayingItem laying_item(item);
+            laying_item.position = tile_position;
+            level->laying_items.push_back(laying_item);
+        }
         level->tiles[i][j].building = nullptr;
     }
 }
@@ -610,6 +607,16 @@ void Enemy::die(Actor &reason) {
     std::cout << "Enemy (" << actor_class_index << ") died from (" << reason.actor_class_index
               << ") with " << health << " health" << std::endl;
     alive = false;
+
+    DungeonLevel *level = Game::get().get_current_level();
+    if (!level) return;
+
+    RangeOfValues range_chest_item(0, Game::get().item_templates.size() - 1);
+    std::shared_ptr<Item> item = Game::get().item_templates[range_chest_item.get_random()]->copy();
+
+    LayingItem laying_item(item);
+    laying_item.position = position;
+    level->laying_items.push_back(laying_item);
 }
 
 Enemy Enemy::copy() const { return Enemy(*this); }

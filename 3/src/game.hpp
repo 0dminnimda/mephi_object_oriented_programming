@@ -384,9 +384,9 @@ public:
 
 class LayingItem : public RigidBody {
 public:
-    LayingItem(std::shared_ptr<Item> item) : RigidBody() {}
-
     std::shared_ptr<Item> item;
+
+    LayingItem(std::shared_ptr<Item> item) : RigidBody(), item(item) {}
 };
 
 class DungeonLevel {

@@ -69,10 +69,9 @@ int sub_main() {
     std::shared_ptr<Weapon> hammer =
         std::static_pointer_cast<Weapon>(game.item_templates[hammer_id]->copy());
     game.player.equipment.equip_weapon(hammer);
-    // game.player.pick_up_item(*hammer);
 
     level.tile_size = 10.0f;
-    level.chest_size_factor = 2.0f / 3.0f;
+    level.chest_size_factor = 1.0f;
 
     level.resize_tiles(30, 30);
     level.regenerate_tiles();
