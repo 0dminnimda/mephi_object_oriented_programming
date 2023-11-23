@@ -235,6 +235,10 @@ void GameView::draw() {
     window.setView(view);
 }
 
+void Inventory::add_item(std::shared_ptr<Item> item) {
+    items.push_back(item);
+}
+
 void InventoryCanvas::draw() {}
 
 void LevelUpCanvas::draw() {}
@@ -270,6 +274,7 @@ void DungeonLevel::regenerate_tiles() {
     RangeOfValues range_chest_spawn(0, 50);
     size_t max_level = 9;
     RangeOfValues range_chest_level(0, (max_level + 1) * (max_level + 1) - 1);
+    RangeOfValues range_chest_item(0, Game::get().item_templates.size() - 1);
 
     for (size_t i = 0; i < tiles.size(); ++i) {
         for (size_t j = 0; j < tiles.row_size(); ++j) {
@@ -280,7 +285,9 @@ void DungeonLevel::regenerate_tiles() {
 
             if (tiles[i][j].kind == Tile::Flor && range_chest_spawn.get_random() == 0) {
                 size_t level = max_level - (size_t)std::sqrt(range_chest_level.get_random());
-                tiles[i][j].set_building(std::make_shared<Chest>(level));
+                auto chest = std::make_shared<Chest>(level);
+                chest->inventory.add_item(Game::get().item_templates[range_chest_item.get_random()]->copy());
+                tiles[i][j].set_building(chest);
             }
         }
     }
@@ -294,12 +301,14 @@ void DungeonLevel::regenerate_enemies() {
 
     RangeOfValues range_x(0, tiles.size());
     RangeOfValues range_y(0, tiles.row_size());
+    RangeOfValues range_wiggle(-10, 10);
 
     for (size_t class_index = 1; class_index < Game::get().actor_classes.size(); ++class_index) {
         for (size_t i = 0; i < 10; ++i) {
             Enemy &enemy = enemies.emplace_back(Game::get().make_enemy(class_index));
-            enemy.position = sf::Vector2f(range_x.get_random(), range_y.get_random()) *
-                             tile_coords_to_world_coords_factor();
+            enemy.position = sf::Vector2f(
+                range_x.get_random() + range_wiggle.get_random() / 10,
+                range_y.get_random() + range_wiggle.get_random() / 10) * tile_coords_to_world_coords_factor();
         }
     }
 }
@@ -336,6 +345,10 @@ void DungeonLevelView::draw(const DungeonLevel &level) {
         for (size_t j = 0; j < row.size(); ++j) {
             draw_tile(row[j], sf::Vector2f(i, j), level.tile_coords_to_world_coords_factor(), level.chest_size_factor);
         }
+    }
+
+    for (const auto &laying_item : level.laying_items) {
+        actors_view.items_view.draw(*(laying_item.item), laying_item.position);
     }
 
     for (const auto &emeny : level.enemies) {
@@ -451,12 +464,38 @@ bool ItemClass::init() {
     return true;
 }
 
-LockPickingResult Chest::try_to_pick(const Actor &source, LockPicks &picks) {
+LockPickingResult Chest::simulate_picking(const Actor &source) {
     RangeOfValues range(0, 1 + 2*level);
-    if ((float)range.get_random() * source.characteristics.luck <= 1) {
+    if ((float)range.get_random() / source.characteristics.luck <= 1) {
         return {true, false};
     }
     return {false, (float)range.get_random() * source.characteristics.luck <= 1};
+}
+
+void Chest::try_to_pick(const Actor &source, LockPicks &picks, size_t i, size_t j) {
+    if (picks.count == 0) return;
+
+    auto result = simulate_picking(source);
+    std::cout << "lock_picked = " << result.lock_picked << " pick_broken = " << result.pick_broken << std::endl;
+    if (result.pick_broken) {
+        picks.count -= 1;
+    }
+
+    DungeonLevel *level = Game::get().get_current_level();
+    if (!level) return;
+    std::cout << "got level" << std::endl;
+
+    // auto tile_position = sf::Vector2f(i, j) * level->tile_coords_to_world_coords_factor();
+    if (result.lock_picked) {
+    //     std::cout << "droppin" << std::endl;
+    //     for (std::shared_ptr<Item> item : inventory.items) {
+    //         std::cout << "item " << (item ? 1 : 0) << std::endl;
+    //         LayingItem laying_item(item);
+    //         laying_item.position = tile_position;
+    //         level->laying_items.push_back(laying_item);
+    //     }
+        level->tiles[i][j].building = nullptr;
+    }
 }
 
 void CharacteristicsModifier::apply(Characteristics &value) {
@@ -500,6 +539,7 @@ void Player::init() {}
 void Player::update(float delta_time) {
     handle_movement(delta_time);
     handle_equipment_use();
+    handle_picking();
 }
 
 void Player::handle_movement(float delta_time) {
@@ -534,6 +574,21 @@ void Player::handle_equipment_use() {
             equipment.weapon->use(*this);
         }
     }
+}
+
+void Player::handle_picking() {
+    if (!sf::Keyboard::isKeyPressed(sf::Keyboard::P)) return;
+
+    DungeonLevel *level = Game::get().get_current_level();
+    if (!level) return;
+
+    auto coords = level->get_tile_coordinates(position);
+    if (!coords) return;
+
+    Tile &tile = level->tiles[coords->first][coords->second];
+    if (!tile.building) return;
+
+    tile.building->try_to_pick(*this, lock_picks, coords->first, coords->second);
 }
 
 void Player::attack(Actor &target) {}

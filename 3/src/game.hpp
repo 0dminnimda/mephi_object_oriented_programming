@@ -46,7 +46,7 @@ public:
     float max_health;
     float defence;
     float speed;
-    float luck;
+    float luck = 1;
 };
 
 class CharacteristicsModifier {
@@ -81,11 +81,12 @@ class Item {
 public:
     size_t item_class_index;
 
+    Item() {}
     Item(size_t item_class_index) : item_class_index(item_class_index) {}
 
     virtual ~Item() = default;
     virtual void use(Actor &target){};
-    virtual std::shared_ptr<Item> copy() const = 0;
+    virtual std::shared_ptr<Item> copy() const { return nullptr; }
 };
 
 class ItemsView {
@@ -188,20 +189,21 @@ private:
 };
 
 class LockPicks : public Item {
+public:
     size_t count;
 };
 
 struct LockPickingResult {
+public:
     bool lock_picked;
     bool pick_broken;
 };
 
 class Inventory {
-private:
+public:
     std::vector<std::shared_ptr<Item>> items;
 
-public:
-    void add_item(Item &item);
+    void add_item(std::shared_ptr<Item> item);
     void open_inventory();
     void close_inventory();
 };
@@ -225,7 +227,8 @@ public:
 
     explicit Chest(size_t level) : inventory(), level(level) {}
 
-    LockPickingResult try_to_pick(const Actor &source, LockPicks &picks);
+    LockPickingResult simulate_picking(const Actor &source);
+    void try_to_pick(const Actor &source, LockPicks &picks, size_t i, size_t j);
 };
 
 class Tile {
@@ -331,9 +334,9 @@ class ActorsView {
 private:
     sf::RenderWindow &window;
 
+public:
     ItemsView items_view;
 
-public:
     ActorsView(sf::RenderWindow &window) : window(window), items_view(window) {}
     ~ActorsView() = default;
 
@@ -341,11 +344,11 @@ public:
 };
 
 class Player : public Actor {
-private:
+public:
     Inventory inventory;
+    LockPicks lock_picks;
     Experience experience;
 
-public:
     Player() = default;
     Player(size_t class_index, float size, Characteristics characteristics)
         : Actor(class_index, size, characteristics) {}
@@ -356,6 +359,7 @@ public:
     void update(float delta_time) override;
     void handle_movement(float delta_time);
     void handle_equipment_use();
+    void handle_picking();
     void attack(Actor &target) override;
     void die(Actor &reason) override;
 
@@ -380,6 +384,8 @@ public:
 
 class LayingItem : public RigidBody {
 public:
+    LayingItem(std::shared_ptr<Item> item) : RigidBody() {}
+
     std::shared_ptr<Item> item;
 };
 
