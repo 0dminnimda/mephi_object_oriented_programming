@@ -514,7 +514,24 @@ void Weapon::use(Actor &target) { attack(target); }
 
 float Weapon::get_damage(Actor &target) { return damage_range.get_random(); }
 
+bool Hammer::cooldown() {
+    if (!on_cooldown) {
+        cooldown_timer.restart();
+        on_cooldown = true;
+        return false;
+    }
+
+    if (cooldown_timer.getElapsedTime() > cooldown_time) {
+        cooldown_timer.restart();
+        return false;
+    }
+
+    return true;
+}
+
 void Hammer::attack(Actor &source) {
+    if (cooldown()) return;
+
     if (source.actor_class_index == Game::player_class_index) {
         for (auto &enemy : Game::get().get_current_level()->enemies) {
             try_to_attack(source, enemy);

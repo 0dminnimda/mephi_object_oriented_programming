@@ -121,13 +121,17 @@ public:
 class Hammer : public Weapon {
 public:
     float hit_range;
+    sf::Clock cooldown_timer;
+    sf::Time cooldown_time;
+    bool on_cooldown = false;
 
-    Hammer(RangeOfValues damage_range, float hit_range)
-        : Weapon(damage_range), hit_range(hit_range) {}
+    Hammer(RangeOfValues damage_range, float hit_range, sf::Time cooldown_time = sf::seconds(1.0f))
+        : Weapon(damage_range), hit_range(hit_range), cooldown_time(cooldown_time) {}
 
     std::shared_ptr<Item> copy() const override;
 
     void attack(Actor &source) override;
+    bool cooldown();
     void try_to_attack(Actor &source, Actor &target) override;
     bool is_in_range(const Actor &source, sf::Vector2f target) const override;
 };
