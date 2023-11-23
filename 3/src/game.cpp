@@ -103,7 +103,7 @@ void Game::handle_events() {
             stop_playing();
         }
 
-        if (is_pressed(event, sf::Keyboard::Space) || (event.type == sf::Event::TouchBegan)) {
+        if (is_pressed(event, sf::Keyboard::Enter) || (event.type == sf::Event::TouchBegan)) {
             start_playing();
         }
 
@@ -176,7 +176,7 @@ bool GameView::init(unsigned int width, unsigned int height) {
 #ifdef SFML_SYSTEM_IOS
     menu_message.setString("Welcome to Epic Lab3 Game!\nTouch the screen to start the game.");
 #else
-    menu_message.setString("Welcome to Epic Lab3 Game!\n\nPress space to start the game.");
+    menu_message.setString("Welcome to Epic Lab3 Game!\n\nPress Enter to start the game.");
 #endif
     center_text_origin(menu_message);
     menu_message.setPosition({view.getSize().x / 2.0f, view.getSize().y / 6.0f});
