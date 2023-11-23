@@ -16,7 +16,6 @@
 
 #include "matrix.hpp"
 
-
 #ifdef SFML_SYSTEM_IOS
 const std::string path_to_resources = "";
 #else
@@ -98,6 +97,9 @@ public:
 class Enchantment {
     size_t target_actor_class_index;
     float damage_multiplier;
+
+public:
+    float apply(float value, const Actor &target) const;
 };
 
 class Weapon : public Item {
@@ -110,17 +112,24 @@ public:
     Weapon(RangeOfValues damage_range) : damage_range(damage_range) {}
 
     void use(Actor &target) override;
-    virtual void attack(sf::Vector2f position) = 0;
+    virtual void attack(Actor &source) = 0;
+    virtual void try_to_attack(Actor &source, Actor &target) = 0;
     virtual float get_damage(Actor &target);
+    virtual bool is_in_range(const Actor &source, sf::Vector2f target) const = 0;
 };
 
 class Hammer : public Weapon {
 public:
-    Hammer(RangeOfValues damage_range) : Weapon(damage_range) {}
+    float hit_range;
+
+    Hammer(RangeOfValues damage_range, float hit_range)
+        : Weapon(damage_range), hit_range(hit_range) {}
 
     std::shared_ptr<Item> copy() const override;
 
-    void attack(sf::Vector2f position) override;
+    void attack(Actor &source) override;
+    void try_to_attack(Actor &source, Actor &target) override;
+    bool is_in_range(const Actor &source, sf::Vector2f target) const override;
 };
 
 // aka armour or equipment
@@ -229,11 +238,9 @@ public:
 };
 
 class Equipment {
+public:
     std::unordered_map<Wearable::Kind, std::shared_ptr<Wearable>> wearable;
     std::shared_ptr<Weapon> weapon;
-
-public:
-    Equipment() : wearable(), weapon() {}
 
     void equip_wearable(std::shared_ptr<Wearable> item);
     void equip_weapon(std::shared_ptr<Weapon> weapon);
@@ -265,29 +272,22 @@ public:
 };
 
 class Actor : public RigidBody {
-private:
-    size_t actor_class_index_;
-    float health_;
-    Equipment equipment_;
-    Characteristics characteristics_;
-
 public:
+    size_t actor_class_index;
+    float health;
+    Equipment equipment;
+    Characteristics characteristics;
+
     Actor() = default;
     Actor(size_t class_index, float size, Characteristics characteristics)
         : RigidBody(size),
-          actor_class_index_(class_index),
-          health_(characteristics.max_health),
-          characteristics_(characteristics) {}
+          actor_class_index(class_index),
+          health(characteristics.max_health),
+          characteristics(characteristics) {}
     virtual ~Actor() = default;
 
-    size_t actor_class_index() const { return actor_class_index_; };
-    float health() const { return health_; };
-    const Equipment &equipment() const { return equipment_; };
-    Characteristics &characteristics() { return characteristics_; };
-    const Characteristics &characteristics() const { return characteristics_; };
-
     float chance_to_take_damage();
-    void take_damage(float amount, Actor &source);
+    virtual void take_damage(float amount, Actor &source);
 
     virtual void init(){};
     virtual void update(float delta_time){};
@@ -323,6 +323,8 @@ public:
 
     void init() override;
     void update(float delta_time) override;
+    void handle_movement(float delta_time);
+    void handle_equipment_use();
     void attack(Actor &target) override;
     void die(Actor &reason) override;
 
@@ -445,8 +447,9 @@ public:
     static constexpr float view_size = 10.0f;   // sets up the view size
     static constexpr float world_size = 10.0f;  // adjusts the sizes of the objects
 
-    std::vector<ActorClass> actor_classes;  // the first entry should be a player class
-    std::vector<Enemy> enemy_templates;     // follows the actor_class_index
+    std::vector<ActorClass> actor_classes;           // the first entry should be a player class
+    std::vector<Enemy> enemy_templates;              // follows the actor_class_index
+    static constexpr size_t player_class_index = 0;  // adjusts the sizes of the objects
 
     std::vector<std::unique_ptr<Item>> item_templates;
 

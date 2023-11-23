@@ -25,30 +25,6 @@ void setup_sprite(
     sprite.setOrigin(sf::Vector2f(texture.getSize()) / 2.0f);
 }
 
-void CharacteristicsModifier::apply(Characteristics &value) {
-    if (max_health) {
-        value.max_health =
-            std::visit([&](auto &&v) -> auto { return v.apply(value.max_health); }, *max_health);
-    }
-
-    if (defence) {
-        value.defence =
-            std::visit([&](auto &&v) -> auto { return v.apply(value.defence); }, *defence);
-    }
-
-    if (speed) {
-        value.speed = std::visit([&](auto &&v) -> auto { return v.apply(value.speed); }, *speed);
-    }
-}
-
-void Potion::apply(Actor &target) { modifier.apply(target.characteristics()); }
-
-void Potion::use(Actor &target) { apply(target); }
-
-void Weapon::use(Actor &target) { attack(target.position); }
-
-void Weapon::attack(sf::Vector2f position) {}
-
 Tile &Tile::set_building(std::unique_ptr<Chest> building) {
     this->building = building.get();
     return *this;
@@ -60,10 +36,6 @@ long RangeOfValues::get_random() {
     std::uniform_int_distribution<long> dis(min, max);
     return dis(gen);
 }
-
-void InventoryCanvas::draw() {}
-
-void LevelUpCanvas::draw() {}
 
 Game &Game::get() {
     static std::shared_ptr<Game> game = nullptr;
@@ -258,6 +230,10 @@ void GameView::draw() {
     window.setView(view);
 }
 
+void InventoryCanvas::draw() {}
+
+void LevelUpCanvas::draw() {}
+
 void DungeonLevel::init() {
     for (auto &emeny : enemies) {
         emeny.init();
@@ -370,7 +346,7 @@ void DungeonLevelView::draw_tile(const Tile &tile, sf::Vector2f position, float 
 }
 
 void ActorsView::draw(const Actor &actor) {
-    sf::Sprite &sprite = Game::get().actor_classes[actor.actor_class_index()].sprite;
+    sf::Sprite &sprite = Game::get().actor_classes[actor.actor_class_index].sprite;
     sf::Vector2f saved = sprite.getScale();
     sprite.setScale(saved / Game::world_size * actor.size);
     sprite.setPosition(actor.position);
@@ -418,11 +394,46 @@ bool ActorClass::init() {
     return true;
 }
 
+void CharacteristicsModifier::apply(Characteristics &value) {
+    if (max_health) {
+        value.max_health =
+            std::visit([&](auto &&v) -> auto { return v.apply(value.max_health); }, *max_health);
+    }
+
+    if (defence) {
+        value.defence =
+            std::visit([&](auto &&v) -> auto { return v.apply(value.defence); }, *defence);
+    }
+
+    if (speed) {
+        value.speed = std::visit([&](auto &&v) -> auto { return v.apply(value.speed); }, *speed);
+    }
+}
+
+float Enchantment::apply(float value, const Actor &target) const {
+    if (target.actor_class_index == target_actor_class_index) {
+        return value * damage_multiplier;
+    }
+    return value;
+}
+
 void Equipment::equip_weapon(std::shared_ptr<Weapon> weapon) { this->weapon = weapon; }
+
+void Actor::take_damage(float amount, Actor &source) {
+    health -= amount;
+    if (health <= 0) {
+        die(source);
+    }
+}
 
 void Player::init() {}
 
 void Player::update(float delta_time) {
+    handle_movement(delta_time);
+    handle_equipment_use();
+}
+
+void Player::handle_movement(float delta_time) {
     auto resulting = sf::Vector2f(0, 0);
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
@@ -445,7 +456,15 @@ void Player::update(float delta_time) {
         resulting.x += 1;
     }
 
-    position += normalized(resulting) * (float)characteristics().speed * delta_time;
+    position += normalized(resulting) * (float)characteristics.speed * delta_time;
+}
+
+void Player::handle_equipment_use() {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+        if (equipment.weapon) {
+            equipment.weapon->use(*this);
+        }
+    }
 }
 
 void Player::attack(Actor &target) {}
@@ -458,17 +477,47 @@ void Enemy::init() {}
 
 void Enemy::update(float delta_time) {
     sf::Vector2f direction = Game::get().player.position - position;
-    position += normalized(direction) * (float)characteristics().speed * delta_time;
+    position += normalized(direction) * (float)characteristics.speed * delta_time;
 }
 
 void Enemy::attack(Actor &target) {}
 
-void Enemy::die(Actor &reason) {}
+void Enemy::die(Actor &reason) {
+    std::cout << "Enemy (" << actor_class_index << ") died from (" << reason.actor_class_index << ") with " << health << " health" << std::endl;
+}
 
 Enemy Enemy::copy() const { return Enemy(*this); }
 
+void Potion::apply(Actor &target) { modifier.apply(target.characteristics); }
+
+void Potion::use(Actor &target) { apply(target); }
+
+void Weapon::use(Actor &target) { attack(target); }
+
 float Weapon::get_damage(Actor &target) { return damage_range.get_random(); }
 
-void Hammer::attack(sf::Vector2f position) {}
+void Hammer::attack(Actor &source) {
+    if (source.actor_class_index == Game::player_class_index) {
+        for (auto &enemy : Game::get().get_current_level()->enemies) {
+            try_to_attack(source, enemy);
+        }
+    } else {
+        try_to_attack(source, Game::get().player);
+    }
+}
+
+void Hammer::try_to_attack(Actor &source, Actor &target) {
+    if (!is_in_range(source, target.position)) return;
+
+    float damage = get_damage(target);
+    if (enchantment)
+        damage = enchantment->apply(damage, target);
+
+    target.take_damage(damage, source);
+}
+
+bool Hammer::is_in_range(const Actor &source, sf::Vector2f target) const {
+    return length_squared(source.position - target) <= hit_range * hit_range;
+}
 
 std::shared_ptr<Item> Hammer::copy() const { return std::make_shared<Hammer>(*this); }

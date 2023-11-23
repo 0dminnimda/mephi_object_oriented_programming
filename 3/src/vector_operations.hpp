@@ -13,8 +13,13 @@ float dot(const sf::Vector2<T> &a, const sf::Vector2<T> &b) {
 }
 
 template <typename T>
+float length_squared(const sf::Vector2<T> &a) {
+    return dot(a, a);
+}
+
+template <typename T>
 float length(const sf::Vector2<T> &a) {
-    return std::sqrt(dot(a, a));
+    return std::sqrt(length_squared(a));
 }
 
 template <typename T>
