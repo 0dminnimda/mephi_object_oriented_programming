@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <iostream>
 #include <random>
+#include <cmath>
 
 #include "SFML/System/Vector2.hpp"
 #include "vector_operations.hpp"
@@ -25,8 +26,8 @@ void setup_sprite(
     sprite.setOrigin(sf::Vector2f(texture.getSize()) / 2.0f);
 }
 
-Tile &Tile::set_building(std::unique_ptr<Chest> building) {
-    this->building = building.get();
+Tile &Tile::set_building(std::shared_ptr<Chest> building) {
+    this->building = building;
     return *this;
 }
 
@@ -52,6 +53,7 @@ static const char *const flor_tile_name = "dungeon_floor.jpeg";
 static const char *const open_dor_tile_name = "dungeon_open_door.jpeg";
 static const char *const closed_dor_tile_name = "dungeon_closed_door.jpeg";
 static const char *const barrier_tile_name = "black.jpeg";
+static const char *const chest_name = "chest.png";
 
 bool Game::init(unsigned int width, unsigned int height) {
     for (auto &it : actor_classes) {
@@ -265,12 +267,21 @@ std::optional<std::pair<size_t, size_t>> DungeonLevel::get_tile_coordinates(
 void DungeonLevel::resize_tiles(size_t width, size_t height) { tiles.resize(width, height); }
 
 void DungeonLevel::regenerate_tiles() {
+    RangeOfValues range_chest_spawn(0, 50);
+    size_t max_level = 9;
+    RangeOfValues range_chest_level(0, (max_level + 1) * (max_level + 1) - 1);
+
     for (size_t i = 0; i < tiles.size(); ++i) {
         for (size_t j = 0; j < tiles.row_size(); ++j) {
             if (i == 0 || i == tiles.size() - 1 || j == 0 || j == tiles.row_size() - 1)
                 tiles[i][j].kind = Tile::Barrier;
             else
                 tiles[i][j].kind = Tile::Flor;
+
+            if (tiles[i][j].kind == Tile::Flor && range_chest_spawn.get_random() == 0) {
+                size_t level = max_level - (size_t)std::sqrt(range_chest_level.get_random());
+                tiles[i][j].set_building(std::make_shared<Chest>(level));
+            }
         }
     }
 
@@ -299,6 +310,7 @@ bool DungeonLevelView::init() {
     if (!closed_dor_tile_texture.loadFromFile(path_to_resources + closed_dor_tile_name))
         return false;
     if (!barrier_tile_texture.loadFromFile(path_to_resources + barrier_tile_name)) return false;
+    if (!chest_texture.loadFromFile(path_to_resources + chest_name)) return false;
 
     setup_sprite(flor_tile_texture, flor_tile_sprite);
     flor_tile_sprite.setOrigin({0, 0});
@@ -312,6 +324,9 @@ bool DungeonLevelView::init() {
     setup_sprite(barrier_tile_texture, barrier_tile_sprite);
     barrier_tile_sprite.setOrigin({0, 0});
 
+    setup_sprite(chest_texture, chest_sprite);
+    chest_sprite.setOrigin({0, 0});
+
     return true;
 }
 
@@ -319,7 +334,7 @@ void DungeonLevelView::draw(const DungeonLevel &level) {
     for (size_t i = 0; i < level.tiles.size(); ++i) {
         auto &row = level.tiles[i];
         for (size_t j = 0; j < row.size(); ++j) {
-            draw_tile(row[j], sf::Vector2f(i, j), level.tile_coords_to_world_coords_factor());
+            draw_tile(row[j], sf::Vector2f(i, j), level.tile_coords_to_world_coords_factor(), level.chest_size_factor);
         }
     }
 
@@ -329,7 +344,7 @@ void DungeonLevelView::draw(const DungeonLevel &level) {
     actors_view.draw(Game::get().player);
 }
 
-void DungeonLevelView::draw_tile(const Tile &tile, sf::Vector2f position, float factor) {
+void DungeonLevelView::draw_tile(const Tile &tile, sf::Vector2f position, float factor, float chest_size_factor) {
     sf::Sprite sprite;
     if (tile.kind == Tile::Flor) {
         sprite = flor_tile_sprite;
@@ -346,6 +361,14 @@ void DungeonLevelView::draw_tile(const Tile &tile, sf::Vector2f position, float 
     sprite.setPosition(position * factor);
     window.draw(sprite);
     sprite.setScale(saved);
+
+    if (tile.building) {
+        saved = chest_sprite.getScale();
+        chest_sprite.setScale(saved * factor * chest_size_factor);
+        chest_sprite.setPosition(position * factor);
+        window.draw(chest_sprite);
+        chest_sprite.setScale(saved);
+    }
 }
 
 void ActorsView::draw(const Actor &actor) {
@@ -426,6 +449,14 @@ bool ItemClass::init() {
     if (!texture.loadFromFile(path_to_resources + texture_name)) return false;
     setup_sprite(texture, sprite);
     return true;
+}
+
+LockPickingResult Chest::try_to_pick(const Actor &source, LockPicks &picks) {
+    RangeOfValues range(0, 1 + 2*level);
+    if ((float)range.get_random() * source.characteristics.luck <= 1) {
+        return {true, false};
+    }
+    return {false, (float)range.get_random() * source.characteristics.luck <= 1};
 }
 
 void CharacteristicsModifier::apply(Characteristics &value) {

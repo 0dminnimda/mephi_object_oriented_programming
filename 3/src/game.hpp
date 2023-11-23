@@ -46,18 +46,15 @@ public:
     float max_health;
     float defence;
     float speed;
+    float luck;
 };
 
 class CharacteristicsModifier {
+public:
     std::optional<ValueModifier<float>> max_health;
     std::optional<ValueModifier<float>> defence;
     std::optional<ValueModifier<float>> speed;
-
-public:
-    CharacteristicsModifier(
-        ValueModifier<float> max_health, ValueModifier<float> defence, ValueModifier<float> speed
-    )
-        : max_health(max_health), defence(defence), speed(speed) {}
+    std::optional<ValueModifier<float>> luck;
 
     void apply(Characteristics &value);
 };
@@ -196,7 +193,7 @@ class LockPicks : public Item {
 
 struct LockPickingResult {
     bool lock_picked;
-    bool pick_borken;
+    bool pick_broken;
 };
 
 class Inventory {
@@ -228,7 +225,7 @@ public:
 
     explicit Chest(size_t level) : inventory(), level(level) {}
 
-    LockPickingResult try_to_pick(LockPicks &picks);
+    LockPickingResult try_to_pick(const Actor &source, LockPicks &picks);
 };
 
 class Tile {
@@ -242,18 +239,14 @@ public:
         DownLaddor,
     };
 
-private:
-    Chest *building;
+    std::shared_ptr<Chest> building;
 
-public:
     Kind kind;
-
-    ~Tile() { delete building; }
 
     explicit Tile() : Tile(Barrier) {}
     explicit Tile(Kind kind) : building(nullptr), kind(kind) {}
 
-    Tile &set_building(std::unique_ptr<Chest> building);
+    Tile &set_building(std::shared_ptr<Chest> building);
 };
 
 class Experience {
@@ -398,6 +391,7 @@ public:
     Matrix<Tile> tiles;
     sf::Vector2f initial_player_position;
     float tile_size;
+    float chest_size_factor;
 
     void init();
     float tile_coords_to_world_coords_factor() const;
@@ -429,6 +423,9 @@ private:
     sf::Texture barrier_tile_texture;
     sf::Sprite barrier_tile_sprite;
 
+    sf::Texture chest_texture;
+    sf::Sprite chest_sprite;
+
     ActorsView actors_view;
 
 public:
@@ -439,7 +436,7 @@ public:
     void draw(const DungeonLevel &level);
 
 private:
-    void draw_tile(const Tile &tile, sf::Vector2f position, float size);
+    void draw_tile(const Tile &tile, sf::Vector2f position, float size, float chest_size_factor);
 };
 
 class GameView {

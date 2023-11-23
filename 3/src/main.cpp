@@ -70,7 +70,8 @@ int sub_main() {
     game.player.equipment.equip_weapon(hammer);
     // game.player.pick_up_item(*hammer);
 
-    level.tile_size = 10;
+    level.tile_size = 10.0f;
+    level.chest_size_factor = 2.0f / 3.0f;
 
     level.resize_tiles(30, 30);
     level.regenerate_tiles();
