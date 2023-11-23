@@ -379,12 +379,19 @@ DungeonLevel *Game::get_current_level() {
 
 void DungeonLevel::handle_collitions() {}
 
+void DungeonLevel::delete_the_dead() {
+    enemies.erase(std::remove_if(enemies.begin(), enemies.end(), [](const Enemy &enemy) {
+        return !enemy.alive;
+    }));
+}
+
 void DungeonLevel::update(float delta_time) {
     for (auto &enemy : enemies) {
         enemy.update(delta_time);
     }
     Game::get().player.update(delta_time);
 
+    delete_the_dead();
     handle_collitions();
 }
 
@@ -484,6 +491,7 @@ void Enemy::attack(Actor &target) {}
 
 void Enemy::die(Actor &reason) {
     std::cout << "Enemy (" << actor_class_index << ") died from (" << reason.actor_class_index << ") with " << health << " health" << std::endl;
+    alive = false;
 }
 
 Enemy Enemy::copy() const { return Enemy(*this); }

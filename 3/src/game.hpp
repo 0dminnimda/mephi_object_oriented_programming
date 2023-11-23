@@ -212,7 +212,7 @@ public:
     ~Tile() { delete building; }
 
     explicit Tile() : Tile(Barrier) {}
-    explicit Tile(Kind kind) : kind(kind), building(nullptr) {}
+    explicit Tile(Kind kind) : building(nullptr), kind(kind) {}
 
     Tile &set_building(std::unique_ptr<Chest> building);
 };
@@ -277,6 +277,7 @@ public:
     float health;
     Equipment equipment;
     Characteristics characteristics;
+    bool alive = true;
 
     Actor() = default;
     Actor(size_t class_index, float size, Characteristics characteristics)
@@ -372,6 +373,7 @@ public:
     void add_laying_item(std::unique_ptr<LayingItem> item);
     void update(float delta_time);
     void handle_collitions();
+    void delete_the_dead();
 };
 
 class DungeonLevelView {
@@ -404,6 +406,10 @@ private:
 };
 
 class GameView {
+public:
+    sf::RenderWindow window;
+    sf::View view;
+
 private:
     DungeonLevelView dungeon_level_view;
     InventoryCanvas inventory_canvas;
@@ -417,11 +423,7 @@ private:
     sf::Text info_message;
 
 public:
-    sf::RenderWindow window;
-    sf::View view;
-
-    GameView()
-        : window(), dungeon_level_view(window), inventory_canvas(window), level_up_canvas(window) {}
+    GameView() : window(), dungeon_level_view(window), inventory_canvas(window), level_up_canvas(window) {}
     ~GameView() = default;
 
     bool init(unsigned int width, unsigned int height);

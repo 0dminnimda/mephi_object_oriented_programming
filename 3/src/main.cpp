@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
@@ -14,6 +16,17 @@ using std::min, std::max;
 
 #include "game.hpp"
 #include "vector_operations.hpp"
+
+#define TRY_CATCH_ALL(code)                                    \
+    {                                                          \
+        try {                                                  \
+            code;                                              \
+        } catch (const std::exception &e) {                    \
+            std::cout << "Error: " << e.what() << std::endl;   \
+        } catch (...) {                                        \
+            std::cout << "Unknwon error occured" << std::endl; \
+        }                                                      \
+    }
 
 float signed_distance_to_axis_aligned_rect(
     const sf::Vector2f &point, const sf::Vector2f &top_left, const sf::Vector2f &bottom_right
@@ -50,7 +63,8 @@ int sub_main() {
 
     DungeonLevel level;
 
-    std::shared_ptr<Weapon> hammer = std::static_pointer_cast<Weapon>(game.item_templates[hammer_id]->copy());
+    std::shared_ptr<Weapon> hammer =
+        std::static_pointer_cast<Weapon>(game.item_templates[hammer_id]->copy());
     game.player.equipment.equip_weapon(hammer);
     // game.player.pick_up_item(*hammer);
 
@@ -71,10 +85,7 @@ int sub_main() {
 }
 
 int main() {
-    try {
-        return sub_main();
-    } catch (const std::exception &e) {
-        std::cout << e.what() << std::endl;
-        return EXIT_FAILURE;
-    }
+    int result = EXIT_FAILURE;
+    TRY_CATCH_ALL({ result = sub_main(); })
+    return result;
 }
