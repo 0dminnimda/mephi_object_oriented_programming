@@ -62,6 +62,7 @@ bool Game::init(unsigned int width, unsigned int height) {
     for (auto &it : item_classes) {
         if (!it.init()) return false;
     }
+    dungeon.init();
     return game_view.init(width, height);
 }
 
@@ -71,12 +72,12 @@ void Game::start_playing() {
     is_playing = true;
     clock.restart();
 
-    load_level(0);
+    dungeon.load_level(0);
 
-    DungeonLevel *level = Game::get().get_current_level();
+    DungeonLevel *level = Game::get().dungeon.get_current_level();
     if (!level) return;
 
-    Game::get().player.position = level->initial_player_position;
+    Game::get().dungeon.player.position = level->initial_player_position;
 }
 
 void Game::stop_playing() {
@@ -84,7 +85,7 @@ void Game::stop_playing() {
 
     is_playing = false;
 
-    unload_current_level();
+    dungeon.unload_current_level();
 }
 
 bool is_pressed(const sf::Event &event, sf::Keyboard::Key key) {
@@ -122,9 +123,9 @@ void Game::handle_events() {
 }
 
 void Game::update(float delta_time) {
-    if (!player.alive) return;
+    if (!dungeon.player.alive) return;
 
-    DungeonLevel *level = get_current_level();
+    DungeonLevel *level = dungeon.get_current_level();
     if (level) {
         level->update(delta_time);
     }
@@ -153,6 +154,14 @@ size_t Game::add_actor_class(const ActorClass &cls) {
 size_t Game::add_item_class(const ItemClass &cls) {
     item_classes.push_back(cls);
     return item_classes.size() - 1;
+}
+
+Enemy Game::make_enemy(size_t actor_class_index) const {
+    return deepcopy(enemy_templates.at(actor_class_index));
+}
+
+std::shared_ptr<Item> Game::make_item(size_t item_class_index) const {
+    return item_templates.at(item_class_index)->deepcopy_item();
 }
 
 bool GameView::init(unsigned int width, unsigned int height) {
@@ -215,7 +224,7 @@ void GameView::draw() {
         return;
     }
 
-    DungeonLevel *level = Game::get().get_current_level();
+    DungeonLevel *level = Game::get().dungeon.get_current_level();
     if (!level) {
         info_message.setFillColor(sf::Color::White);
         info_message.setString("No levels are loaded");
@@ -229,17 +238,17 @@ void GameView::draw() {
 
     dungeon_level_view.draw(*level);
 
-    if (!Game::get().player.alive) {
+    if (!Game::get().dungeon.player.alive) {
         info_message.setFillColor(sf::Color::Red);
         info_message.setString("You are dead");
         center_text_origin(info_message);
-        info_message.setPosition(sf::Vector2f(Game::get().player.position));
+        info_message.setPosition(sf::Vector2f(Game::get().dungeon.player.position));
         window.draw(info_message);
     }
 
     float ratio = (float)window.getSize().x / (float)window.getSize().y;
     view.setSize(sf::Vector2f(Game::view_size * ratio, Game::view_size));
-    view.setCenter(sf::Vector2f(Game::get().player.position));
+    view.setCenter(sf::Vector2f(Game::get().dungeon.player.position));
     window.setView(view);
 }
 
@@ -255,6 +264,13 @@ void Inventory::add_item(std::shared_ptr<Item> item) { items.push_back(item); }
 void InventoryCanvas::draw() {}
 
 void LevelUpCanvas::draw() {}
+
+void Dungeon::init() {
+    for (auto &level : all_levels) {
+        level.init();
+    }
+    Game::get().dungeon.player.init();
+}
 
 void DungeonLevel::init() {
     for (auto &emeny : enemies) {
@@ -372,7 +388,7 @@ void DungeonLevelView::draw(const DungeonLevel &level) {
     for (const auto &emeny : level.enemies) {
         actors_view.draw(emeny);
     }
-    actors_view.draw(Game::get().player);
+    actors_view.draw(Game::get().dungeon.player);
 }
 
 void DungeonLevelView::draw_tile(
@@ -425,9 +441,9 @@ void ItemsView::draw(const Item &item, sf::Vector2f position) {
     sprite.setScale(saved);
 }
 
-void Game::add_level(const DungeonLevel &level) { all_levels.push_back(level); }
+void Dungeon::add_level(const DungeonLevel &level) { all_levels.push_back(level); }
 
-bool Game::load_level(size_t index) {
+bool Dungeon::load_level(size_t index) {
     if (index < 0 || index >= all_levels.size()) {
         return false;
     }
@@ -435,17 +451,9 @@ bool Game::load_level(size_t index) {
     return true;
 }
 
-void Game::unload_current_level() { current_level = std::nullopt; }
+void Dungeon::unload_current_level() { current_level = std::nullopt; }
 
-Enemy Game::make_enemy(size_t actor_class_index) const {
-    return deepcopy(enemy_templates.at(actor_class_index));
-}
-
-std::shared_ptr<Item> Game::make_item(size_t item_class_index) const {
-    return item_templates.at(item_class_index)->deepcopy_item();
-}
-
-DungeonLevel *Game::get_current_level() {
+DungeonLevel *Dungeon::get_current_level() {
     if (!current_level) {
         return nullptr;
     }
@@ -470,7 +478,7 @@ void DungeonLevel::update(float delta_time) {
     for (auto &enemy : enemies) {
         enemy.update(delta_time);
     }
-    Game::get().player.update(delta_time);
+    Game::get().dungeon.player.update(delta_time);
 
     delete_the_dead();
     handle_collitions();
@@ -506,7 +514,7 @@ void Chest::try_to_pick(const Actor &source, LockPicks &picks, size_t i, size_t 
         picks.count -= 1;
     }
 
-    DungeonLevel *level = Game::get().get_current_level();
+    DungeonLevel *level = Game::get().dungeon.get_current_level();
     if (!level) return;
 
     auto tile_position = sf::Vector2f(i, j) * level->tile_coords_to_world_coords_factor();
@@ -640,7 +648,7 @@ void Player::handle_equipment_use() {
 void Player::handle_picking() {
     if (!sf::Keyboard::isKeyPressed(sf::Keyboard::P)) return;
 
-    DungeonLevel *level = Game::get().get_current_level();
+    DungeonLevel *level = Game::get().dungeon.get_current_level();
     if (!level) return;
 
     auto coords = level->get_tile_coordinates(position);
@@ -664,7 +672,7 @@ void Enemy::update(float delta_time) {
 }
 
 void Enemy::handle_movement(float delta_time) {
-    sf::Vector2f direction = Game::get().player.position - position;
+    sf::Vector2f direction = Game::get().dungeon.player.position - position;
     position += normalized(direction) * (float)characteristics.speed * delta_time;
 }
 
@@ -679,7 +687,7 @@ void Enemy::die(Actor &reason) {
               << ") with " << health << " health" << std::endl;
     alive = false;
 
-    DungeonLevel *level = Game::get().get_current_level();
+    DungeonLevel *level = Game::get().dungeon.get_current_level();
     if (!level) return;
 
     RangeOfValues range_chest_item(0, Game::get().item_templates.size() - 1);
@@ -727,11 +735,11 @@ void Hammer::attack(Actor &source) {
     if (cooldown()) return;
 
     if (source.actor_class_index == Game::player_class_index) {
-        for (auto &enemy : Game::get().get_current_level()->enemies) {
+        for (auto &enemy : Game::get().dungeon.get_current_level()->enemies) {
             try_to_attack(source, enemy);
         }
     } else {
-        try_to_attack(source, Game::get().player);
+        try_to_attack(source, Game::get().dungeon.player);
     }
 }
 

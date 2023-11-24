@@ -14,8 +14,9 @@
 #include <variant>
 #include <vector>
 
-#include "matrix.hpp"
 #include "deepcopy.hpp"
+#include "matrix.hpp"
+
 
 #ifdef SFML_SYSTEM_IOS
 const std::string path_to_resources = "";
@@ -407,7 +408,6 @@ public:
 };
 
 class DungeonLevel {
-    // private:
 public:
     std::vector<Enemy> enemies;
     std::vector<LayingItem> laying_items;
@@ -462,6 +462,20 @@ private:
     void draw_tile(const Tile &tile, sf::Vector2f position, float size, float chest_size_factor);
 };
 
+class Dungeon {
+public:
+    std::vector<DungeonLevel> all_levels;
+    std::optional<DungeonLevel> current_level;
+
+    Player player;
+
+    void init();
+    void add_level(const DungeonLevel &level);
+    bool load_level(size_t index);
+    void unload_current_level();
+    DungeonLevel *get_current_level();
+};
+
 class GameView {
 public:
     sf::RenderWindow window;
@@ -495,14 +509,13 @@ public:
 
 class Game {
 private:
-    std::vector<DungeonLevel> all_levels;
-    std::optional<DungeonLevel> current_level;
-
     sf::Clock clock;
 
     GameView game_view;
 
 public:
+    Dungeon dungeon;
+
     bool is_playing = false;
     static constexpr float view_size = 10.0f;   // sets up the view size
     static constexpr float world_size = 10.0f;  // adjusts the sizes of the objects
@@ -514,8 +527,6 @@ public:
     std::vector<ItemClass> item_classes;
     std::vector<std::unique_ptr<Item>> item_templates;  // follows the item_classes
 
-    Player player;
-
     Game() = default;
     ~Game() = default;
 
@@ -524,11 +535,6 @@ public:
     void pause();
     void unpause();
     void update(float delta_time);
-
-    void add_level(const DungeonLevel &level);
-    bool load_level(size_t index);
-    void unload_current_level();
-    DungeonLevel *get_current_level();
 
     void handle_events();
     void start_playing();
