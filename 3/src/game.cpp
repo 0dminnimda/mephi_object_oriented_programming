@@ -8,8 +8,14 @@
 #include <iostream>
 #include <random>
 
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/System/Vector2.hpp"
 #include "vector_operations.hpp"
+
+sf::Color set_transparency(sf::Color color, sf::Uint8 transparency) {
+    color.a = transparency;
+    return color;
+}
 
 void center_text_origin(sf::Text &text) {
     sf::FloatRect text_rect = text.getLocalBounds();
@@ -174,7 +180,8 @@ bool GameView::init(unsigned int width, unsigned int height) {
     if (!dungeon_level_view.init()) return false;
 
     if (!logo_texture.loadFromFile(path_to_resources + logo_name)) return false;
-    setup_sprite(logo_texture, logo, sf::Vector2f(view.getSize()) / 2.0f);
+    float scale = max(sf::Vector2f(view.getSize())) / 3.0f;
+    setup_sprite(logo_texture, logo, {scale, scale});
     logo.setPosition({view.getSize().x / 2.0f, view.getSize().y * 2.0f / 3.0f});
 
     if (!font.loadFromFile(path_to_resources + "tuffy.ttf")) return false;
@@ -427,12 +434,25 @@ void DungeonLevelView::draw_tile(
 void ActorsView::draw(const Actor &actor) {
     sf::Sprite &sprite = Game::get().actor_classes[actor.actor_class_index].sprite;
     sf::Vector2f saved = sprite.getScale();
-    sprite.setScale(saved / Game::world_size * actor.size);
+    sprite.setScale(saved * actor.size / Game::world_size);
     sprite.setPosition(actor.position);
     window.draw(sprite);
     sprite.setScale(saved);
 
     if (actor.equipment.weapon) items_view.draw(*actor.equipment.weapon, actor.position);
+
+    float bar_width = actor.size / Game::world_size * 1.2f;
+    max_health_bar.setSize(sf::Vector2f(1.0f, health_bar_height_factor) * bar_width);
+    max_health_bar.setPosition(actor.position - sf::Vector2f(bar_width, bar_width) / 2.0f);
+    max_health_bar.setFillColor(sf::Color(255, 255, 255, 127));
+    window.draw(max_health_bar);
+
+    float health_ratio = std::max(0.0f, actor.health) / actor.characteristics.max_health;
+
+    current_health_bar.setSize({max_health_bar.getSize().x * health_ratio, max_health_bar.getSize().y});
+    current_health_bar.setPosition(max_health_bar.getPosition());
+    current_health_bar.setFillColor(set_transparency(sf::Color::Green, 127));
+    window.draw(current_health_bar);
 }
 
 void ItemsView::draw(const Item &item, sf::Vector2f position) {
@@ -572,14 +592,11 @@ void Equipment::deepcopy_to(Equipment &other) const {
 }
 
 void Actor::take_damage(float amount, Actor &source) {
-    health -= amount - source.characteristics.defence;
-    if (health <= 0) {
+    health -= std::max(0.0f, amount - characteristics.defence);
+    if (health <= 0.0f) {
+        health = 0.0f;
         die(source);
     }
-
-    std::cout << "Actor (" << actor_class_index << ") took " << amount << " damage from ("
-              << source.actor_class_index << ") resulting with " << health << " health"
-              << std::endl;
 }
 
 void Experience::gain(size_t amount, Actor &actor) {

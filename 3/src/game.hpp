@@ -352,6 +352,11 @@ class ActorsView {
 private:
     sf::RenderWindow &window;
 
+    float health_bar_height_factor = 0.1f;
+
+    sf::RectangleShape max_health_bar;
+    sf::RectangleShape current_health_bar;
+
 public:
     ItemsView items_view;
 

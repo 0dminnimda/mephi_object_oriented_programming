@@ -54,7 +54,7 @@ int sub_main() {
     size_t pepe_id = game.add_actor_class(ActorClass("pepe", "hes angy", "pepe_angry.jpeg"));
 
     game.enemy_templates.resize(game.actor_classes.size());
-    game.player_template = Player(player_id, 10.0f, Characteristics(100000.0f, 20.0f, 5.0f));
+    game.player_template = Player(player_id, 10.0f, Characteristics(100.0f, 20.0f, 5.0f));
     game.player_template.lock_picks.count = 100;
     game.enemy_templates[goblin_id] = Enemy(goblin_id, 7.0f, Characteristics(10.0f, 2.0f, 2.0f));
     game.enemy_templates[pepe_id] = Enemy(pepe_id, 5.0f, Characteristics(10.0f, 0.0f, 4.0f));
@@ -64,7 +64,7 @@ int sub_main() {
 
     game.item_templates.resize(game.item_classes.size());
     game.item_templates[hammer_id] =
-        std::make_unique<Hammer>(hammer_id, RangeOfValues(3, 500), 10.0f);
+        std::make_unique<Hammer>(hammer_id, RangeOfValues(3, 5), 10.0f);
 
     DungeonLevel level;
 
@@ -83,7 +83,7 @@ int sub_main() {
 
     game.dungeon.add_level(level);
 
-    if (!game.init(800, 600)) return EXIT_FAILURE;
+    if (!game.init(1200, 900)) return EXIT_FAILURE;
     if (!game.run()) return EXIT_FAILURE;
     return EXIT_SUCCESS;
 }
