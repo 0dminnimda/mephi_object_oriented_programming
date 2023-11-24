@@ -545,6 +545,14 @@ float Enchantment::apply(float value, const Actor &target) const {
 
 void Equipment::equip_weapon(std::shared_ptr<Item> weapon) { this->weapon = weapon; }
 
+void Equipment::deepcopy_to(Equipment &other) const {
+    other.wearable = wearable;
+    if (weapon)
+        other.weapon = weapon->deepcopy_item();
+    else
+        other.weapon = nullptr;
+}
+
 void Actor::take_damage(float amount, Actor &source) {
     health -= amount - source.characteristics.defence;
     if (health <= 0) {
@@ -582,7 +590,7 @@ void Actor::deepcopy_to(Actor &other) const {
     RigidBody::deepcopy_to(other);
     other.actor_class_index = actor_class_index;
     other.health = health;
-    other.equipment = equipment;
+    equipment.deepcopy_to(other.equipment);
     other.characteristics = characteristics;
     other.alive = alive;
 }

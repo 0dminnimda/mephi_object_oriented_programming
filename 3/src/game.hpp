@@ -288,6 +288,8 @@ public:
 
 class Equipment {
 public:
+    DeepCopy(Equipment);
+
     std::unordered_map<Wearable::Kind, std::shared_ptr<Wearable>> wearable;
     std::shared_ptr<Item> weapon;
 
