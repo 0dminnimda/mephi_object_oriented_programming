@@ -568,7 +568,7 @@ void Actor::take_damage(float amount, Actor &source) {
         die(source);
     }
 
-    std::cout << "Enemy (" << actor_class_index << ") took " << amount << " damage from ("
+    std::cout << "Actor (" << actor_class_index << ") took " << amount << " damage from ("
               << source.actor_class_index << ") resulting with " << health << " health"
               << std::endl;
 }
