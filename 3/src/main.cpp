@@ -59,10 +59,12 @@ int sub_main() {
     game.enemy_templates[goblin_id] = Enemy(goblin_id, 7.0f, Characteristics(10.0f, 2.0f, 2.0f));
     game.enemy_templates[pepe_id] = Enemy(pepe_id, 5.0f, Characteristics(10.0f, 0.0f, 4.0f));
 
-    size_t hammer_id = game.add_item_class(ItemClass("hammer", "smashes in the face", "hammer.png", 13.0f));
+    size_t hammer_id =
+        game.add_item_class(ItemClass("hammer", "smashes in the face", "hammer.png", 13.0f));
 
     game.item_templates.resize(game.item_classes.size());
-    game.item_templates[hammer_id] = std::make_unique<Hammer>(hammer_id, RangeOfValues(3, 500), 1.0f);
+    game.item_templates[hammer_id] =
+        std::make_unique<Hammer>(hammer_id, RangeOfValues(3, 500), 10.0f);
 
     DungeonLevel level;
 

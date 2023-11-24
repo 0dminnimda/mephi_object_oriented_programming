@@ -4,9 +4,9 @@
 
 #include <SFML/System.hpp>
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <random>
-#include <cmath>
 
 #include "SFML/System/Vector2.hpp"
 #include "vector_operations.hpp"
@@ -235,9 +235,7 @@ void GameView::draw() {
     window.setView(view);
 }
 
-void Inventory::add_item(std::shared_ptr<Item> item) {
-    items.push_back(item);
-}
+void Inventory::add_item(std::shared_ptr<Item> item) { items.push_back(item); }
 
 void InventoryCanvas::draw() {}
 
@@ -307,8 +305,10 @@ void DungeonLevel::regenerate_enemies() {
         for (size_t i = 0; i < 10; ++i) {
             Enemy &enemy = enemies.emplace_back(Game::get().make_enemy(class_index));
             enemy.position = sf::Vector2f(
-                range_x.get_random() + range_wiggle.get_random() / 10,
-                range_y.get_random() + range_wiggle.get_random() / 10) * tile_coords_to_world_coords_factor();
+                range_x.get_random() + (float)range_wiggle.get_random() / 10,
+                range_y.get_random() + (float)range_wiggle.get_random() / 10
+            );
+            enemy.position *= tile_coords_to_world_coords_factor();
         }
     }
 }
@@ -343,7 +343,10 @@ void DungeonLevelView::draw(const DungeonLevel &level) {
     for (size_t i = 0; i < level.tiles.size(); ++i) {
         auto &row = level.tiles[i];
         for (size_t j = 0; j < row.size(); ++j) {
-            draw_tile(row[j], sf::Vector2f(i, j), level.tile_coords_to_world_coords_factor(), level.chest_size_factor);
+            draw_tile(
+                row[j], sf::Vector2f(i, j), level.tile_coords_to_world_coords_factor(),
+                level.chest_size_factor
+            );
         }
     }
 
@@ -357,7 +360,9 @@ void DungeonLevelView::draw(const DungeonLevel &level) {
     actors_view.draw(Game::get().player);
 }
 
-void DungeonLevelView::draw_tile(const Tile &tile, sf::Vector2f position, float factor, float chest_size_factor) {
+void DungeonLevelView::draw_tile(
+    const Tile &tile, sf::Vector2f position, float factor, float chest_size_factor
+) {
     sf::Sprite sprite;
     if (tile.kind == Tile::Flor) {
         sprite = flor_tile_sprite;
@@ -392,8 +397,7 @@ void ActorsView::draw(const Actor &actor) {
     window.draw(sprite);
     sprite.setScale(saved);
 
-    if (actor.equipment.weapon)
-        items_view.draw(*actor.equipment.weapon, actor.position);
+    if (actor.equipment.weapon) items_view.draw(*actor.equipment.weapon, actor.position);
 }
 
 void ItemsView::draw(const Item &item, sf::Vector2f position) {
@@ -466,7 +470,7 @@ bool ItemClass::init() {
 }
 
 LockPickingResult Chest::simulate_picking(const Actor &source) {
-    RangeOfValues range(0, 1 + 2*level);
+    RangeOfValues range(0, 1 + 2 * level);
     if ((float)range.get_random() / source.characteristics.luck <= 1) {
         return {true, false};
     }
@@ -477,7 +481,8 @@ void Chest::try_to_pick(const Actor &source, LockPicks &picks, size_t i, size_t 
     if (picks.count == 0) return;
 
     auto result = simulate_picking(source);
-    std::cout << "lock_picked = " << result.lock_picked << " pick_broken = " << result.pick_broken << std::endl;
+    std::cout << "lock_picked = " << result.lock_picked << " pick_broken = " << result.pick_broken
+              << std::endl;
     if (result.pick_broken) {
         picks.count -= 1;
     }
@@ -545,8 +550,7 @@ void Experience::gain(size_t amount, Actor &actor) {
     }
 }
 
-size_t Experience::needs_exp_for_level(size_t level) {
-    return 4 * level * level + 10 * level + 10;
+size_t Experience::needs_exp_for_level(size_t level) { return 4 * level * level + 10 * level + 10; }
 }
 
 void Experience::level_up() {
