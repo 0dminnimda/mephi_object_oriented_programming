@@ -13,6 +13,8 @@ prep_executable = $(eval $(1) := $(shell bash ../prep_exec.sh $(2) --use_dir "re
 
 call_cmake = cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER="$(CC)" -DCMAKE_CXX_COMPILER="$(CXX)"
 
+DISPLAY = ":1"
+
 $(OUT_DIR):
 	mkdir -p $(OUT_DIR)
 
@@ -51,7 +53,7 @@ setup_termux_gui:
 .PHONY: run
 run:
 	$(call prep_executable, EXEC, ./build/bin/main.out)
-	DISPLAY=":1" $(EXEC)
+	DISPLAY=$(DISPLAY) $(EXEC)
 
 llvm_cov = llvm-cov $(1) $(2) -instr-profile=$(3) --ignore-filename-regex="tests/*"
 
