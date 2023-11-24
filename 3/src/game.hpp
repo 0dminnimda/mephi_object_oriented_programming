@@ -89,7 +89,7 @@ public:
 
     virtual ~Item() = default;
 
-    virtual std::shared_ptr<Item> deepcopy_item() const { return nullptr; }
+    virtual std::shared_ptr<Item> deepcopy_item() const = 0;
 
     virtual void use(Actor &target){};
 };
@@ -199,7 +199,11 @@ private:
 
 class LockPicks : public Item {
 public:
+    DeepCopy(LockPicks);
+
     size_t count;
+
+    std::shared_ptr<Item> deepcopy_item() const override;
 };
 
 struct LockPickingResult {

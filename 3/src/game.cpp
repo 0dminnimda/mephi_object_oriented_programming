@@ -243,6 +243,13 @@ void GameView::draw() {
     window.setView(view);
 }
 
+void LockPicks::deepcopy_to(LockPicks &other) const {
+    Item::deepcopy_to(other);
+    other.count = count;
+}
+
+std::shared_ptr<Item> LockPicks::deepcopy_item() const { return deepcopy_shared(*this); }
+
 void Inventory::add_item(std::shared_ptr<Item> item) { items.push_back(item); }
 
 void InventoryCanvas::draw() {}
