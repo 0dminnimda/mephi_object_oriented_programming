@@ -73,11 +73,6 @@ void Game::start_playing() {
     clock.restart();
 
     dungeon.load_level(0);
-
-    DungeonLevel *level = Game::get().dungeon.get_current_level();
-    if (!level) return;
-
-    Game::get().dungeon.player.position = level->initial_player_position;
 }
 
 void Game::stop_playing() {
@@ -448,7 +443,12 @@ bool Dungeon::load_level(size_t index) {
         return false;
     }
     current_level = all_levels[index];
+    on_load_level(*current_level);
     return true;
+}
+
+void Dungeon::on_load_level(DungeonLevel &level) {
+    player.position = level.initial_player_position;
 }
 
 void Dungeon::unload_current_level() { current_level = std::nullopt; }

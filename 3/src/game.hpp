@@ -472,6 +472,7 @@ public:
     void init();
     void add_level(const DungeonLevel &level);
     bool load_level(size_t index);
+    void on_load_level(DungeonLevel &level);
     void unload_current_level();
     DungeonLevel *get_current_level();
 };
