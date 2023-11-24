@@ -122,6 +122,8 @@ void Game::handle_events() {
 }
 
 void Game::update(float delta_time) {
+    if (!player.alive) return;
+
     DungeonLevel *level = get_current_level();
     if (level) {
         level->update(delta_time);
@@ -133,8 +135,6 @@ bool Game::run() {
         handle_events();
 
         float delta_time = clock.restart().asSeconds();
-        // AITimer.getElapsedTime() > sf::seconds(0.1f)
-
         update(delta_time);
 
         game_view.clear();
@@ -228,6 +228,14 @@ void GameView::draw() {
     }
 
     dungeon_level_view.draw(*level);
+
+    if (!Game::get().player.alive) {
+        info_message.setFillColor(sf::Color::Red);
+        info_message.setString("You are dead");
+        center_text_origin(info_message);
+        info_message.setPosition(sf::Vector2f(Game::get().player.position));
+        window.draw(info_message);
+    }
 
     float ratio = (float)window.getSize().x / (float)window.getSize().y;
     view.setSize(sf::Vector2f(Game::view_size * ratio, Game::view_size));
@@ -528,7 +536,7 @@ float Enchantment::apply(float value, const Actor &target) const {
     return value;
 }
 
-void Equipment::equip_weapon(std::shared_ptr<Weapon> weapon) { this->weapon = weapon; }
+void Equipment::equip_weapon(std::shared_ptr<Item> weapon) { this->weapon = weapon; }
 
 void Actor::take_damage(float amount, Actor &source) {
     health -= amount - source.characteristics.defence;
@@ -629,20 +637,27 @@ void Player::handle_picking() {
     tile.building->try_to_pick(*this, lock_picks, coords->first, coords->second);
 }
 
-// void Player::attack(Actor &target) {}
-
-void Player::die(Actor &reason) {}
+void Player::die(Actor &reason) { alive = false; }
 
 void Player::pick_up_item(Item &item) {}
 
 void Enemy::init() {}
 
 void Enemy::update(float delta_time) {
+    handle_movement(delta_time);
+    handle_equipment_use();
+}
+
+void Enemy::handle_movement(float delta_time) {
     sf::Vector2f direction = Game::get().player.position - position;
     position += normalized(direction) * (float)characteristics.speed * delta_time;
 }
 
-// void Enemy::attack(Actor &target) {}
+void Enemy::handle_equipment_use() {
+    if (equipment.weapon) {
+        equipment.weapon->use(*this);
+    }
+}
 
 void Enemy::die(Actor &reason) {
     std::cout << "Enemy (" << actor_class_index << ") died from (" << reason.actor_class_index
