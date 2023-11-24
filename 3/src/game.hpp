@@ -363,6 +363,8 @@ public:
 
 class Player : public Actor {
 public:
+    DeepCopy(Player);
+
     Inventory inventory;
     LockPicks lock_picks;
     Experience experience;
@@ -522,8 +524,9 @@ public:
     static constexpr float world_size = 10.0f;  // adjusts the sizes of the objects
 
     std::vector<ActorClass> actor_classes;  // the first entry should be a player class
-    std::vector<Enemy> enemy_templates;     // follows the actor_class_index
     static constexpr size_t player_class_index = 0;
+    Player player_template;
+    std::vector<Enemy> enemy_templates;     // follows the actor_class_index
 
     std::vector<ItemClass> item_classes;
     std::vector<std::unique_ptr<Item>> item_templates;  // follows the item_classes

@@ -448,6 +448,7 @@ bool Dungeon::load_level(size_t index) {
 }
 
 void Dungeon::on_load_level(DungeonLevel &level) {
+    Game::get().player_template.deepcopy_to(player);
     player.position = level.initial_player_position;
 }
 
@@ -604,6 +605,13 @@ void Actor::deepcopy_to(Actor &other) const {
 }
 
 void Player::init() {}
+
+void Player::deepcopy_to(Player &other) const {
+    Actor::deepcopy_to(other);
+    other.inventory = inventory;
+    other.lock_picks = lock_picks;
+    other.experience = experience;
+}
 
 void Player::update(float delta_time) {
     handle_movement(delta_time);
