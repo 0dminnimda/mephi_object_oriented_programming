@@ -495,6 +495,7 @@ private:
     sf::Font font;
     sf::Text menu_message;
     sf::Text info_message;
+    sf::Text death_message;
 
 public:
     GameView()

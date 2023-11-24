@@ -195,8 +195,19 @@ bool GameView::init(unsigned int width, unsigned int height) {
 
     info_message.setFont(font);
     info_message.setCharacterSize(40);
+    info_message.setFillColor(sf::Color::White);
     info_message.setPosition(sf::Vector2f(view.getSize()) / 2.0f);
     info_message.setScale(
+        sf::Vector2f(Game::view_size, Game::view_size) / (float)std::min(width, height)
+    );
+
+    death_message.setFont(font);
+    death_message.setCharacterSize(60);
+    death_message.setFillColor(sf::Color::Red);
+    death_message.setOutlineThickness(5);
+    death_message.setOutlineColor(sf::Color::Black);
+    death_message.setPosition(sf::Vector2f(view.getSize()) / 2.0f);
+    death_message.setScale(
         sf::Vector2f(Game::view_size, Game::view_size) / (float)std::min(width, height)
     );
 
@@ -221,7 +232,6 @@ void GameView::draw() {
 
     DungeonLevel *level = Game::get().dungeon.get_current_level();
     if (!level) {
-        info_message.setFillColor(sf::Color::White);
         info_message.setString("No levels are loaded");
         center_text_origin(info_message);
         window.draw(info_message);
@@ -234,11 +244,10 @@ void GameView::draw() {
     dungeon_level_view.draw(*level);
 
     if (!Game::get().dungeon.player.alive) {
-        info_message.setFillColor(sf::Color::Red);
-        info_message.setString("You are dead");
-        center_text_origin(info_message);
-        info_message.setPosition(sf::Vector2f(Game::get().dungeon.player.position));
-        window.draw(info_message);
+        death_message.setString("YOU DIED");
+        center_text_origin(death_message);
+        death_message.setPosition(sf::Vector2f(Game::get().dungeon.player.position));
+        window.draw(death_message);
     }
 
     float ratio = (float)window.getSize().x / (float)window.getSize().y;
