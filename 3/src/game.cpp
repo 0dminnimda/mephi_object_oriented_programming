@@ -284,7 +284,7 @@ void DungeonLevel::regenerate_tiles() {
             if (tiles[i][j].kind == Tile::Flor && range_chest_spawn.get_random() == 0) {
                 size_t level = max_level - (size_t)std::sqrt(range_chest_level.get_random());
                 auto chest = std::make_shared<Chest>(level);
-                chest->inventory.add_item(Game::get().item_templates[range_chest_item.get_random()]->copy());
+                chest->inventory.add_item(Game::get().make_item(range_chest_item.get_random()));
                 tiles[i][j].set_building(chest);
             }
         }
@@ -423,7 +423,11 @@ bool Game::load_level(size_t index) {
 void Game::unload_current_level() { current_level = std::nullopt; }
 
 Enemy Game::make_enemy(size_t actor_class_index) const {
-    return enemy_templates.at(actor_class_index).copy();
+    return deepcopy(enemy_templates.at(actor_class_index));
+}
+
+std::shared_ptr<Item> Game::make_item(size_t item_class_index) const {
+    return item_templates.at(item_class_index)->deepcopy_item();
 }
 
 DungeonLevel *Game::get_current_level() {
@@ -551,10 +555,21 @@ void Experience::gain(size_t amount, Actor &actor) {
 }
 
 size_t Experience::needs_exp_for_level(size_t level) { return 4 * level * level + 10 * level + 10; }
+
+void Experience::level_up() { level += 1; }
+
+void RigidBody::deepcopy_to(RigidBody &other) const {
+    other.position = position;
+    other.size = size;
 }
 
-void Experience::level_up() {
-    level += 1;
+void Actor::deepcopy_to(Actor &other) const {
+    RigidBody::deepcopy_to(other);
+    other.actor_class_index = actor_class_index;
+    other.health = health;
+    other.equipment = equipment;
+    other.characteristics = characteristics;
+    other.alive = alive;
 }
 
 void Player::init() {}
@@ -638,18 +653,26 @@ void Enemy::die(Actor &reason) {
     if (!level) return;
 
     RangeOfValues range_chest_item(0, Game::get().item_templates.size() - 1);
-    std::shared_ptr<Item> item = Game::get().item_templates[range_chest_item.get_random()]->copy();
+    std::shared_ptr<Item> item = Game::get().make_item(range_chest_item.get_random());
 
     LayingItem laying_item(item);
     laying_item.position = position;
     level->laying_items.push_back(laying_item);
 }
+void Enemy::deepcopy_to(Enemy &other) const { Actor::deepcopy_to(other); }
 
-Enemy Enemy::copy() const { return Enemy(*this); }
+void Item::deepcopy_to(Item &other) const { other.item_class_index = item_class_index; }
 
 void Potion::apply(Actor &target) { modifier.apply(target.characteristics); }
 
 void Potion::use(Actor &target) { apply(target); }
+
+void Weapon::deepcopy_to(Weapon &other) const {
+    Item::deepcopy_to(other);
+    other.artefact = artefact;
+    other.enchantment = enchantment;
+    other.damage_range = damage_range;
+}
 
 void Weapon::use(Actor &target) { attack(target); }
 
@@ -695,4 +718,12 @@ bool Hammer::is_in_range(const Actor &source, sf::Vector2f target) const {
     return length_squared(source.position - target) <= hit_range * hit_range;
 }
 
-std::shared_ptr<Item> Hammer::copy() const { return std::make_shared<Hammer>(*this); }
+void Hammer::deepcopy_to(Hammer &other) const {
+    Weapon::deepcopy_to(other);
+    other.hit_range = hit_range;
+    other.cooldown_timer = cooldown_timer;
+    other.cooldown_time = cooldown_time;
+    other.on_cooldown = on_cooldown;
+}
+
+std::shared_ptr<Item> Hammer::deepcopy_item() const { return deepcopy_shared(*this); }

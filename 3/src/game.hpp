@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "matrix.hpp"
+#include "deepcopy.hpp"
 
 #ifdef SFML_SYSTEM_IOS
 const std::string path_to_resources = "";
@@ -79,14 +80,18 @@ public:
 
 class Item {
 public:
+    DeepCopy(Item);
+
     size_t item_class_index;
 
     Item() {}
     Item(size_t item_class_index) : item_class_index(item_class_index) {}
 
     virtual ~Item() = default;
+
+    virtual std::shared_ptr<Item> deepcopy_item() const { return nullptr; }
+
     virtual void use(Actor &target){};
-    virtual std::shared_ptr<Item> copy() const { return nullptr; }
 };
 
 class ItemsView {
@@ -136,6 +141,8 @@ protected:
     RangeOfValues damage_range;
 
 public:
+    DeepCopy(Weapon);
+
     Weapon(size_t item_class_index, RangeOfValues damage_range)
         : Item(item_class_index), damage_range(damage_range) {}
 
@@ -148,6 +155,8 @@ public:
 
 class Hammer : public Weapon {
 public:
+    DeepCopy(Hammer);
+
     float hit_range;
     sf::Clock cooldown_timer;
     sf::Time cooldown_time;
@@ -161,7 +170,7 @@ public:
           hit_range(hit_range),
           cooldown_time(cooldown_time) {}
 
-    std::shared_ptr<Item> copy() const override;
+    std::shared_ptr<Item> deepcopy_item() const override;
 
     void attack(Actor &source) override;
     bool cooldown();
@@ -276,14 +285,16 @@ public:
 class Equipment {
 public:
     std::unordered_map<Wearable::Kind, std::shared_ptr<Wearable>> wearable;
-    std::shared_ptr<Weapon> weapon;
+    std::shared_ptr<Item> weapon;
 
     void equip_wearable(std::shared_ptr<Wearable> item);
-    void equip_weapon(std::shared_ptr<Weapon> weapon);
+    void equip_weapon(std::shared_ptr<Item> weapon);
 };
 
 class RigidBody {
 public:
+    DeepCopy(RigidBody);
+
     sf::Vector2f position;
     float size = 1.0f;
 
@@ -308,6 +319,8 @@ public:
 
 class Actor : public RigidBody {
 public:
+    DeepCopy(Actor);
+
     size_t actor_class_index;
     float health;
     Equipment equipment;
@@ -323,10 +336,8 @@ public:
     virtual ~Actor() = default;
 
     virtual void take_damage(float amount, Actor &source);
-
     virtual void init(){};
     virtual void update(float delta_time){};
-    virtual void attack(Actor &target){};
     virtual void die(Actor &reason){};
 };
 
@@ -360,7 +371,6 @@ public:
     void handle_movement(float delta_time);
     void handle_equipment_use();
     void handle_picking();
-    void attack(Actor &target) override;
     void die(Actor &reason) override;
 
     void pick_up_item(Item &item);
@@ -368,17 +378,18 @@ public:
 
 class Enemy : public Actor {
 public:
+    DeepCopy(Enemy);
+
     Enemy() = default;
     Enemy(size_t class_index, float size, Characteristics characteristics)
         : Actor(class_index, size, characteristics) {}
     Enemy(const Actor &actor) : Actor(actor) {}
     Enemy(Actor &&actor) : Actor(actor) {}
 
-    Enemy copy() const;
-
     void init() override;
     void update(float delta_time) override;
-    void attack(Actor &target) override;
+    void handle_movement(float delta_time);
+    void handle_equipment_use();
     void die(Actor &reason) override;
 };
 
@@ -523,6 +534,7 @@ public:
     Enemy make_enemy(size_t actor_class_index) const;
 
     size_t add_item_class(const ItemClass &cls);
+    std::shared_ptr<Item> make_item(size_t item_class_index) const;
     // size_t add_item_template(std::unique_ptr<Item> item);
 };
 
