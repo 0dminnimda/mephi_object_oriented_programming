@@ -27,6 +27,8 @@
 *.log
 
 build
+_build
+build_
 html
 latex
 docs
