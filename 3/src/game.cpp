@@ -654,7 +654,7 @@ void Player::handle_equipment_use() {
 }
 
 void Player::handle_picking() {
-    if (!sf::Keyboard::isKeyPressed(sf::Keyboard::P)) return;
+    if (!sf::Keyboard::isKeyPressed(sf::Keyboard::E)) return;
 
     DungeonLevel *level = Game::get().dungeon.get_current_level();
     if (!level) return;
