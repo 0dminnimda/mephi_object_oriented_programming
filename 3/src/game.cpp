@@ -610,7 +610,7 @@ void Player::handle_picking() {
     tile.building->try_to_pick(*this, lock_picks, coords->first, coords->second);
 }
 
-void Player::attack(Actor &target) {}
+// void Player::attack(Actor &target) {}
 
 void Player::die(Actor &reason) {}
 
@@ -623,7 +623,7 @@ void Enemy::update(float delta_time) {
     position += normalized(direction) * (float)characteristics.speed * delta_time;
 }
 
-void Enemy::attack(Actor &target) {}
+// void Enemy::attack(Actor &target) {}
 
 void Enemy::die(Actor &reason) {
     std::cout << "Enemy (" << actor_class_index << ") died from (" << reason.actor_class_index
