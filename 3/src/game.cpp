@@ -11,9 +11,9 @@
 #include <iterator>
 #include <random>
 
+#include "SFML/Graphics/Rect.hpp"
 #include "color_operations.hpp"
 #include "vector_operations.hpp"
-
 
 void debug_draw_point(const sf::Vector2f &point) {
     sf::CircleShape circle(0.05f);
@@ -361,8 +361,8 @@ void DungeonLevel::regenerate_tiles() {
 void DungeonLevel::regenerate_enemies() {
     enemies.clear();
 
-    RangeOfValues range_x(0, tiles.size());
-    RangeOfValues range_y(0, tiles.row_size());
+    RangeOfValues range_x(2, tiles.size() - 2);
+    RangeOfValues range_y(2, tiles.row_size() - 2);
     RangeOfValues range_wiggle(-10, 10);
 
     for (size_t class_index = 1; class_index < Game::get().actor_classes.size(); ++class_index) {
@@ -375,6 +375,55 @@ void DungeonLevel::regenerate_enemies() {
             enemy.position *= tile_coords_to_world_coords_factor();
         }
     }
+}
+
+void DungeonLevel::handle_collitions() {
+    std::vector<sf::FloatRect> aabbs(enemies.size() + 1);
+    for (size_t i = 0; i < enemies.size(); ++i) {
+        aabbs[i] = enemies[i].get_axes_aligned_bounding_box();
+    }
+    aabbs[enemies.size()] = Game::get().dungeon.player.get_axes_aligned_bounding_box();
+
+    std::vector<sf::Vector2f> directions(enemies.size() + 1);
+
+    for (size_t i = 0; i < enemies.size() + 1; ++i) {
+        for (size_t j = i + 1; j < enemies.size() + 1; ++j) {
+            sf::FloatRect intersection;
+            if (!aabbs[i].intersects(aabbs[j], intersection)) continue;
+
+            sf::Vector2f diff = ::center(aabbs[i]) - ::center(aabbs[j]);
+            sf::Vector2f correction = intersection.getSize() * 2 / 3;
+
+            // make sure the direction is correct
+            if (diff.x < 0) {
+                correction.x = -correction.x;
+            }
+            if (diff.y < 0) {
+                correction.y = -correction.y;
+            }
+
+            // choose the axis to correct (minimal one)
+            if (abs(correction.x) < abs(correction.y)) {
+                correction.y = 0;
+            } else {
+                correction.x = 0;
+            }
+
+            directions[i] += correction;
+            directions[j] -= correction;
+
+            // directions[i] += normalized(correction) * abs(min(correction));
+            // directions[j] -= normalized(correction) * abs(min(correction));
+
+            // directions[i] += (::center(aabbs[i]) - ::center(aabbs[j])) / 2;
+            // directions[j] += (::center(aabbs[j]) - ::center(aabbs[i])) / 2;
+        }
+    }
+
+    for (size_t i = 0; i < enemies.size(); ++i) {
+        enemies[i].position += directions[i];
+    }
+    // Game::get().dungeon.player.position += directions[enemies.size()] / 4;
 }
 
 bool DungeonLevelView::init() {
@@ -534,8 +583,6 @@ DungeonLevel *Dungeon::get_current_level() {
     return &(*current_level);  // some funky C++ with it's * for std::optional
 }
 
-void DungeonLevel::handle_collitions() {}
-
 void DungeonLevel::delete_the_dead() {
     size_t c = 0;
     size_t i = 0;
@@ -666,6 +713,36 @@ void Experience::level_up() { level += 1; }
 void RigidBody::deepcopy_to(RigidBody &other) const {
     other.position = position;
     other.size = size;
+}
+
+sf::FloatRect RigidBody::get_axes_aligned_bounding_box() const {
+    float size = this->size / Game::world_size;
+    return sf::FloatRect(position.x - size / 2, position.y - size / 2, size, size);
+}
+
+sf::Vector2f center(const sf::FloatRect &a) {
+    return sf::Vector2f(a.left + a.width / 2, a.top + a.height / 2);
+}
+
+bool intersects(
+    const sf::FloatRect &aabb1, const sf::FloatRect &aabb2, sf::Vector2f &intersection_point
+) {
+    sf::FloatRect intersection;
+    if (aabb1.intersects(aabb2, intersection)) {
+        intersection_point = center(intersection);
+        return true;
+    }
+    return false;
+}
+
+bool RigidBody::intersects(const RigidBody &other, sf::Vector2f &intersection_point) const {
+    return ::intersects(
+        get_axes_aligned_bounding_box(), other.get_axes_aligned_bounding_box(), intersection_point
+    );
+}
+
+bool RigidBody::intersects(const RigidBody &other) const {
+    return get_axes_aligned_bounding_box().intersects(other.get_axes_aligned_bounding_box());
 }
 
 void Actor::deepcopy_to(Actor &other) const {

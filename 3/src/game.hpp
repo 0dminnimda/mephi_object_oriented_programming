@@ -307,7 +307,14 @@ public:
 
     RigidBody() = default;
     RigidBody(float size) : size(size) {}
+
+    sf::FloatRect get_axes_aligned_bounding_box() const;
+    bool intersects(const RigidBody &other, sf::Vector2f &intersection_point) const;
+    bool intersects(const RigidBody &other) const;
 };
+
+sf::Vector2f center(const sf::FloatRect &a);
+bool intersects(const sf::FloatRect &aabb1, const sf::FloatRect &aabb2, sf::Vector2f &intersection_point);
 
 class ActorClass {
 public:
