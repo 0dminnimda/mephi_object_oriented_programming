@@ -61,7 +61,7 @@ int sub_main() {
     game.enemy_templates[pepe_id] = Enemy(pepe_id, 5.0f, Characteristics(10.0f, 0.0f, 4.0f));
 
     size_t hammer_id =
-        game.add_item_class(ItemClass("hammer", "smashes in the face", "hammer.png", 13.0f));
+        game.add_item_class(ItemClass("hammer", "smashes in the face", "hammer.png", 13.0f, Item::Kind::Weapon));
 
     game.item_templates.resize(game.item_classes.size());
     game.item_templates[hammer_id] =

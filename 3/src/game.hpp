@@ -63,25 +63,11 @@ public:
 
 class Actor;
 
-class ItemClass {
-public:
-    std::string name;
-    std::string description;
-    std::string texture_name;
-    sf::Texture texture;
-    sf::Sprite sprite;
-    float size;
-
-    ItemClass(std::string name, std::string description, std::string texture_name, float size)
-        : name(name), description(description), texture_name(texture_name), size(size) {}
-    ~ItemClass() = default;
-
-    bool init();
-};
-
 class Item {
 public:
     DeepCopy(Item);
+
+    enum Kind { Weapon, Wearable, Custom };
 
     size_t item_class_index;
 
@@ -93,6 +79,31 @@ public:
     virtual std::shared_ptr<Item> deepcopy_item() const = 0;
 
     virtual void use(Actor &target){};
+    virtual void update_characteristics_as_an_equipment(Characteristics &characteristics){};
+};
+
+class ItemClass {
+public:
+    std::string name;
+    std::string description;
+    std::string texture_name;
+    sf::Texture texture;
+    sf::Sprite sprite;
+    float size;
+    Item::Kind kind;
+
+    ItemClass(
+        std::string name, std::string description, std::string texture_name, float size,
+        Item::Kind kind
+    )
+        : name(name),
+          description(description),
+          texture_name(texture_name),
+          size(size),
+          kind(kind) {}
+    ~ItemClass() = default;
+
+    bool init();
 };
 
 class ItemsView {
@@ -315,7 +326,9 @@ public:
 };
 
 sf::Vector2f center(const sf::FloatRect &a);
-bool intersects(const sf::FloatRect &aabb1, const sf::FloatRect &aabb2, sf::Vector2f &intersection_point);
+bool intersects(
+    const sf::FloatRect &aabb1, const sf::FloatRect &aabb2, sf::Vector2f &intersection_point
+);
 
 class ActorClass {
 public:
@@ -458,8 +471,8 @@ public:
     void add_laying_item(std::unique_ptr<LayingItem> item);
     void update(float delta_time);
     void handle_collitions();
-    void handle_actor_actor_collitions(std::vector<RigidBody*> &bodies);
-    void handle_actor_level_collitions(std::vector<RigidBody*> &bodies);
+    void handle_actor_actor_collitions(std::vector<RigidBody *> &bodies);
+    void handle_actor_level_collitions(std::vector<RigidBody *> &bodies);
     void delete_the_dead();
 };
 
