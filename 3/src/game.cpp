@@ -503,6 +503,11 @@ void DungeonLevelView::draw(const DungeonLevel &level) {
         actors_view.draw(emeny);
     }
     actors_view.draw(Game::get().dungeon.player);
+
+    for (const auto &emeny : level.enemies) {
+        actors_view.draw_ui(emeny);
+    }
+    actors_view.draw_ui(Game::get().dungeon.player);
 }
 
 void DungeonLevelView::draw_tile(
@@ -563,7 +568,9 @@ void ActorsView::draw(const Actor &actor) {
     sprite.setScale(saved);
 
     if (actor.equipment.weapon) items_view.draw(*actor.equipment.weapon, actor.position);
+}
 
+void ActorsView::draw_ui(const Actor &actor) {
     float bar_width = actor.size / Game::world_size * 1.2f;
     max_health_bar.setSize(sf::Vector2f(1.0f, health_bar_height_factor) * bar_width);
     max_health_bar.setPosition(actor.position - sf::Vector2f(bar_width, bar_width) / 2.0f);

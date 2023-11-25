@@ -388,6 +388,7 @@ public:
     ~ActorsView() = default;
 
     void draw(const Actor &actor);
+    void draw_ui(const Actor &actor);
 };
 
 class Player : public Actor {
