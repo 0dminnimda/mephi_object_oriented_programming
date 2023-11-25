@@ -148,7 +148,7 @@ public:
         : Item(item_class_index), damage_range(damage_range) {}
 
     void use(Actor &target) override;
-    virtual void attack(Actor &source) = 0;
+    virtual void attack_by(Actor &source) = 0;
     virtual void try_to_attack(Actor &source, Actor &target) = 0;
     virtual float get_damage(Actor &target);
     virtual bool is_in_range(const Actor &source, sf::Vector2f target) const = 0;
@@ -173,7 +173,7 @@ public:
 
     std::shared_ptr<Item> deepcopy_item() const override;
 
-    void attack(Actor &source) override;
+    void attack_by(Actor &source) override;
     bool cooldown();
     void try_to_attack(Actor &source, Actor &target) override;
     bool is_in_range(const Actor &source, sf::Vector2f target) const override;

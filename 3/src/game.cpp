@@ -746,7 +746,7 @@ void Weapon::deepcopy_to(Weapon &other) const {
     other.damage_range = damage_range;
 }
 
-void Weapon::use(Actor &target) { attack(target); }
+void Weapon::use(Actor &target) { attack_by(target); }
 
 float Weapon::get_damage(Actor &target) { return damage_range.get_random(); }
 
@@ -765,7 +765,7 @@ bool Hammer::cooldown() {
     return true;
 }
 
-void Hammer::attack(Actor &source) {
+void Hammer::attack_by(Actor &source) {
     if (cooldown()) return;
 
     if (source.actor_class_index == Game::player_class_index) {
