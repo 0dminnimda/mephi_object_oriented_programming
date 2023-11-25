@@ -44,6 +44,11 @@ T min(const sf::Vector2<T> &a) {
 }
 
 template <typename T>
+T mean(const sf::Vector2<T> &a) {
+    return (a.x + a.y) / 2;
+}
+
+template <typename T>
 sf::Vector2<T> proj(const sf::Vector2<T> &a, const sf::Vector2<T> &b) {
     return b * (dot(a, b) / dot(b, b));
 }
@@ -60,14 +65,49 @@ sf::Vector2<T> operator/(const sf::Vector2<T> &a, const sf::Vector2<T> &b) {
     return {a.x / b.x, a.y / b.y};
 }
 
-template <typename T>
-sf::Vector2<T> operator/(T a, const sf::Vector2<T> &b) {
+template <typename T, typename U>
+sf::Vector2<T> operator/(const sf::Vector2<T> &a, U b) {
+    return {a.x / b, a.y / b};
+}
+
+template <typename T, typename U>
+sf::Vector2<T> operator/(U a, const sf::Vector2<T> &b) {
     return {a / b.x, a / b.y};
 }
 
 template <typename T>
 sf::Vector2<T> operator*(const sf::Vector2<T> &a, const sf::Vector2<T> &b) {
     return {a.x * b.x, a.y * b.y};
+}
+
+template <typename T, typename U>
+sf::Vector2<T> operator*(const sf::Vector2<T> &a, U b) {
+    return {a.x * b, a.y * b};
+}
+
+template <typename T, typename U>
+sf::Vector2<T> operator*(U a, const sf::Vector2<T> &b) {
+    return {a * b.x, a * b.y};
+}
+
+template <typename T, typename U>
+sf::Vector2<T> operator+(const sf::Vector2<T> &a, U b) {
+    return {a.x + b, a.y + b};
+}
+
+template <typename T, typename U>
+sf::Vector2<T> operator+(U a, const sf::Vector2<T> &b) {
+    return {a + b.x, a + b.y};
+}
+
+template <typename T, typename U>
+sf::Vector2<T> operator-(const sf::Vector2<T> &a, U b) {
+    return {a.x - b, a.y - b};
+}
+
+template <typename T, typename U>
+sf::Vector2<T> operator-(U a, const sf::Vector2<T> &b) {
+    return {a - b.x, a - b.y};
 }
 
 namespace std {
