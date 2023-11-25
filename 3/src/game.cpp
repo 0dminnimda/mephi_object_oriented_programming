@@ -514,14 +514,16 @@ void DungeonLevel::handle_collitions() {}
 
 void DungeonLevel::delete_the_dead() {
     size_t c = 0;
-    for (size_t i = 0; i < enemies.size(); ++i) {
-        if (!enemies[i].alive) {
-            if (i != c) enemies[c] = enemies[i];
-        } else {
+    size_t i = 0;
+    for (; i < enemies.size(); ++i) {
+        if (enemies[c].alive) {
+            ++c;
+        } else if (enemies[i].alive) {
+            std::swap(enemies[c], enemies[i]);
             ++c;
         }
     }
-    enemies.erase(enemies.begin() + c, enemies.end());
+    enemies.erase(std::next(enemies.begin(), c), enemies.end());
 }
 
 void DungeonLevel::update(float delta_time) {
