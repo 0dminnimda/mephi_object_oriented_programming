@@ -11,7 +11,9 @@
 #include <iterator>
 #include <random>
 
+#include "color_operations.hpp"
 #include "vector_operations.hpp"
+
 
 void debug_draw_point(const sf::Vector2f &point) {
     sf::CircleShape circle(0.05f);
@@ -451,11 +453,31 @@ void DungeonLevelView::draw_tile(
     }
 }
 
+float symmetric_linear_easing(float t, float p) {
+    if (t < p) {
+        return t / p;
+    } else if (t < 1.0f - p) {
+        return 1.0f;
+    } else {
+        return (1.0f - t) / p;
+    }
+}
+
+void SpriteColorAnimator::update(sf::Time elapsed_time, sf::Sprite &sprite) {
+    if (elapsed_time > duration) {
+        sprite.setColor(inactive_color);
+    } else {
+        float t = symmetric_linear_easing(elapsed_time.asSeconds() / duration.asSeconds(), 0.3f);
+        sprite.setColor(inactive_color * (1 - t) + active_color * t);
+    }
+}
+
 void ActorsView::draw(const Actor &actor) {
     sf::Sprite &sprite = Game::get().actor_classes[actor.actor_class_index].sprite;
     sf::Vector2f saved = sprite.getScale();
     sprite.setScale(saved * actor.size / Game::world_size);
     sprite.setPosition(actor.position);
+    taked_damage_animator.update(actor.since_last_taken_damage.getElapsedTime(), sprite);
     window.draw(sprite);
     sprite.setScale(saved);
 
@@ -616,6 +638,7 @@ void Equipment::deepcopy_to(Equipment &other) const {
 }
 
 void Actor::take_damage(float amount, Actor &source) {
+    since_last_taken_damage.restart();
     health -= std::max(0.0f, amount - characteristics.defence);
     if (health <= 0.0f) {
         health = 0.0f;
@@ -784,13 +807,13 @@ float Weapon::get_damage(Actor &target) { return damage_range.get_random(); }
 
 bool Hammer::cooldown() {
     if (!on_cooldown) {
-        cooldown_timer.restart();
+        since_last_use.restart();
         on_cooldown = true;
         return false;
     }
 
-    if (cooldown_timer.getElapsedTime() > cooldown_time) {
-        cooldown_timer.restart();
+    if (since_last_use.getElapsedTime() > cooldown_time) {
+        since_last_use.restart();
         return false;
     }
 
@@ -825,7 +848,7 @@ bool Hammer::is_in_range(const Actor &source, sf::Vector2f target) const {
 void Hammer::deepcopy_to(Hammer &other) const {
     Weapon::deepcopy_to(other);
     other.hit_range = hit_range;
-    other.cooldown_timer = cooldown_timer;
+    other.since_last_use = since_last_use;
     other.cooldown_time = cooldown_time;
     other.on_cooldown = on_cooldown;
 }

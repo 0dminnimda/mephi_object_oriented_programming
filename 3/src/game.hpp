@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SFML/Graphics/Sprite.hpp"
 #ifndef GAME_H
 #define GAME_H
 
@@ -16,7 +17,6 @@
 
 #include "deepcopy.hpp"
 #include "matrix.hpp"
-
 
 #ifdef SFML_SYSTEM_IOS
 const std::string path_to_resources = "";
@@ -159,7 +159,7 @@ public:
     DeepCopy(Hammer);
 
     float hit_range;
-    sf::Clock cooldown_timer;
+    sf::Clock since_last_use;
     sf::Time cooldown_time;
     bool on_cooldown = false;
 
@@ -333,6 +333,7 @@ public:
     Equipment equipment;
     Characteristics characteristics;
     bool alive = true;
+    sf::Clock since_last_taken_damage;
 
     Actor() = default;
     Actor(size_t class_index, float size, Characteristics characteristics)
@@ -348,6 +349,18 @@ public:
     virtual void die(Actor &reason){};
 };
 
+float symmetric_linear_easing(float t, float p);
+
+class SpriteColorAnimator {
+public:
+    sf::Color inactive_color;
+    sf::Color active_color;
+
+    sf::Time duration;
+
+    void update(sf::Time elapsed_time, sf::Sprite &sprite);
+};
+
 class ActorsView {
 private:
     sf::RenderWindow &window;
@@ -356,6 +369,9 @@ private:
 
     sf::RectangleShape max_health_bar;
     sf::RectangleShape current_health_bar;
+
+    SpriteColorAnimator taked_damage_animator =
+        SpriteColorAnimator(sf::Color::White, sf::Color(200, 0, 0), sf::seconds(0.15f));
 
 public:
     ItemsView items_view;
