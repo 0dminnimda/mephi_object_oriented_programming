@@ -662,6 +662,7 @@ void Player::deepcopy_to(Player &other) const {
 }
 
 void Player::update(float delta_time) {
+    if (!alive) return;
     handle_movement(delta_time);
     handle_equipment_use();
     handle_picking();
@@ -716,13 +717,17 @@ void Player::handle_picking() {
     tile.building->try_to_pick(*this, lock_picks, coords->first, coords->second);
 }
 
-void Player::die(Actor &reason) { alive = false; }
+void Player::die(Actor &reason) {
+    if (!alive) return;
+    alive = false;
+}
 
 void Player::pick_up_item(Item &item) {}
 
 void Enemy::init() {}
 
 void Enemy::update(float delta_time) {
+    if (!alive) return;
     handle_movement(delta_time);
     handle_equipment_use();
 }
@@ -739,6 +744,8 @@ void Enemy::handle_equipment_use() {
 }
 
 void Enemy::die(Actor &reason) {
+    if (!alive) return;
+
     std::cout << "Enemy (" << actor_class_index << ") died from (" << reason.actor_class_index
               << ") with " << health << " health" << std::endl;
     alive = false;
@@ -753,6 +760,7 @@ void Enemy::die(Actor &reason) {
     laying_item.position = position;
     level->laying_items.push_back(laying_item);
 }
+
 void Enemy::deepcopy_to(Enemy &other) const { Actor::deepcopy_to(other); }
 
 void Item::deepcopy_to(Item &other) const { other.item_class_index = item_class_index; }
