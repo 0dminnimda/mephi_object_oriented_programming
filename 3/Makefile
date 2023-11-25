@@ -11,7 +11,9 @@ ANAL_BUILD_PATH = "$(shell which analyze-build)"
 
 prep_executable = $(eval $(1) := $(shell bash ../prep_exec.sh $(2) --use_dir "resources"))
 
-call_cmake = cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER="$(CC)" -DCMAKE_CXX_COMPILER="$(CXX)"
+BUILD_TYPE = Release
+
+call_cmake = cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DCMAKE_C_COMPILER="$(CC)" -DCMAKE_CXX_COMPILER="$(CXX)"
 
 DISPLAY = ":1"
 
