@@ -303,6 +303,7 @@ public:
     DeepCopy(RigidBody);
 
     sf::Vector2f position;
+    bool pushable = true;
     float size = 1.0f;
 
     RigidBody() = default;
@@ -455,6 +456,8 @@ public:
     void add_laying_item(std::unique_ptr<LayingItem> item);
     void update(float delta_time);
     void handle_collitions();
+    void handle_actor_actor_collitions(std::vector<RigidBody*> &bodies);
+    void handle_actor_level_collitions(std::vector<RigidBody*> &bodies);
     void delete_the_dead();
 };
 

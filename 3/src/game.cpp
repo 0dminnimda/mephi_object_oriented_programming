@@ -378,16 +378,27 @@ void DungeonLevel::regenerate_enemies() {
 }
 
 void DungeonLevel::handle_collitions() {
-    std::vector<sf::FloatRect> aabbs(enemies.size() + 1);
+    std::vector<RigidBody *> bodies(enemies.size() + 1);
     for (size_t i = 0; i < enemies.size(); ++i) {
-        aabbs[i] = enemies[i].get_axes_aligned_bounding_box();
+        bodies[i] = &enemies[i];
     }
-    aabbs[enemies.size()] = Game::get().dungeon.player.get_axes_aligned_bounding_box();
+    bodies[enemies.size()] = &Game::get().dungeon.player;
 
-    std::vector<sf::Vector2f> directions(enemies.size() + 1);
+    handle_actor_level_collitions(bodies);
+    handle_actor_actor_collitions(bodies);
+    handle_actor_level_collitions(bodies);
+}
 
-    for (size_t i = 0; i < enemies.size() + 1; ++i) {
-        for (size_t j = i + 1; j < enemies.size() + 1; ++j) {
+void DungeonLevel::handle_actor_actor_collitions(std::vector<RigidBody *> &bodies) {
+    std::vector<sf::FloatRect> aabbs(bodies.size());
+    for (size_t i = 0; i < bodies.size(); ++i) {
+        aabbs[i] = bodies[i]->get_axes_aligned_bounding_box();
+    }
+
+    std::vector<sf::Vector2f> directions(bodies.size());
+
+    for (size_t i = 0; i < bodies.size(); ++i) {
+        for (size_t j = i + 1; j < bodies.size(); ++j) {
             sf::FloatRect intersection;
             if (!aabbs[i].intersects(aabbs[j], intersection)) continue;
 
@@ -411,19 +422,40 @@ void DungeonLevel::handle_collitions() {
 
             directions[i] += correction;
             directions[j] -= correction;
-
-            // directions[i] += normalized(correction) * abs(min(correction));
-            // directions[j] -= normalized(correction) * abs(min(correction));
-
-            // directions[i] += (::center(aabbs[i]) - ::center(aabbs[j])) / 2;
-            // directions[j] += (::center(aabbs[j]) - ::center(aabbs[i])) / 2;
         }
     }
 
-    for (size_t i = 0; i < enemies.size(); ++i) {
-        enemies[i].position += directions[i];
+    for (size_t i = 0; i < bodies.size(); ++i) {
+        if (bodies[i]->pushable) bodies[i]->position += directions[i];
     }
-    // Game::get().dungeon.player.position += directions[enemies.size()] / 4;
+}
+
+void DungeonLevel::handle_actor_level_collitions(std::vector<RigidBody *> &bodies) {
+    std::vector<sf::FloatRect> aabbs(bodies.size());
+    for (size_t i = 0; i < bodies.size(); ++i) {
+        aabbs[i] = bodies[i]->get_axes_aligned_bounding_box();
+    }
+
+    float right_wall = tiles.size() * tile_coords_to_world_coords_factor();
+    float down_wall = tiles.row_size() * tile_coords_to_world_coords_factor();
+
+    for (size_t i = 0; i < bodies.size(); ++i) {
+        if (aabbs[i].left < 0) {
+            bodies[i]->position.x += 0 - aabbs[i].left;
+        }
+        if (aabbs[i].top < 0) {
+            bodies[i]->position.y += 0 - aabbs[i].top;
+        }
+
+        float right = aabbs[i].left + aabbs[i].width;
+        if (right > right_wall) {
+            bodies[i]->position.x -= right - right_wall;
+        }
+        float down = aabbs[i].top + aabbs[i].height;
+        if (down > down_wall) {
+            bodies[i]->position.y -= down - down_wall;
+        }
+    }
 }
 
 bool DungeonLevelView::init() {
@@ -712,6 +744,7 @@ void Experience::level_up() { level += 1; }
 
 void RigidBody::deepcopy_to(RigidBody &other) const {
     other.position = position;
+    other.pushable = pushable;
     other.size = size;
 }
 
