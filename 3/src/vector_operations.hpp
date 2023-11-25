@@ -3,9 +3,10 @@
 #ifndef VECTOR_OPERATIONS_H
 #define VECTOR_OPERATIONS_H
 
-#include <algorithm>
-
 #include <SFML/System.hpp>
+#include <algorithm>
+#include <ostream>
+
 
 template <typename T>
 float dot(const sf::Vector2<T> &a, const sf::Vector2<T> &b) {
@@ -50,8 +51,7 @@ sf::Vector2<T> proj(const sf::Vector2<T> &a, const sf::Vector2<T> &b) {
 template <typename T>
 sf::Vector2<T> normalized(const sf::Vector2<T> &a) {
     T len = length(a);
-    if (len)
-        return a / len;
+    if (len) return a / len;
     return a;
 }
 
@@ -70,4 +70,12 @@ sf::Vector2<T> operator*(const sf::Vector2<T> &a, const sf::Vector2<T> &b) {
     return {a.x * b.x, a.y * b.y};
 }
 
-#endif // VECTOR_OPERATIONS_H
+namespace std {
+    template <typename T>
+    std::ostream &operator<<(std::ostream &stream, const sf::Vector2<T> &a) {
+        stream << "Vector(" << a.x << ", " << a.y << ")";
+        return stream;
+    }
+}  // namespace std
+
+#endif  // VECTOR_OPERATIONS_H
