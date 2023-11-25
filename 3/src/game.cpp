@@ -887,9 +887,6 @@ void Enemy::handle_equipment_use() {
 
 void Enemy::die(Actor &reason) {
     if (!alive) return;
-
-    std::cout << "Enemy (" << actor_class_index << ") died from (" << reason.actor_class_index
-              << ") with " << health << " health" << std::endl;
     alive = false;
 
     DungeonLevel *level = Game::get().dungeon.get_current_level();
