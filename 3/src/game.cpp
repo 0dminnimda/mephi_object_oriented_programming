@@ -14,7 +14,6 @@
 #include "color_operations.hpp"
 #include "vector_operations.hpp"
 
-
 void debug_draw_point(const sf::Vector2f &point) {
     sf::CircleShape circle(0.05f);
     circle.setPosition(point);
@@ -233,6 +232,18 @@ bool GameView::init(unsigned int width, unsigned int height) {
     death_message.setScale(
         sf::Vector2f(Game::view_size, Game::view_size) / (float)std::min(width, height)
     );
+
+    if (!sf::Shader::isAvailable()) {
+        std::cout << "Shaders are not available on this system" << std::endl;
+        return false;
+    }
+
+    if (!outline_shader.loadFromFile(
+            // path_to_resources + "def.vert", path_to_resources + "def.frag"
+            path_to_resources + "outline.vert", path_to_resources + "outline.frag"
+            // path_to_resources + "outline2.frag", sf::Shader::Fragment
+        ))
+        return false;
 
     return true;
 }
@@ -505,7 +516,11 @@ void ItemsView::draw(const Item &item, sf::Vector2f position) {
     sf::Vector2f saved = sprite.getScale();
     sprite.setScale(saved / Game::world_size * cls.size);
     sprite.setPosition(position);
-    window.draw(sprite);
+
+    Game::get().game_view.outline_shader.setUniform("t0", sprite.getTexture());
+    Game::get().game_view.outline_shader.setUniform("matrix", sf::Glsl::Mat4(sprite.getTransform().getMatrix()));
+
+    window.draw(sprite, &Game::get().game_view.outline_shader);
     sprite.setScale(saved);
 }
 

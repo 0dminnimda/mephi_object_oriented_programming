@@ -521,6 +521,9 @@ private:
     sf::Text death_message;
 
 public:
+    sf::Shader outline_shader;
+
+public:
     GameView()
         : window(), dungeon_level_view(window), inventory_canvas(window), level_up_canvas(window) {}
     ~GameView() = default;
