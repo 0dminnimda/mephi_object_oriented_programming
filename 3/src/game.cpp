@@ -71,7 +71,7 @@ Game &Game::get() {
 }
 
 static const char *const logo_name = "rock_eyebrow_meme.png";
-static const char *const flor_tile_name = "dungeon_floor_4x4.jpeg";
+static const char *const flor_tile_name = "dungeon_floor_uneven_bricks.png";
 static const char *const open_dor_tile_name = "dungeon_open_door.jpeg";
 static const char *const closed_dor_tile_name = "dungeon_closed_door.jpeg";
 static const char *const barrier_tile_name = "black.jpeg";
