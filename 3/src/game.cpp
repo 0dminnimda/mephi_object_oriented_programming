@@ -366,7 +366,7 @@ void DungeonLevel::regenerate_enemies() {
     RangeOfValues range_wiggle(-10, 10);
 
     for (size_t class_index = 1; class_index < Game::get().actor_classes.size(); ++class_index) {
-        for (size_t i = 0; i < 10; ++i) {
+        for (size_t i = 0; i < actors_spawned_per_class; ++i) {
             Enemy &enemy = enemies.emplace_back(Game::get().make_enemy(class_index));
             enemy.position = sf::Vector2f(
                 range_x.get_random() + (float)range_wiggle.get_random() / 10,
