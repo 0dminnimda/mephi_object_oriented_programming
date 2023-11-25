@@ -17,6 +17,9 @@ if(NOT ANDROID)
     FetchContent_MakeAvailable(SFML)
 endif()
 
+if (CMAKE_BUILD_TYPE EQUAL "DEBUG")
+    add_compile_definitions(DEBUG)
+endif()
 
 add_executable(main src/main.cpp src/game.cpp)
 set_target_properties(main PROPERTIES SUFFIX ".out")

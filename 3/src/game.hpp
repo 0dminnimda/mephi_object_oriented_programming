@@ -489,6 +489,10 @@ public:
     sf::RenderWindow window;
     sf::View view;
 
+#ifdef DEBUG
+    std::vector<sf::Vector2f> debug_points;
+#endif  // DEBUG
+
 private:
     DungeonLevelView dungeon_level_view;
     InventoryCanvas inventory_canvas;
@@ -520,9 +524,9 @@ class Game {
 private:
     sf::Clock clock;
 
+public:
     GameView game_view;
 
-public:
     Dungeon dungeon;
 
     bool is_playing = false;

@@ -2,15 +2,29 @@
 
 #include <stdlib.h>
 
+#include <SFML/Graphics/Color.hpp>
 #include <SFML/System.hpp>
+#include <SFML/System/Vector2.hpp>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <iterator>
 #include <random>
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/System/Vector2.hpp"
 #include "vector_operations.hpp"
+
+void debug_draw_point(const sf::Vector2f &point) {
+    sf::CircleShape circle(0.05f);
+    circle.setPosition(point);
+    circle.setFillColor(sf::Color::Red);
+    Game::get().game_view.window.draw(circle);
+}
+
+void debug_draw_permanent_point(const sf::Vector2f &point) {
+#ifdef DEBUG
+    Game::get().game_view.debug_points.push_back(point);
+#endif  // DEBUG
+}
 
 sf::Color set_transparency(sf::Color color, sf::Uint8 transparency) {
     color.a = transparency;
@@ -256,6 +270,12 @@ void GameView::draw() {
         death_message.setPosition(sf::Vector2f(Game::get().dungeon.player.position));
         window.draw(death_message);
     }
+
+#ifdef DEBUG
+    for (auto &point : debug_points) {
+        debug_draw_point(point);
+    }
+#endif  // DEBUG
 
     float ratio = (float)window.getSize().x / (float)window.getSize().y;
     view.setSize(sf::Vector2f(Game::view_size * ratio, Game::view_size));
