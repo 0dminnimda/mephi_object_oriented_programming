@@ -378,7 +378,6 @@ public:
     Player(size_t class_index, float size, Characteristics characteristics)
         : Actor(class_index, size, characteristics) {}
     Player(const Actor &actor) : Actor(actor) {}
-    Player(Actor &&actor) : Actor(actor) {}
 
     void init() override;
     void update(float delta_time) override;
@@ -398,7 +397,6 @@ public:
     Enemy(size_t class_index, float size, Characteristics characteristics)
         : Actor(class_index, size, characteristics) {}
     Enemy(const Actor &actor) : Actor(actor) {}
-    Enemy(Actor &&actor) : Actor(actor) {}
 
     void init() override;
     void update(float delta_time) override;
@@ -536,7 +534,7 @@ public:
     std::vector<ActorClass> actor_classes;  // the first entry should be a player class
     static constexpr size_t player_class_index = 0;
     Player player_template;
-    std::vector<Enemy> enemy_templates;     // follows the actor_class_index
+    std::vector<Enemy> enemy_templates;  // follows the actor_class_index
 
     std::vector<ItemClass> item_classes;
     std::vector<std::unique_ptr<Item>> item_templates;  // follows the item_classes

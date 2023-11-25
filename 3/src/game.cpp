@@ -469,7 +469,9 @@ void ActorsView::draw(const Actor &actor) {
 
     float health_ratio = std::max(0.0f, actor.health) / actor.characteristics.max_health;
 
-    current_health_bar.setSize({max_health_bar.getSize().x * health_ratio, max_health_bar.getSize().y});
+    current_health_bar.setSize(
+        {max_health_bar.getSize().x * health_ratio, max_health_bar.getSize().y}
+    );
     current_health_bar.setPosition(max_health_bar.getPosition());
     current_health_bar.setFillColor(set_transparency(sf::Color::Green, 127));
     window.draw(current_health_bar);
