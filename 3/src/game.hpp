@@ -262,6 +262,9 @@ public:
 
     size_t count;
 
+    LockPicks() = default;
+    LockPicks(size_t item_class_index, size_t count) : Item(item_class_index), count(count) {}
+
     std::shared_ptr<Item> deepcopy_item() const override;
 };
 

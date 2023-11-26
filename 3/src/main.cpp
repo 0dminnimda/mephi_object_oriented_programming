@@ -68,10 +68,15 @@ int sub_main() {
         "sword", "you can cut yourself just by looking at it", "sword_silver.png", 8.0f,
         Item::Kind::Weapon
     ));
+    size_t lock_pick_id = game.add_item_class(ItemClass(
+        "lock pick", "you sneaky pick", "lock_pick_with_fabric.png", 7.0f,
+        Item::Kind::Custom
+    ));
 
     game.item_templates.resize(game.item_classes.size());
     game.item_templates[hammer_id] = std::make_unique<Hammer>(hammer_id, RangeOfLong(10, 20), 3.0f, 10000.0f);
     game.item_templates[sword_id] = std::make_unique<Sword>(sword_id, RangeOfLong(3, 5), 2.0f, 100.0f);
+    game.item_templates[lock_pick_id] = std::make_unique<LockPicks>(lock_pick_id, 20);
 
     DungeonLevel level;
 
