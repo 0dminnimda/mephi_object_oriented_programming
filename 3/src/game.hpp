@@ -9,6 +9,7 @@
 #include <SFML/System/Vector2.hpp>
 #include <memory>
 #include <optional>
+#include <random>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -128,15 +129,29 @@ public:
     void apply(Actor &target);
 };
 
+template <typename T>
 class RangeOfValues {
 public:
-    long min;
-    long max;
+    T min;
+    T max;
 
-    RangeOfValues(long min, long max) : min(min), max(max) {}
+    RangeOfValues(T min, T max) : min(min), max(max) {}
 
-    long get_random();
+    T get_random() {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        if constexpr (std::is_integral_v<T>) {
+            std::uniform_int_distribution<T> dis(min, max);
+            return dis(gen);
+        } else {
+            std::uniform_real_distribution<T> dis(min, max);
+            return dis(gen);
+        }
+    }
 };
+
+using RangeOfLong = RangeOfValues<long>;
+using RangeOfFloat = RangeOfValues<float>;
 
 class Enchantment {
     size_t target_actor_class_index;
@@ -150,12 +165,12 @@ class Weapon : public Item {
 protected:
     std::optional<CharacteristicsModifier> artefact;
     std::optional<Enchantment> enchantment;
-    RangeOfValues damage_range;
+    RangeOfLong damage_range;
 
 public:
     DeepCopy(Weapon);
 
-    Weapon(size_t item_class_index, RangeOfValues damage_range)
+    Weapon(size_t item_class_index, RangeOfLong damage_range)
         : Item(item_class_index), damage_range(damage_range) {}
 
     void use(Actor &target) override;
@@ -175,7 +190,7 @@ public:
     bool on_cooldown = false;
 
     Hammer(
-        size_t item_class_index, RangeOfValues damage_range, float hit_range,
+        size_t item_class_index, RangeOfLong damage_range, float hit_range,
         sf::Time cooldown_time = sf::seconds(1.0f)
     )
         : Weapon(item_class_index, damage_range),
@@ -200,7 +215,7 @@ public:
     bool on_cooldown = false;
 
     Sword(
-        size_t item_class_index, RangeOfValues damage_range, float hit_range,
+        size_t item_class_index, RangeOfLong damage_range, float hit_range,
         sf::Time cooldown_time = sf::seconds(0.3f)
     )
         : Weapon(item_class_index, damage_range),
@@ -229,7 +244,7 @@ public:
 
 private:
     std::optional<CharacteristicsModifier> artefact;
-    RangeOfValues defence_range;
+    RangeOfLong defence_range;
 
     Kind kind;
 };

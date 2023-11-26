@@ -9,7 +9,6 @@
 #include <cmath>
 #include <iostream>
 #include <iterator>
-#include <random>
 
 #include "SFML/Graphics/Rect.hpp"
 #include "color_operations.hpp"
@@ -51,13 +50,6 @@ void setup_sprite(
 Tile &Tile::set_building(std::shared_ptr<Chest> building) {
     this->building = building;
     return *this;
-}
-
-long RangeOfValues::get_random() {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<long> dis(min, max);
-    return dis(gen);
 }
 
 Game &Game::get() {
@@ -338,10 +330,10 @@ Tile *DungeonLevel::get_tile(sf::Vector2f position) {
 void DungeonLevel::resize_tiles(size_t width, size_t height) { tiles.resize(width, height); }
 
 void DungeonLevel::regenerate_tiles() {
-    RangeOfValues range_chest_spawn(0, 50);
+    RangeOfLong range_chest_spawn(0, 50);
     size_t max_level = 9;
-    RangeOfValues range_chest_level(0, (max_level + 1) * (max_level + 1) - 1);
-    RangeOfValues range_chest_item(0, Game::get().item_templates.size() - 1);
+    RangeOfLong range_chest_level(0, (max_level + 1) * (max_level + 1) - 1);
+    RangeOfLong range_chest_item(0, Game::get().item_templates.size() - 1);
 
     for (size_t i = 0; i < tiles.size(); ++i) {
         for (size_t j = 0; j < tiles.row_size(); ++j) {
@@ -366,9 +358,9 @@ void DungeonLevel::regenerate_tiles() {
 void DungeonLevel::regenerate_enemies() {
     enemies.clear();
 
-    RangeOfValues range_x(2, tiles.size() - 2);
-    RangeOfValues range_y(2, tiles.row_size() - 2);
-    RangeOfValues range_wiggle(-10, 10);
+    RangeOfLong range_x(2, tiles.size() - 2);
+    RangeOfLong range_y(2, tiles.row_size() - 2);
+    RangeOfLong range_wiggle(-10, 10);
 
     for (size_t class_index = 1; class_index < Game::get().actor_classes.size(); ++class_index) {
         for (size_t i = 0; i < actors_spawned_per_class; ++i) {
@@ -673,7 +665,7 @@ bool ItemClass::init() {
 }
 
 LockPickingResult Chest::simulate_picking(const Actor &source) {
-    RangeOfValues range(0, 1 + 2 * level);
+    RangeOfLong range(0, 1 + 2 * level);
     if ((float)range.get_random() / source.characteristics.luck <= 1) {
         return {true, false};
     }
@@ -921,7 +913,7 @@ void Enemy::die(Actor &reason) {
     std::optional<DungeonLevel> &level = Game::get().dungeon.get_current_level();
     if (!level) return;
 
-    RangeOfValues range_chest_item(0, Game::get().item_templates.size() - 1);
+    RangeOfLong range_chest_item(0, Game::get().item_templates.size() - 1);
     std::shared_ptr<Item> item = Game::get().make_item(range_chest_item.get_random());
 
     LayingItem laying_item(item);
