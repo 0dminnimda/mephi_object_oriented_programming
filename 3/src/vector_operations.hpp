@@ -61,6 +61,36 @@ sf::Vector2<T> normalized(const sf::Vector2<T> &a) {
 }
 
 template <typename T>
+sf::Vector2<T> YO(const sf::Vector2<T> &a) {
+    return {a.y, 0};
+}
+
+template <typename T>
+sf::Vector2<T> OY(const sf::Vector2<T> &a) {
+    return {0, a.y};
+}
+
+template <typename T>
+sf::Vector2<T> YY(const sf::Vector2<T> &a) {
+    return {a.y, a.y};
+}
+
+template <typename T>
+sf::Vector2<T> XO(const sf::Vector2<T> &a) {
+    return {a.x, 0};
+}
+
+template <typename T>
+sf::Vector2<T> OX(const sf::Vector2<T> &a) {
+    return {0, a.x};
+}
+
+template <typename T>
+sf::Vector2<T> XX(const sf::Vector2<T> &a) {
+    return {a.x, a.x};
+}
+
+template <typename T>
 sf::Vector2<T> operator/(const sf::Vector2<T> &a, const sf::Vector2<T> &b) {
     return {a.x / b.x, a.y / b.y};
 }
