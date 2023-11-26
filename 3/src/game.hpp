@@ -491,8 +491,8 @@ public:
     void resize_tiles(size_t width, size_t height);
     void regenerate_tiles();
     void regenerate_enemies();
-    std::optional<std::pair<size_t, size_t>> get_tile_coordinates(const sf::Vector2f &position
-    ) const;
+    std::optional<std::pair<size_t, size_t>> get_tile_coordinates(sf::Vector2f position) const;
+    Tile *get_tile(sf::Vector2f position);
     void add_laying_item(std::unique_ptr<LayingItem> item);
     void update(float delta_time);
     void handle_collitions();
@@ -545,7 +545,7 @@ public:
     bool load_level(size_t index);
     void on_load_level(DungeonLevel &level);
     void unload_current_level();
-    DungeonLevel *get_current_level();
+    std::optional<DungeonLevel> &get_current_level();
 };
 
 class GameView {

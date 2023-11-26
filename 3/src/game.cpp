@@ -142,7 +142,7 @@ void Game::handle_events() {
 void Game::update(float delta_time) {
     if (!dungeon.player.alive) return;
 
-    DungeonLevel *level = dungeon.get_current_level();
+    std::optional<DungeonLevel> &level = dungeon.get_current_level();
     if (level) {
         level->update(delta_time);
     }
@@ -253,7 +253,7 @@ void GameView::draw() {
         return;
     }
 
-    DungeonLevel *level = Game::get().dungeon.get_current_level();
+    std::optional<DungeonLevel> &level = Game::get().dungeon.get_current_level();
     if (!level) {
         info_message.setString("No levels are loaded");
         center_text_origin(info_message);
@@ -320,14 +320,19 @@ sf::Vector2f DungeonLevel::center() const {
            2.0f;
 }
 
-std::optional<std::pair<size_t, size_t>> DungeonLevel::get_tile_coordinates(
-    const sf::Vector2f &position
+std::optional<std::pair<size_t, size_t>> DungeonLevel::get_tile_coordinates(sf::Vector2f position
 ) const {
     sf::Vector2f world_coords = position / tile_coords_to_world_coords_factor();
     if (position.x < 0 || position.x >= tiles.size() || position.y < 0 ||
         position.y >= tiles.row_size())
         return std::nullopt;
     return std::make_pair(position.x, position.y);
+}
+
+Tile *DungeonLevel::get_tile(sf::Vector2f position) {
+    auto coords = get_tile_coordinates(position);
+    if (!coords) return nullptr;
+    return &tiles[coords->first][coords->second];
 }
 
 void DungeonLevel::resize_tiles(size_t width, size_t height) { tiles.resize(width, height); }
@@ -676,7 +681,7 @@ void Chest::try_to_pick(const Actor &source, LockPicks &picks, size_t i, size_t 
         picks.count -= 1;
     }
 
-    DungeonLevel *level = Game::get().dungeon.get_current_level();
+    std::optional<DungeonLevel> &level = Game::get().dungeon.get_current_level();
     if (!level) return;
 
     auto tile_position = sf::Vector2f(i, j) * level->tile_coords_to_world_coords_factor();
@@ -847,7 +852,7 @@ void Player::handle_equipment_use() {
 void Player::handle_picking() {
     if (!sf::Keyboard::isKeyPressed(sf::Keyboard::E)) return;
 
-    DungeonLevel *level = Game::get().dungeon.get_current_level();
+    std::optional<DungeonLevel> &level = Game::get().dungeon.get_current_level();
     if (!level) return;
 
     auto coords = level->get_tile_coordinates(position);
@@ -889,7 +894,7 @@ void Enemy::die(Actor &reason) {
     if (!alive) return;
     alive = false;
 
-    DungeonLevel *level = Game::get().dungeon.get_current_level();
+    std::optional<DungeonLevel> &level = Game::get().dungeon.get_current_level();
     if (!level) return;
 
     RangeOfValues range_chest_item(0, Game::get().item_templates.size() - 1);
