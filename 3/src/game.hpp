@@ -214,6 +214,7 @@ class Sword : public Weapon {
 public:
     DeepCopy(Sword);
 
+    // TODO: add direction dependant range
     float hit_range;
     sf::Clock since_last_use;
     sf::Time cooldown_time;
