@@ -362,6 +362,7 @@ public:
 
     RigidBody() = default;
     RigidBody(float size) : size(size) {}
+    RigidBody(sf::Vector2f position) : position(position) {}
 
     sf::FloatRect get_axes_aligned_bounding_box() const;
     bool intersects(const RigidBody &other, sf::Vector2f &intersection_point) const;
@@ -449,6 +450,8 @@ public:
     void draw_ui(const Actor &actor);
 };
 
+static const sf::Time pick_up_timeout = sf::seconds(1.0f);
+
 class Player : public Actor {
 public:
     DeepCopy(Player);
@@ -456,7 +459,7 @@ public:
     Inventory inventory;
     LockPicks lock_picks;
     Experience experience;
-    float pick_up_range = 1.2f;
+    static constexpr float pick_up_range = 1.2f;
 
     Player() = default;
     Player(size_t class_index, float size, Characteristics characteristics)
@@ -470,7 +473,8 @@ public:
     void handle_lock_picking();
     void die(Actor &reason) override;
     void handle_picking_up_items();
-    void pick_up_item(Item &item);
+    bool pick_up_item(std::shared_ptr<Item> item);
+    void throw_out_item(std::shared_ptr<Item> item) const;
 };
 
 class Enemy : public Actor {
@@ -493,8 +497,11 @@ class LayingItem : public RigidBody {
 public:
     std::shared_ptr<Item> item;
     bool picked_up = false;
+    sf::Clock since_last_pick_up;
 
     LayingItem(std::shared_ptr<Item> item) : RigidBody(), item(item) {}
+    LayingItem(std::shared_ptr<Item> item, sf::Vector2f position)
+        : RigidBody(position), item(item) {}
 };
 
 class DungeonLevel {

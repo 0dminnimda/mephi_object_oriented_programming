@@ -14,6 +14,8 @@
 #include "color_operations.hpp"
 #include "vector_operations.hpp"
 
+constexpr float PI = 3.14159265358979323846f;
+
 void debug_draw_point(const sf::Vector2f &point) {
     sf::CircleShape circle(0.05f);
     circle.setPosition(point);
@@ -688,8 +690,7 @@ void Chest::try_to_pick(const Actor &source, LockPicks &picks, size_t i, size_t 
     auto tile_position = sf::Vector2f(i, j) * level->tile_coords_to_world_coords_factor();
     if (result.lock_picked) {
         for (std::shared_ptr<Item> item : inventory.items) {
-            LayingItem laying_item(item);
-            laying_item.position = tile_position;
+            LayingItem laying_item(item, tile_position);
             level->laying_items.push_back(laying_item);
         }
         level->tiles[i][j].building = nullptr;
@@ -729,6 +730,15 @@ void Equipment::deepcopy_to(Equipment &other) const {
         other.weapon = nullptr;
 }
 
+void Actor::deepcopy_to(Actor &other) const {
+    RigidBody::deepcopy_to(other);
+    other.actor_class_index = actor_class_index;
+    other.health = health;
+    equipment.deepcopy_to(other.equipment);
+    other.characteristics = characteristics;
+    other.alive = alive;
+}
+
 void Actor::take_damage(float amount, Actor &source) {
     since_last_taken_damage.restart();
     health -= std::max(0.0f, amount - characteristics.defence);
@@ -738,9 +748,7 @@ void Actor::take_damage(float amount, Actor &source) {
     }
 }
 
-ActorClass &Actor::get_class() const {
-    return Game::get().actor_classes[actor_class_index];
-}
+ActorClass &Actor::get_class() const { return Game::get().actor_classes[actor_class_index]; }
 
 void Experience::gain(size_t amount, Actor &actor) {
     value += amount;
@@ -793,15 +801,6 @@ bool RigidBody::intersects(const RigidBody &other, sf::Vector2f &intersection_po
 
 bool RigidBody::intersects(const RigidBody &other) const {
     return get_axes_aligned_bounding_box().intersects(other.get_axes_aligned_bounding_box());
-}
-
-void Actor::deepcopy_to(Actor &other) const {
-    RigidBody::deepcopy_to(other);
-    other.actor_class_index = actor_class_index;
-    other.health = health;
-    equipment.deepcopy_to(other.equipment);
-    other.characteristics = characteristics;
-    other.alive = alive;
 }
 
 void Player::init() {}
@@ -870,18 +869,43 @@ void Player::handle_lock_picking() {
     tile.building->try_to_pick(*this, lock_picks, coords->first, coords->second);
 }
 
-void Player::pick_up_item(Item &item) {
-    
+void Player::throw_out_item(std::shared_ptr<Item> item) const {
+    float angle = RangeOfFloat(0, 2 * PI).get_random();
+    float len = pick_up_range * 1.5;
+    sf::Vector2f item_position = position + sf::Vector2f(std::cos(angle), std::sin(angle)) * len;
+    Game::get().dungeon.get_current_level()->laying_items.push_back(LayingItem(item, item_position)
+    );
+}
+
+bool Player::pick_up_item(std::shared_ptr<Item> item) {
+    if (item->get_class().kind == Item::Kind::Weapon) {
+        std::cout << "picking up a weapon" << std::endl;
+        if (equipment.weapon) {
+            std::cout << "throwing out old weapon" << std::endl;
+            throw_out_item(equipment.weapon);
+        }
+        equipment.weapon = item;
+        return true;
+    }
+    return false;
 }
 
 void Player::handle_picking_up_items() {
     if (!sf::Keyboard::isKeyPressed(sf::Keyboard::E)) return;
 
-    for (auto &item : Game::get().dungeon.get_current_level()->laying_items) {
-        if (!item.picked_up && length_squared(item.position - position) <= pick_up_range * pick_up_range) {
+    std::vector<LayingItem> &laying_items = Game::get().dungeon.get_current_level()->laying_items;
+
+    // laying_items can become larger (but should not go smaller, but still) during the loop
+    size_t size = laying_items.size();
+    for (size_t i = 0; i < std::min(size, laying_items.size()); ++i) {
+        LayingItem &item = laying_items[i];
+        if (!item.picked_up && item.since_last_pick_up.getElapsedTime() > pick_up_timeout &&
+            length_squared(item.position - position) <= pick_up_range * pick_up_range)
+        {
             std::cout << length_squared(item.position - position) << std::endl;
-            // pick_up_item(*item.item);
-            item.picked_up = true;
+            if (pick_up_item(item.item)) {
+                item.picked_up = true;
+            }
         }
     }
 }
@@ -920,8 +944,7 @@ void Enemy::die(Actor &reason) {
     RangeOfLong range_chest_item(0, Game::get().item_templates.size() - 1);
     std::shared_ptr<Item> item = Game::get().make_item(range_chest_item.get_random());
 
-    LayingItem laying_item(item);
-    laying_item.position = position;
+    LayingItem laying_item(item, position);
     level->laying_items.push_back(laying_item);
 }
 
