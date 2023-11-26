@@ -129,10 +129,10 @@ public:
 };
 
 class RangeOfValues {
+public:
     long min;
     long max;
 
-public:
     RangeOfValues(long min, long max) : min(min), max(max) {}
 
     long get_random();
@@ -436,6 +436,7 @@ public:
     Inventory inventory;
     LockPicks lock_picks;
     Experience experience;
+    float pick_up_range = 1.2f;
 
     Player() = default;
     Player(size_t class_index, float size, Characteristics characteristics)
@@ -446,9 +447,9 @@ public:
     void update(float delta_time) override;
     void handle_movement(float delta_time);
     void handle_equipment_use();
-    void handle_picking();
+    void handle_lock_picking();
     void die(Actor &reason) override;
-
+    void handle_picking_up_items();
     void pick_up_item(Item &item);
 };
 
@@ -471,6 +472,7 @@ public:
 class LayingItem : public RigidBody {
 public:
     std::shared_ptr<Item> item;
+    bool picked_up = false;
 
     LayingItem(std::shared_ptr<Item> item) : RigidBody(), item(item) {}
 };
@@ -498,7 +500,8 @@ public:
     void handle_collitions();
     void handle_actor_actor_collitions(std::vector<RigidBody *> &bodies);
     void handle_actor_level_collitions(std::vector<RigidBody *> &bodies);
-    void delete_the_dead();
+    void delete_dead_actors();
+    void delete_picked_up_items();
 };
 
 class DungeonLevelView {

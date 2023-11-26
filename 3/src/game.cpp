@@ -382,6 +382,43 @@ void DungeonLevel::regenerate_enemies() {
     }
 }
 
+void DungeonLevel::update(float delta_time) {
+    for (auto &enemy : enemies) {
+        enemy.update(delta_time);
+    }
+    Game::get().dungeon.player.update(delta_time);
+
+    delete_dead_actors();
+    delete_picked_up_items();
+    handle_collitions();
+}
+
+void DungeonLevel::delete_dead_actors() {
+    size_t c = 0;
+    for (size_t i = 0; i < enemies.size(); ++i) {
+        if (enemies[c].alive) {
+            ++c;
+        } else if (enemies[i].alive) {
+            std::swap(enemies[c], enemies[i]);
+            ++c;
+        }
+    }
+    enemies.erase(std::next(enemies.begin(), c), enemies.end());
+}
+
+void DungeonLevel::delete_picked_up_items() {
+    size_t c = 0;
+    for (size_t i = 0; i < laying_items.size(); ++i) {
+        if (!laying_items[c].picked_up) {
+            ++c;
+        } else if (!laying_items[i].picked_up) {
+            std::swap(laying_items[c], laying_items[i]);
+            ++c;
+        }
+    }
+    laying_items.erase(std::next(laying_items.begin(), c), laying_items.end());
+}
+
 void DungeonLevel::handle_collitions() {
     std::vector<RigidBody *> bodies(enemies.size() + 1);
     for (size_t i = 0; i < enemies.size(); ++i) {
@@ -501,6 +538,7 @@ void DungeonLevelView::draw(const DungeonLevel &level) {
     }
 
     for (const LayingItem &laying_item : level.laying_items) {
+        if (laying_item.picked_up) continue;
         actors_view.items_view.draw(*(laying_item.item), laying_item.position);
     }
 
@@ -620,36 +658,7 @@ void Dungeon::on_load_level(DungeonLevel &level) {
 
 void Dungeon::unload_current_level() { current_level = std::nullopt; }
 
-DungeonLevel *Dungeon::get_current_level() {
-    if (!current_level) {
-        return nullptr;
-    }
-    return &(*current_level);  // some funky C++ with it's * for std::optional
-}
-
-void DungeonLevel::delete_the_dead() {
-    size_t c = 0;
-    size_t i = 0;
-    for (; i < enemies.size(); ++i) {
-        if (enemies[c].alive) {
-            ++c;
-        } else if (enemies[i].alive) {
-            std::swap(enemies[c], enemies[i]);
-            ++c;
-        }
-    }
-    enemies.erase(std::next(enemies.begin(), c), enemies.end());
-}
-
-void DungeonLevel::update(float delta_time) {
-    for (auto &enemy : enemies) {
-        enemy.update(delta_time);
-    }
-    Game::get().dungeon.player.update(delta_time);
-
-    delete_the_dead();
-    handle_collitions();
-}
+std::optional<DungeonLevel> &Dungeon::get_current_level() { return current_level; }
 
 bool ActorClass::init() {
     if (!texture.loadFromFile(path_to_resources + texture_name)) return false;
@@ -812,7 +821,8 @@ void Player::update(float delta_time) {
     if (!alive) return;
     handle_movement(delta_time);
     handle_equipment_use();
-    handle_picking();
+    handle_lock_picking();
+    handle_picking_up_items();
 }
 
 void Player::handle_movement(float delta_time) {
@@ -849,8 +859,8 @@ void Player::handle_equipment_use() {
     }
 }
 
-void Player::handle_picking() {
-    if (!sf::Keyboard::isKeyPressed(sf::Keyboard::E)) return;
+void Player::handle_lock_picking() {
+    if (!sf::Keyboard::isKeyPressed(sf::Keyboard::F)) return;
 
     std::optional<DungeonLevel> &level = Game::get().dungeon.get_current_level();
     if (!level) return;
@@ -864,12 +874,26 @@ void Player::handle_picking() {
     tile.building->try_to_pick(*this, lock_picks, coords->first, coords->second);
 }
 
+void Player::pick_up_item(Item &item) {
+    
+}
+
+void Player::handle_picking_up_items() {
+    if (!sf::Keyboard::isKeyPressed(sf::Keyboard::E)) return;
+
+    for (auto &item : Game::get().dungeon.get_current_level()->laying_items) {
+        if (!item.picked_up && length_squared(item.position - position) <= pick_up_range * pick_up_range) {
+            std::cout << length_squared(item.position - position) << std::endl;
+            // pick_up_item(*item.item);
+            item.picked_up = true;
+        }
+    }
+}
+
 void Player::die(Actor &reason) {
     if (!alive) return;
     alive = false;
 }
-
-void Player::pick_up_item(Item &item) {}
 
 void Enemy::init() {}
 
