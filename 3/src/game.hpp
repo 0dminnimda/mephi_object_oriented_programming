@@ -95,6 +95,7 @@ public:
     sf::Sprite sprite;
     float size;
     Item::Kind kind;
+    size_t max_stack_size = 1;
 
     ItemClass(
         std::string name, std::string description, std::string texture_name, float size,
@@ -118,7 +119,7 @@ public:
     ItemsView(sf::RenderWindow &window) : window(window) {}
     ~ItemsView() = default;
 
-    void draw(const Item &item, sf::Vector2f position, float size = -1.0f);
+    void draw(const Item &item, sf::Vector2f position);
 };
 
 class Potion : public Item {
@@ -275,22 +276,52 @@ public:
     bool pick_broken;
 };
 
-class Inventory {
+class StackOfItems {
 public:
-    std::vector<std::shared_ptr<Item>> items;
+    std::shared_ptr<Item> item;
+    size_t size = 0;
 
     bool add_item(std::shared_ptr<Item> item);
+};
+
+class Inventory {
+public:
+    size_t max_size;
+    std::vector<StackOfItems> slots;
+
+    Inventory() : Inventory(10) {}
+    Inventory(size_t max_size) : max_size(max_size), slots(max_size) {}
+
+    bool add_item(std::shared_ptr<Item> item);
+};
+
+class StackOfItemsView {
+    sf::RenderWindow &window;
+
+    float text_ratio = 2.0f;
+
+    sf::Text count_text;
+
+public:
+    StackOfItemsView(sf::RenderWindow &window) : window(window) {}
+    ~StackOfItemsView() = default;
+
+    void init();
+    void draw(const StackOfItems &stack, sf::Vector2f position, float size);
 };
 
 class InventoryView {
     sf::RenderWindow &window;
 
+    StackOfItemsView stack_of_items_view;
+
     float inventory_item_size = 10.0f;
 
 public:
-    InventoryView(sf::RenderWindow &window) : window(window) {}
+    InventoryView(sf::RenderWindow &window) : window(window), stack_of_items_view(window) {}
     ~InventoryView() = default;
 
+    void init();
     void draw(const Inventory &inventory);
 };
 
@@ -541,7 +572,7 @@ public:
     sf::Vector2f initial_player_position;
     float tile_size;
     float chest_size_factor;
-    size_t actors_spawned_per_class = 20;
+    size_t actors_spawned_per_class = 30;
     float rebounce_factor = 0.8f;
 
     void init();
@@ -625,12 +656,12 @@ private:
     sf::Texture logo_texture;
     sf::Sprite logo;
 
+public:
     sf::Font font;
     sf::Text menu_message;
     sf::Text info_message;
     sf::Text death_message;
 
-public:
     GameView()
         : window(), dungeon_level_view(window), inventory_view(window), level_up_canvas(window) {}
     ~GameView() = default;

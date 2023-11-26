@@ -72,6 +72,7 @@ void setup_items(Game &game) {
     size_t lock_pick_id = game.add_item_class(ItemClass(
         "lock pick", "you sneaky pick", "lock_pick_with_fabric.png", 7.0f, Item::Kind::Custom
     ));
+    game.item_classes[lock_pick_id].max_stack_size = 4;
 
     game.item_templates.resize(game.item_classes.size());
     game.item_templates[hammer_id] =

@@ -6,6 +6,7 @@
 #include <SFML/System.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <iostream>
 #include <iterator>
@@ -203,14 +204,15 @@ bool GameView::init(unsigned int width, unsigned int height) {
     view.setCenter(sf::Vector2f(view.getSize()) / 2.0f);
     window.setView(view);
 
+    if (!font.loadFromFile(path_to_resources + "tuffy.ttf")) return false;
+
     if (!dungeon_level_view.init()) return false;
+    inventory_view.init();
 
     if (!logo_texture.loadFromFile(path_to_resources + logo_name)) return false;
     float scale = max(sf::Vector2f(view.getSize())) / 3.0f;
     setup_sprite(logo_texture, logo, {scale, scale});
     logo.setPosition({view.getSize().x / 2.0f, view.getSize().y * 2.0f / 3.0f});
-
-    if (!font.loadFromFile(path_to_resources + "tuffy.ttf")) return false;
 
     menu_message.setFont(font);
     menu_message.setCharacterSize(40);
@@ -307,29 +309,56 @@ void LockPicks::deepcopy_to(LockPicks &other) const {
 
 std::shared_ptr<Item> LockPicks::deepcopy_item() const { return deepcopy_shared(*this); }
 
-bool Inventory::add_item(std::shared_ptr<Item> item) {
-    items.push_back(item);
+bool StackOfItems::add_item(std::shared_ptr<Item> new_item) {
+    if (size == 0) {
+        item = new_item;
+        size = 1;
+        return true;
+    }
+
+    if (item->item_class_index != new_item->item_class_index) return false;
+    if (size >= item->get_class().max_stack_size) return false;
+
+    ++size;
     return true;
+}
+
+bool Inventory::add_item(std::shared_ptr<Item> item) {
+    // first check non empty slots to see if we can stack the item
+    for (auto &slot : slots) {
+        if (slot.size && slot.add_item(item)) {
+            return true;
+        }
+    }
+
+    // and only if we cannot stack the item, we should use one more slot
+    for (auto &slot : slots) {
+        if (!slot.size && slot.add_item(item)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 float calculate_inventory_item_x(float length, size_t count, size_t i) {
     return (0.5f + (float)i) * length / (float)count;
 }
 
+void InventoryView::init() { stack_of_items_view.init(); }
+
 void InventoryView::draw(const Inventory &inventory) {
     sf::View view = Game::get().game_view.view;
 
     float actual_size = inventory_item_size / Game::world_size;
-    size_t count = inventory.items.size();
+    size_t count = inventory.slots.size();
 
     float x_base = view.getCenter().x + (1 - (float)count) * actual_size / 2;
     float y = view.getCenter().y + view.getSize().y / 2 - actual_size / 2;
 
     for (size_t i = 0; i < count; ++i) {
         sf::Vector2f position(x_base + actual_size * i, y);
-        Game::get().game_view.dungeon_level_view.actors_view.items_view.draw(
-            *inventory.items[i], position, inventory_item_size
-        );
+        stack_of_items_view.draw(inventory.slots[i], position, inventory_item_size);
     }
 }
 
@@ -698,14 +727,50 @@ void ActorsView::draw_ui(const Actor &actor) {
     window.draw(current_health_bar);
 }
 
-void ItemsView::draw(const Item &item, sf::Vector2f position, float size) {
+void ItemsView::draw(const Item &item, sf::Vector2f position) {
     auto &cls = item.get_class();
-    if (size < 0) size = cls.size;
     sf::Sprite &sprite = cls.sprite;
     sf::Vector2f saved = sprite.getScale();
+    sprite.setScale(saved * cls.size / Game::world_size);
+    sprite.setPosition(position);
+    window.draw(sprite);
+    sprite.setScale(saved);
+}
+
+void StackOfItemsView::init() {
+    count_text.setFont(Game::get().game_view.font);
+    count_text.setCharacterSize(40);
+    count_text.setFillColor(sf::Color::White);
+    count_text.setOutlineColor(sf::Color::Black);
+    count_text.setOutlineThickness(2);
+}
+
+void StackOfItemsView::draw(const StackOfItems &stack, sf::Vector2f position, float size) {
+    if (stack.size == 0) {
+        sf::Sprite sprite;
+        sprite.setScale(sf::Vector2f(1, 1) * size / Game::world_size);
+        sprite.setPosition(position);
+        window.draw(sprite);
+        return;
+    }
+
+    auto &cls = stack.item->get_class();
+    sf::Sprite &sprite = cls.sprite;
+    sf::Vector2f saved = sprite.getScale();
+
     sprite.setScale(saved * size / Game::world_size);
     sprite.setPosition(position);
     window.draw(sprite);
+
+    count_text.setString(std::to_string(stack.size));
+    center_text_origin(count_text);
+    count_text.setPosition(
+        position + sprite.getGlobalBounds().getSize() / 2 -
+        count_text.getGlobalBounds().getSize() * 2 / 3
+    );
+    count_text.setScale(saved * size * text_ratio / Game::world_size);
+    window.draw(count_text);
+
     sprite.setScale(saved);
 }
 
@@ -764,8 +829,9 @@ void Chest::try_to_pick(const Actor &source, LockPicks &picks, size_t i, size_t 
 
     auto tile_position = sf::Vector2f(i, j) * level->tile_coords_to_world_coords_factor();
     if (result.lock_picked) {
-        for (std::shared_ptr<Item> item : inventory.items) {
-            LayingItem laying_item(item, tile_position);
+        for (auto &slot : inventory.slots) {
+            if (!slot.size) continue;
+            LayingItem laying_item(slot.item, tile_position);
             level->laying_items.push_back(laying_item);
         }
         level->tiles[i][j].building = nullptr;

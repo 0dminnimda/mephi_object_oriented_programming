@@ -7,6 +7,7 @@
 
 template <typename T>
 class Row {
+private:
     std::vector<T> items;
 
 public:
@@ -35,6 +36,7 @@ public:
 
 template <typename T>
 class Matrix {
+private:
     std::vector<Row<T>> rows;
 
 public:
@@ -73,4 +75,4 @@ public:
     const_iterator cend() const { return rows.cend(); }
 };
 
-#endif // MATRIX_H
+#endif  // MATRIX_H
