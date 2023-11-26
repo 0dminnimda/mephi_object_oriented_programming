@@ -74,8 +74,8 @@ int sub_main() {
 
     DungeonLevel level;
 
-    game.player_template.equipment.equip_weapon(game.make_item(hammer_id));
-    game.enemy_templates[goblin_id].equipment.equip_weapon(game.make_item(hammer_id));
+    game.player_template.pick_up_item(game.make_item(hammer_id));
+    game.enemy_templates[goblin_id].pick_up_item(game.make_item(hammer_id));
 
     level.tile_size = 10.0f;
     level.chest_size_factor = 1.0f;

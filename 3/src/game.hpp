@@ -245,11 +245,11 @@ public:
         Amulet,
     };
 
+    Kind kind;
+
 private:
     std::optional<CharacteristicsModifier> artefact;
     RangeOfLong defence_range;
-
-    Kind kind;
 };
 
 class LockPicks : public Item {
@@ -271,7 +271,7 @@ class Inventory {
 public:
     std::vector<std::shared_ptr<Item>> items;
 
-    void add_item(std::shared_ptr<Item> item);
+    bool add_item(std::shared_ptr<Item> item);
     void open_inventory();
     void close_inventory();
 };
@@ -345,11 +345,11 @@ class Equipment {
 public:
     DeepCopy(Equipment);
 
-    std::unordered_map<Wearable::Kind, std::shared_ptr<Wearable>> wearable;
+    std::unordered_map<Wearable::Kind, std::shared_ptr<Item>> wearables;
     std::shared_ptr<Item> weapon;
 
-    void equip_wearable(std::shared_ptr<Wearable> item);
-    void equip_weapon(std::shared_ptr<Item> weapon);
+    bool equip_wearable(std::shared_ptr<Item> item);
+    bool equip_weapon(std::shared_ptr<Item> weapon);
 };
 
 class RigidBody {
@@ -412,6 +412,7 @@ public:
     virtual void init(){};
     virtual void update(float delta_time){};
     virtual void die(Actor &reason){};
+    virtual bool pick_up_item(std::shared_ptr<Item> item) { return false; };
 
     ActorClass &get_class() const;
 };
@@ -473,7 +474,7 @@ public:
     void handle_lock_picking();
     void die(Actor &reason) override;
     void handle_picking_up_items();
-    bool pick_up_item(std::shared_ptr<Item> item);
+    bool pick_up_item(std::shared_ptr<Item> item) override;
     void throw_out_item(std::shared_ptr<Item> item) const;
 };
 
@@ -491,6 +492,7 @@ public:
     void handle_movement(float delta_time);
     void handle_equipment_use();
     void die(Actor &reason) override;
+    bool pick_up_item(std::shared_ptr<Item> item) override;
 };
 
 class LayingItem : public RigidBody {

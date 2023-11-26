@@ -286,7 +286,10 @@ void LockPicks::deepcopy_to(LockPicks &other) const {
 
 std::shared_ptr<Item> LockPicks::deepcopy_item() const { return deepcopy_shared(*this); }
 
-void Inventory::add_item(std::shared_ptr<Item> item) { items.push_back(item); }
+bool Inventory::add_item(std::shared_ptr<Item> item) {
+    items.push_back(item);
+    return true;
+}
 
 void InventoryCanvas::draw() {}
 
@@ -720,10 +723,42 @@ float Enchantment::apply(float value, const Actor &target) const {
     return value;
 }
 
-void Equipment::equip_weapon(std::shared_ptr<Item> weapon) { this->weapon = weapon; }
+bool Equipment::equip_wearable(std::shared_ptr<Item> item) {
+    Wearable& as_wearable = dynamic_cast<Wearable&>(*item);
+
+    auto it = wearables.find(as_wearable.kind);
+    if (it == wearables.end()) {
+        wearables.insert({as_wearable.kind, item});
+        return true;
+    }
+    return false;
+
+    // Wearable& as_wearable = dynamic_cast<Wearable&>(*item);
+
+    // auto it = wearables.find(as_wearable.kind);
+    // if (it != wearables.end()) {
+    //     throw_out_item(it->second);
+    //     it->second = item;
+    // } else {
+    //     wearables.insert({as_wearable.kind, item});
+    // }
+}
+
+bool Equipment::equip_weapon(std::shared_ptr<Item> item) {
+    if (!weapon) {
+        weapon = item;
+        return true;
+    }
+    return false;
+
+    // if (weapon) {
+    //     throw_out_item(weapon);
+    // }
+    // weapon = item;
+}
 
 void Equipment::deepcopy_to(Equipment &other) const {
-    other.wearable = wearable;
+    other.wearables = wearables;
     if (weapon)
         other.weapon = weapon->deepcopy_item();
     else
@@ -879,15 +914,12 @@ void Player::throw_out_item(std::shared_ptr<Item> item) const {
 
 bool Player::pick_up_item(std::shared_ptr<Item> item) {
     if (item->get_class().kind == Item::Kind::Weapon) {
-        std::cout << "picking up a weapon" << std::endl;
-        if (equipment.weapon) {
-            std::cout << "throwing out old weapon" << std::endl;
-            throw_out_item(equipment.weapon);
-        }
-        equipment.weapon = item;
-        return true;
+        return equipment.equip_weapon(item);
+    } else if (item->get_class().kind == Item::Kind::Wearable) {
+        return equipment.equip_wearable(item);
+    } else {
+        return inventory.add_item(item);
     }
-    return false;
 }
 
 void Player::handle_picking_up_items() {
@@ -921,6 +953,16 @@ void Enemy::update(float delta_time) {
     if (!alive) return;
     handle_movement(delta_time);
     handle_equipment_use();
+}
+
+bool Enemy::pick_up_item(std::shared_ptr<Item> item) {
+    if (item->get_class().kind == Item::Kind::Weapon) {
+        return equipment.equip_weapon(item);
+    } else if (item->get_class().kind == Item::Kind::Wearable) {
+        return equipment.equip_wearable(item);
+    } else {
+        return false;
+    }
 }
 
 void Enemy::handle_movement(float delta_time) {
