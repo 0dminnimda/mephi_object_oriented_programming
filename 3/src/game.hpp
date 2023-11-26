@@ -190,15 +190,17 @@ public:
     float hit_range;
     sf::Clock since_last_use;
     sf::Time cooldown_time;
+    float push_back_force_multiplier;
     bool on_cooldown = false;
 
     Hammer(
         size_t item_class_index, RangeOfLong damage_range, float hit_range,
-        sf::Time cooldown_time = sf::seconds(1.0f)
+        float push_back_force_multiplier = 5000.0f, sf::Time cooldown_time = sf::seconds(1.0f)
     )
         : Weapon(item_class_index, damage_range),
           hit_range(hit_range),
-          cooldown_time(cooldown_time) {}
+          cooldown_time(cooldown_time),
+          push_back_force_multiplier(push_back_force_multiplier) {}
 
     std::shared_ptr<Item> deepcopy_item() const override;
 
@@ -216,14 +218,16 @@ public:
     sf::Clock since_last_use;
     sf::Time cooldown_time;
     bool on_cooldown = false;
+    float push_back_force_multiplier;
 
     Sword(
         size_t item_class_index, RangeOfLong damage_range, float hit_range,
-        sf::Time cooldown_time = sf::seconds(0.3f)
+        float push_back_force_multiplier = 1000.0f, sf::Time cooldown_time = sf::seconds(0.3f)
     )
         : Weapon(item_class_index, damage_range),
           hit_range(hit_range),
-          cooldown_time(cooldown_time) {}
+          cooldown_time(cooldown_time),
+          push_back_force_multiplier(push_back_force_multiplier) {}
 
     std::shared_ptr<Item> deepcopy_item() const override;
 
@@ -356,13 +360,28 @@ class RigidBody {
 public:
     DeepCopy(RigidBody);
 
-    sf::Vector2f position;
-    bool pushable = true;
     float size = 1.0f;
+    float mass = 1.0f;
+    float friction_coefficient = 2.0f;  // mu * gravity
+
+    sf::Vector2f position;
+    sf::Vector2f velocity;
+    sf::Vector2f acceleration;
+
+    bool pushable = true;
 
     RigidBody() = default;
-    RigidBody(float size) : size(size) {}
+    RigidBody(float size, float mass) : size(size), mass(mass) {}
     RigidBody(sf::Vector2f position) : position(position) {}
+    RigidBody(sf::Vector2f position, float size, float mass)
+        : size(size), mass(mass), position(position) {}
+
+    void apply_force(sf::Vector2f forece);
+    void apply_impulse(sf::Vector2f impulse);
+    void apply_friction();
+    void physics_update(float delta_time);
+
+    bool is_moving(float epsilon = 0.001f) const;
 
     sf::FloatRect get_axes_aligned_bounding_box() const;
     bool intersects(const RigidBody &other, sf::Vector2f &intersection_point) const;
@@ -389,6 +408,8 @@ public:
     bool init();
 };
 
+static const sf::Time ready_to_be_deleted_after = sf::seconds(2.0f);
+
 class Actor : public RigidBody {
 public:
     DeepCopy(Actor);
@@ -402,7 +423,7 @@ public:
 
     Actor() = default;
     Actor(size_t class_index, float size, Characteristics characteristics)
-        : RigidBody(size),
+        : RigidBody(size, size),
           actor_class_index(class_index),
           health(characteristics.max_health),
           characteristics(characteristics) {}
@@ -413,7 +434,9 @@ public:
     virtual void update(float delta_time){};
     virtual void die(Actor &reason){};
     virtual bool pick_up_item(std::shared_ptr<Item> item) { return false; };
+    virtual void on_deletion(){};
 
+    bool ready_to_be_deleted() const;
     ActorClass &get_class() const;
 };
 
@@ -434,6 +457,7 @@ private:
     sf::RenderWindow &window;
 
     float health_bar_height_factor = 0.1f;
+    float death_color_multiplier = 0.4f;
 
     sf::RectangleShape max_health_bar;
     sf::RectangleShape current_health_bar;
@@ -492,6 +516,7 @@ public:
     void handle_movement(float delta_time);
     void handle_equipment_use();
     void die(Actor &reason) override;
+    void on_deletion() override;
     bool pick_up_item(std::shared_ptr<Item> item) override;
 };
 
@@ -515,6 +540,7 @@ public:
     float tile_size;
     float chest_size_factor;
     size_t actors_spawned_per_class = 10;
+    float rebounce_factor = 0.8f;
 
     void init();
     float tile_coords_to_world_coords_factor() const;

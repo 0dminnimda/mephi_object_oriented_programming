@@ -385,6 +385,16 @@ void DungeonLevel::update(float delta_time) {
     }
     Game::get().dungeon.player.update(delta_time);
 
+    for (auto &enemy : enemies) {
+        enemy.apply_friction();
+    }
+    Game::get().dungeon.player.apply_friction();
+
+    for (auto &enemy : enemies) {
+        enemy.physics_update(delta_time);
+    }
+    Game::get().dungeon.player.physics_update(delta_time);
+
     delete_dead_actors();
     delete_picked_up_items();
     handle_collitions();
@@ -393,13 +403,19 @@ void DungeonLevel::update(float delta_time) {
 void DungeonLevel::delete_dead_actors() {
     size_t c = 0;
     for (size_t i = 0; i < enemies.size(); ++i) {
-        if (enemies[c].alive) {
+        if (!enemies[c].ready_to_be_deleted()) {
             ++c;
-        } else if (enemies[i].alive) {
+        } else if (!enemies[i].ready_to_be_deleted()) {
+            
             std::swap(enemies[c], enemies[i]);
             ++c;
         }
     }
+
+    for (size_t i = c; i < enemies.size(); ++i) {
+        enemies[i].on_deletion();
+    }
+
     enemies.erase(std::next(enemies.begin(), c), enemies.end());
 }
 
@@ -481,18 +497,22 @@ void DungeonLevel::handle_actor_level_collitions(std::vector<RigidBody *> &bodie
     for (size_t i = 0; i < bodies.size(); ++i) {
         if (aabbs[i].left < 0) {
             bodies[i]->position.x += 0 - aabbs[i].left;
+            bodies[i]->velocity.x -= bodies[i]->velocity.x * rebounce_factor;
         }
         if (aabbs[i].top < 0) {
             bodies[i]->position.y += 0 - aabbs[i].top;
+            bodies[i]->velocity.y -= bodies[i]->velocity.y * rebounce_factor;
         }
 
         float right = aabbs[i].left + aabbs[i].width;
         if (right > right_wall) {
             bodies[i]->position.x -= right - right_wall;
+            bodies[i]->velocity.x -= bodies[i]->velocity.x * rebounce_factor;
         }
         float down = aabbs[i].top + aabbs[i].height;
         if (down > down_wall) {
             bodies[i]->position.y -= down - down_wall;
+            bodies[i]->velocity.y -= bodies[i]->velocity.y * rebounce_factor;
         }
     }
 }
@@ -604,6 +624,9 @@ void ActorsView::draw(const Actor &actor) {
     sprite.setScale(saved * actor.size / Game::world_size);
     sprite.setPosition(actor.position);
     taked_damage_animator.update(actor.since_last_taken_damage.getElapsedTime(), sprite);
+    if (!actor.alive)  {
+        sprite.setColor(sprite.getColor() * death_color_multiplier);
+    }
     window.draw(sprite);
     sprite.setScale(saved);
 
@@ -765,6 +788,10 @@ void Equipment::deepcopy_to(Equipment &other) const {
         other.weapon = nullptr;
 }
 
+bool Actor::ready_to_be_deleted() const {
+    return !alive && (!is_moving() || since_last_taken_damage.getElapsedTime() > ready_to_be_deleted_after);
+}
+
 void Actor::deepcopy_to(Actor &other) const {
     RigidBody::deepcopy_to(other);
     other.actor_class_index = actor_class_index;
@@ -806,6 +833,24 @@ void RigidBody::deepcopy_to(RigidBody &other) const {
     other.position = position;
     other.pushable = pushable;
     other.size = size;
+}
+
+bool RigidBody::is_moving(float epsilon) const {
+    return velocity.x > epsilon || velocity.y > epsilon;
+}
+
+void RigidBody::apply_force(sf::Vector2f forece) { acceleration += forece / mass; }
+
+void RigidBody::apply_impulse(sf::Vector2f impulse) { velocity += impulse / mass; }
+
+void RigidBody::apply_friction() {
+    apply_force(-(velocity) * friction_coefficient * mass);
+}
+
+void RigidBody::physics_update(float delta_time) {
+    velocity += acceleration * delta_time;
+    position += velocity * delta_time;
+    acceleration = sf::Vector2f(0, 0);
 }
 
 sf::FloatRect RigidBody::get_axes_aligned_bounding_box() const {
@@ -864,7 +909,7 @@ void Player::update(float delta_time) {
 }
 
 void Player::handle_movement(float delta_time) {
-    auto resulting = sf::Vector2f(0, 0);
+    sf::Vector2f resulting(0, 0);
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
     {
@@ -986,7 +1031,9 @@ void Enemy::handle_equipment_use() {
 void Enemy::die(Actor &reason) {
     if (!alive) return;
     alive = false;
+}
 
+void Enemy::on_deletion() {
     std::optional<DungeonLevel> &level = Game::get().dungeon.get_current_level();
     if (!level) return;
 
@@ -1051,6 +1098,10 @@ void Hammer::try_to_attack(Actor &source, Actor &target) {
     float damage = get_damage(target);
     if (enchantment) damage = enchantment->apply(damage, target);
 
+    target.apply_force(
+        -normalized(source.position - target.position) * damage / damage_range.max *
+        push_back_force_multiplier
+    );
     target.take_damage(damage, source);
 }
 
@@ -1101,6 +1152,10 @@ void Sword::try_to_attack(Actor &source, Actor &target) {
     float damage = get_damage(target);
     if (enchantment) damage = enchantment->apply(damage, target);
 
+    target.apply_force(
+        -normalized(source.position - target.position) * damage / damage_range.max *
+        push_back_force_multiplier
+    );
     target.take_damage(damage, source);
 }
 

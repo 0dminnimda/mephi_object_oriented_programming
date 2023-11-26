@@ -57,8 +57,9 @@ int sub_main() {
     game.player_template = Player(player_id, 10.0f, Characteristics(100.0f, 20.0f, 5.0f));
     game.player_template.lock_picks.count = 100;
     game.player_template.pushable = false;
-    game.enemy_templates[goblin_id] = Enemy(goblin_id, 7.0f, Characteristics(10.0f, 2.0f, 2.0f));
-    game.enemy_templates[pepe_id] = Enemy(pepe_id, 5.0f, Characteristics(10.0f, 0.0f, 4.0f));
+    game.player_template.mass = 1000.0f;
+    game.enemy_templates[goblin_id] = Enemy(goblin_id, 7.0f, Characteristics(40.0f, 2.0f, 2.0f));
+    game.enemy_templates[pepe_id] = Enemy(pepe_id, 5.0f, Characteristics(40.0f, 0.0f, 4.0f));
 
     size_t hammer_id = game.add_item_class(
         ItemClass("hammer", "smashes in the face", "hammer.png", 13.0f, Item::Kind::Weapon)
@@ -69,13 +70,13 @@ int sub_main() {
     ));
 
     game.item_templates.resize(game.item_classes.size());
-    game.item_templates[hammer_id] = std::make_unique<Hammer>(hammer_id, RangeOfLong(3, 5), 10.0f);
-    game.item_templates[sword_id] = std::make_unique<Sword>(sword_id, RangeOfLong(3, 5), 3.0f);
+    game.item_templates[hammer_id] = std::make_unique<Hammer>(hammer_id, RangeOfLong(10, 20), 3.0f, 10000.0f);
+    game.item_templates[sword_id] = std::make_unique<Sword>(sword_id, RangeOfLong(3, 5), 2.0f, 100.0f);
 
     DungeonLevel level;
 
     game.player_template.pick_up_item(game.make_item(hammer_id));
-    game.enemy_templates[goblin_id].pick_up_item(game.make_item(hammer_id));
+    game.enemy_templates[goblin_id].pick_up_item(game.make_item(sword_id));
 
     level.tile_size = 10.0f;
     level.chest_size_factor = 1.0f;
