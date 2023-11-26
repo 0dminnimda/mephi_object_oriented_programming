@@ -830,9 +830,10 @@ void Chest::try_to_pick(const Actor &source, LockPicks &picks, size_t i, size_t 
     auto tile_position = sf::Vector2f(i, j) * level->tile_coords_to_world_coords_factor();
     if (result.lock_picked) {
         for (auto &slot : inventory.slots) {
-            if (!slot.size) continue;
-            LayingItem laying_item(slot.item, tile_position);
-            level->laying_items.push_back(laying_item);
+            for (size_t k = 0; k < slot.size; ++k) {
+                LayingItem laying_item(slot.item->deepcopy_item(), tile_position);
+                level->laying_items.push_back(laying_item);
+            }
         }
         level->tiles[i][j].building = nullptr;
     }
