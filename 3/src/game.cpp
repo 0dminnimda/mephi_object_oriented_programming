@@ -189,9 +189,11 @@ long Game::item_class_index_by_name(const std::string &name) {
     return -1;
 }
 
+constexpr const char *game_name = "Epic Lab3 Game";
+
 bool GameView::init(unsigned int width, unsigned int height) {
     window.create(
-        sf::VideoMode(width, height, 32), "Epic Lab3 Game",
+        sf::VideoMode(width, height, 32), game_name,
         sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize
     );
     window.setVerticalSyncEnabled(true);
@@ -214,9 +216,9 @@ bool GameView::init(unsigned int width, unsigned int height) {
     menu_message.setCharacterSize(40);
     menu_message.setFillColor(sf::Color::White);
 #ifdef SFML_SYSTEM_IOS
-    menu_message.setString("Welcome to Epic Lab3 Game!\nTouch the screen to start the game.");
+    menu_message.setString(std::string("Welcome to ") + game_name + "\nTouch the screen to start the game.");
 #else
-    menu_message.setString("Welcome to Epic Lab3 Game!\n\nPress Enter to start the game.");
+    menu_message.setString(std::string("Welcome to ") + game_name + "\n\nPress Enter to start the game.");
 #endif
     center_text_origin(menu_message);
     menu_message.setPosition({view.getSize().x / 2.0f, view.getSize().y / 6.0f});
