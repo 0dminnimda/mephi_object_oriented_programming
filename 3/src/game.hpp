@@ -118,7 +118,7 @@ public:
     ItemsView(sf::RenderWindow &window) : window(window) {}
     ~ItemsView() = default;
 
-    void draw(const Item &item, sf::Vector2f position);
+    void draw(const Item &item, sf::Vector2f position, float size = -1.0f);
 };
 
 class Potion : public Item {
@@ -279,20 +279,18 @@ public:
     std::vector<std::shared_ptr<Item>> items;
 
     bool add_item(std::shared_ptr<Item> item);
-    void open_inventory();
-    void close_inventory();
 };
 
-class InventoryCanvas {
+class InventoryView {
     sf::RenderWindow &window;
 
-public:
-    InventoryCanvas(sf::RenderWindow &window) : window(window) {}
-    ~InventoryCanvas() = default;
+    float inventory_item_size = 10.0f;
 
-    void on_open_inventory(Inventory &inventory);
-    void on_close_inventory(Inventory &inventory);
-    void draw();
+public:
+    InventoryView(sf::RenderWindow &window) : window(window) {}
+    ~InventoryView() = default;
+
+    void draw(const Inventory &inventory);
 };
 
 class Chest {
@@ -581,9 +579,9 @@ private:
     sf::Texture chest_texture;
     sf::Sprite chest_sprite;
 
+public:
     ActorsView actors_view;
 
-public:
     DungeonLevelView(sf::RenderWindow &window) : window(window), actors_view(window) {}
     ~DungeonLevelView() = default;
 
@@ -618,11 +616,11 @@ public:
     std::vector<sf::Vector2f> debug_points;
 #endif  // DEBUG
 
-private:
     DungeonLevelView dungeon_level_view;
-    InventoryCanvas inventory_canvas;
+    InventoryView inventory_view;
     LevelUpCanvas level_up_canvas;
 
+private:
     sf::Texture logo_texture;
     sf::Sprite logo;
 
@@ -633,7 +631,7 @@ private:
 
 public:
     GameView()
-        : window(), dungeon_level_view(window), inventory_canvas(window), level_up_canvas(window) {}
+        : window(), dungeon_level_view(window), inventory_view(window), level_up_canvas(window) {}
     ~GameView() = default;
 
     bool init(unsigned int width, unsigned int height);

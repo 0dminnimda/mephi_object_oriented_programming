@@ -216,9 +216,13 @@ bool GameView::init(unsigned int width, unsigned int height) {
     menu_message.setCharacterSize(40);
     menu_message.setFillColor(sf::Color::White);
 #ifdef SFML_SYSTEM_IOS
-    menu_message.setString(std::string("Welcome to ") + game_name + "\nTouch the screen to start the game.");
+    menu_message.setString(
+        std::string("Welcome to ") + game_name + "\nTouch the screen to start the game."
+    );
 #else
-    menu_message.setString(std::string("Welcome to ") + game_name + "\n\nPress Enter to start the game.");
+    menu_message.setString(
+        std::string("Welcome to ") + game_name + "\n\nPress Enter to start the game."
+    );
 #endif
     center_text_origin(menu_message);
     menu_message.setPosition({view.getSize().x / 2.0f, view.getSize().y / 6.0f});
@@ -274,7 +278,13 @@ void GameView::draw() {
         return;
     }
 
+    float ratio = (float)window.getSize().x / (float)window.getSize().y;
+    view.setSize(sf::Vector2f(Game::view_size * ratio, Game::view_size));
+    view.setCenter(sf::Vector2f(Game::get().dungeon.player.position));
+    window.setView(view);
+
     dungeon_level_view.draw(*level);
+    inventory_view.draw(Game::get().dungeon.player.inventory);
 
     if (!Game::get().dungeon.player.alive) {
         death_message.setString("YOU DIED");
@@ -288,11 +298,6 @@ void GameView::draw() {
         debug_draw_point(point);
     }
 #endif  // DEBUG
-
-    float ratio = (float)window.getSize().x / (float)window.getSize().y;
-    view.setSize(sf::Vector2f(Game::view_size * ratio, Game::view_size));
-    view.setCenter(sf::Vector2f(Game::get().dungeon.player.position));
-    window.setView(view);
 }
 
 void LockPicks::deepcopy_to(LockPicks &other) const {
@@ -307,7 +312,26 @@ bool Inventory::add_item(std::shared_ptr<Item> item) {
     return true;
 }
 
-void InventoryCanvas::draw() {}
+float calculate_inventory_item_x(float length, size_t count, size_t i) {
+    return (0.5f + (float)i) * length / (float)count;
+}
+
+void InventoryView::draw(const Inventory &inventory) {
+    sf::View view = Game::get().game_view.view;
+
+    float actual_size = inventory_item_size / Game::world_size;
+    size_t count = inventory.items.size();
+
+    float x_base = view.getCenter().x + (1 - (float)count) * actual_size / 2;
+    float y = view.getCenter().y + view.getSize().y / 2 - actual_size / 2;
+
+    for (size_t i = 0; i < count; ++i) {
+        sf::Vector2f position(x_base + actual_size * i, y);
+        Game::get().game_view.dungeon_level_view.actors_view.items_view.draw(
+            *inventory.items[i], position, inventory_item_size
+        );
+    }
+}
 
 void LevelUpCanvas::draw() {}
 
@@ -674,11 +698,12 @@ void ActorsView::draw_ui(const Actor &actor) {
     window.draw(current_health_bar);
 }
 
-void ItemsView::draw(const Item &item, sf::Vector2f position) {
+void ItemsView::draw(const Item &item, sf::Vector2f position, float size) {
     auto &cls = item.get_class();
+    if (size < 0) size = cls.size;
     sf::Sprite &sprite = cls.sprite;
     sf::Vector2f saved = sprite.getScale();
-    sprite.setScale(saved / Game::world_size * cls.size);
+    sprite.setScale(saved * size / Game::world_size);
     sprite.setPosition(position);
     window.draw(sprite);
     sprite.setScale(saved);
@@ -1017,10 +1042,7 @@ void Player::handle_picking_up_items() {
     }
 }
 
-void Player::die(Actor &reason) {
-    if (!alive) return;
-    alive = false;
-}
+void Player::die(Actor &reason) { alive = false; }
 
 void Enemy::init() {}
 
@@ -1051,10 +1073,7 @@ void Enemy::handle_equipment_use() {
     }
 }
 
-void Enemy::die(Actor &reason) {
-    if (!alive) return;
-    alive = false;
-}
+void Enemy::die(Actor &reason) { alive = false; }
 
 void Enemy::on_deletion() {
     std::optional<DungeonLevel> &level = Game::get().dungeon.get_current_level();
