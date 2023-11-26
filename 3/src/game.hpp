@@ -330,7 +330,7 @@ public:
     Inventory inventory;
     const size_t level;
 
-    explicit Chest(size_t level) : inventory(), level(level) {}
+    explicit Chest(size_t level) : inventory(1), level(level) {}
 
     LockPickingResult simulate_picking(const Actor &source);
     void try_to_pick(const Actor &source, LockPicks &picks, size_t i, size_t j);
