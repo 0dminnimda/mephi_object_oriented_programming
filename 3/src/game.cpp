@@ -175,6 +175,20 @@ std::shared_ptr<Item> Game::make_item(size_t item_class_index) const {
     return item_templates.at(item_class_index)->deepcopy_item();
 }
 
+long Game::actor_class_index_by_name(const std::string &name) {
+    for (size_t i = 0; i < actor_classes.size(); i++) {
+        if (actor_classes[i].name == name) return i;
+    }
+    return -1;
+}
+
+long Game::item_class_index_by_name(const std::string &name) {
+    for (size_t i = 0; i < item_classes.size(); i++) {
+        if (item_classes[i].name == name) return i;
+    }
+    return -1;
+}
+
 bool GameView::init(unsigned int width, unsigned int height) {
     window.create(
         sf::VideoMode(width, height, 32), "Epic Lab3 Game",

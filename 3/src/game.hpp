@@ -682,11 +682,12 @@ public:
     bool run();
 
     size_t add_actor_class(const ActorClass &cls);
+    long actor_class_index_by_name(const std::string &name);
     Enemy make_enemy(size_t actor_class_index) const;
 
     size_t add_item_class(const ItemClass &cls);
+    long item_class_index_by_name(const std::string &name);
     std::shared_ptr<Item> make_item(size_t item_class_index) const;
-    // size_t add_item_template(std::unique_ptr<Item> item);
 };
 
 #endif  // GAME_H
