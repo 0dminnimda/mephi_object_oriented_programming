@@ -724,7 +724,7 @@ float Enchantment::apply(float value, const Actor &target) const {
 }
 
 bool Equipment::equip_wearable(std::shared_ptr<Item> item) {
-    Wearable& as_wearable = dynamic_cast<Wearable&>(*item);
+    Wearable &as_wearable = dynamic_cast<Wearable &>(*item);
 
     auto it = wearables.find(as_wearable.kind);
     if (it == wearables.end()) {
@@ -849,6 +849,14 @@ void Player::deepcopy_to(Player &other) const {
 
 void Player::update(float delta_time) {
     if (!alive) return;
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::G)) {
+        if (equipment.weapon) {
+            throw_out_item(equipment.weapon);
+            equipment.weapon = nullptr;
+        }
+    }
+
     handle_movement(delta_time);
     handle_equipment_use();
     handle_lock_picking();
@@ -934,7 +942,6 @@ void Player::handle_picking_up_items() {
         if (!item.picked_up && item.since_last_pick_up.getElapsedTime() > pick_up_timeout &&
             length_squared(item.position - position) <= pick_up_range * pick_up_range)
         {
-            std::cout << length_squared(item.position - position) << std::endl;
             if (pick_up_item(item.item)) {
                 item.picked_up = true;
             }

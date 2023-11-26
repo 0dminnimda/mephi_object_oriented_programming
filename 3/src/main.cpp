@@ -70,7 +70,7 @@ int sub_main() {
 
     game.item_templates.resize(game.item_classes.size());
     game.item_templates[hammer_id] = std::make_unique<Hammer>(hammer_id, RangeOfLong(3, 5), 10.0f);
-    game.item_templates[sword_id] = std::make_unique<Sword>(hammer_id, RangeOfLong(3, 5), 3.0f);
+    game.item_templates[sword_id] = std::make_unique<Sword>(sword_id, RangeOfLong(3, 5), 3.0f);
 
     DungeonLevel level;
 
