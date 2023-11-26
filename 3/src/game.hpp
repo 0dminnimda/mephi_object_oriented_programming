@@ -63,6 +63,7 @@ public:
 };
 
 class Actor;
+class ItemClass;
 
 class Item {
 public:
@@ -81,6 +82,8 @@ public:
 
     virtual void use(Actor &target){};
     virtual void update_characteristics_as_an_equipment(Characteristics &characteristics){};
+
+    ItemClass &get_class() const;
 };
 
 class ItemClass {
@@ -408,6 +411,8 @@ public:
     virtual void init(){};
     virtual void update(float delta_time){};
     virtual void die(Actor &reason){};
+
+    ActorClass &get_class() const;
 };
 
 float symmetric_linear_easing(float t, float p);

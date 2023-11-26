@@ -594,7 +594,7 @@ void SpriteColorAnimator::update(sf::Time elapsed_time, sf::Sprite &sprite) {
 }
 
 void ActorsView::draw(const Actor &actor) {
-    sf::Sprite &sprite = Game::get().actor_classes[actor.actor_class_index].sprite;
+    sf::Sprite &sprite = actor.get_class().sprite;
     sf::Vector2f saved = sprite.getScale();
     sprite.setScale(saved * actor.size / Game::world_size);
     sprite.setPosition(actor.position);
@@ -623,7 +623,7 @@ void ActorsView::draw_ui(const Actor &actor) {
 }
 
 void ItemsView::draw(const Item &item, sf::Vector2f position) {
-    auto &cls = Game::get().item_classes[item.item_class_index];
+    auto &cls = item.get_class();
     sf::Sprite &sprite = cls.sprite;
     sf::Vector2f saved = sprite.getScale();
     sprite.setScale(saved / Game::world_size * cls.size);
@@ -736,6 +736,10 @@ void Actor::take_damage(float amount, Actor &source) {
         health = 0.0f;
         die(source);
     }
+}
+
+ActorClass &Actor::get_class() const {
+    return Game::get().actor_classes[actor_class_index];
 }
 
 void Experience::gain(size_t amount, Actor &actor) {
@@ -924,6 +928,8 @@ void Enemy::die(Actor &reason) {
 void Enemy::deepcopy_to(Enemy &other) const { Actor::deepcopy_to(other); }
 
 void Item::deepcopy_to(Item &other) const { other.item_class_index = item_class_index; }
+
+ItemClass &Item::get_class() const { return Game::get().item_classes[item_class_index]; }
 
 void Potion::apply(Actor &target) { modifier.apply(target.characteristics); }
 
