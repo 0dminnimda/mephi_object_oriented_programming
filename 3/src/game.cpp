@@ -406,7 +406,6 @@ void DungeonLevel::delete_dead_actors() {
         if (!enemies[c].ready_to_be_deleted()) {
             ++c;
         } else if (!enemies[i].ready_to_be_deleted()) {
-            
             std::swap(enemies[c], enemies[i]);
             ++c;
         }
@@ -433,15 +432,24 @@ void DungeonLevel::delete_picked_up_items() {
 }
 
 void DungeonLevel::handle_collitions() {
-    std::vector<RigidBody *> bodies(enemies.size() + 1);
-    for (size_t i = 0; i < enemies.size(); ++i) {
-        bodies[i] = &enemies[i];
-    }
-    bodies[enemies.size()] = &Game::get().dungeon.player;
+    {
+        std::vector<RigidBody *> bodies(enemies.size() + 1);
+        for (size_t i = 0; i < enemies.size(); ++i) {
+            bodies[i] = &enemies[i];
+        }
+        bodies[enemies.size()] = &Game::get().dungeon.player;
 
-    handle_actor_level_collitions(bodies);
-    handle_actor_actor_collitions(bodies);
-    handle_actor_level_collitions(bodies);
+        handle_rigid_body_level_collitions(bodies);
+        handle_actor_actor_collitions(bodies);
+        handle_rigid_body_level_collitions(bodies);
+    }
+    {
+        std::vector<RigidBody *> item_bodies(laying_items.size());
+        for (size_t i = 0; i < laying_items.size(); ++i) {
+            item_bodies[i] = &laying_items[i];
+        }
+        handle_rigid_body_level_collitions(item_bodies);
+    }
 }
 
 void DungeonLevel::handle_actor_actor_collitions(std::vector<RigidBody *> &bodies) {
@@ -485,7 +493,7 @@ void DungeonLevel::handle_actor_actor_collitions(std::vector<RigidBody *> &bodie
     }
 }
 
-void DungeonLevel::handle_actor_level_collitions(std::vector<RigidBody *> &bodies) {
+void DungeonLevel::handle_rigid_body_level_collitions(std::vector<RigidBody *> &bodies) {
     std::vector<sf::FloatRect> aabbs(bodies.size());
     for (size_t i = 0; i < bodies.size(); ++i) {
         aabbs[i] = bodies[i]->get_axes_aligned_bounding_box();
@@ -624,7 +632,7 @@ void ActorsView::draw(const Actor &actor) {
     sprite.setScale(saved * actor.size / Game::world_size);
     sprite.setPosition(actor.position);
     taked_damage_animator.update(actor.since_last_taken_damage.getElapsedTime(), sprite);
-    if (!actor.alive)  {
+    if (!actor.alive) {
         sprite.setColor(sprite.getColor() * death_color_multiplier);
     }
     window.draw(sprite);
@@ -789,7 +797,8 @@ void Equipment::deepcopy_to(Equipment &other) const {
 }
 
 bool Actor::ready_to_be_deleted() const {
-    return !alive && (!is_moving() || since_last_taken_damage.getElapsedTime() > ready_to_be_deleted_after);
+    return !alive &&
+           (!is_moving() || since_last_taken_damage.getElapsedTime() > ready_to_be_deleted_after);
 }
 
 void Actor::deepcopy_to(Actor &other) const {
@@ -843,9 +852,7 @@ void RigidBody::apply_force(sf::Vector2f forece) { acceleration += forece / mass
 
 void RigidBody::apply_impulse(sf::Vector2f impulse) { velocity += impulse / mass; }
 
-void RigidBody::apply_friction() {
-    apply_force(-(velocity) * friction_coefficient * mass);
-}
+void RigidBody::apply_friction() { apply_force(-(velocity)*friction_coefficient * mass); }
 
 void RigidBody::physics_update(float delta_time) {
     velocity += acceleration * delta_time;

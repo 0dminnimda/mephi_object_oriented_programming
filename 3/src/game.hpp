@@ -554,7 +554,7 @@ public:
     void update(float delta_time);
     void handle_collitions();
     void handle_actor_actor_collitions(std::vector<RigidBody *> &bodies);
-    void handle_actor_level_collitions(std::vector<RigidBody *> &bodies);
+    void handle_rigid_body_level_collitions(std::vector<RigidBody *> &bodies);
     void delete_dead_actors();
     void delete_picked_up_items();
 };
