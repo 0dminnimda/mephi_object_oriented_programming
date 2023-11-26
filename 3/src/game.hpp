@@ -190,6 +190,31 @@ public:
     bool is_in_range(const Actor &source, sf::Vector2f target) const override;
 };
 
+class Sword : public Weapon {
+public:
+    DeepCopy(Sword);
+
+    float hit_range;
+    sf::Clock since_last_use;
+    sf::Time cooldown_time;
+    bool on_cooldown = false;
+
+    Sword(
+        size_t item_class_index, RangeOfValues damage_range, float hit_range,
+        sf::Time cooldown_time = sf::seconds(0.3f)
+    )
+        : Weapon(item_class_index, damage_range),
+          hit_range(hit_range),
+          cooldown_time(cooldown_time) {}
+
+    std::shared_ptr<Item> deepcopy_item() const override;
+
+    void attack_by(Actor &source) override;
+    bool cooldown();
+    void try_to_attack(Actor &source, Actor &target) override;
+    bool is_in_range(const Actor &source, sf::Vector2f target) const override;
+};
+
 // aka armour or equipment
 class Wearable : public Item {
 public:
