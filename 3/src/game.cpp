@@ -30,7 +30,7 @@ void debug_draw_permanent_point(const sf::Vector2f &point) {
 #endif  // DEBUG
 }
 
-sf::Color set_transparency(sf::Color color, sf::Uint8 transparency) {
+sf::Color set_alpha(sf::Color color, sf::Uint8 transparency) {
     color.a = transparency;
     return color;
 }
@@ -208,6 +208,7 @@ bool GameView::init(unsigned int width, unsigned int height) {
 
     if (!dungeon_level_view.init()) return false;
     inventory_view.init();
+    experience_view.init();
 
     if (!logo_texture.loadFromFile(path_to_resources + logo_name)) return false;
     float scale = max(sf::Vector2f(view.getSize())) / 3.0f;
@@ -430,6 +431,32 @@ void InventoryView::draw(const Inventory &inventory) {
         sf::Vector2f position(x_base + actual_size * i, y);
         stack_of_items_view.draw(inventory.slots[i], position, inventory_item_size, i == inventory.selection);
     }
+}
+
+void ExperienceView::init() {
+    level_text.setFont(Game::get().game_view.font);
+    level_text.setCharacterSize(40);
+    level_text.setFillColor(sf::Color::White);
+    level_text.setOutlineColor(sf::Color::Black);
+    level_text.setOutlineThickness(3);
+}
+
+void ExperienceView::draw(const Experience &experience) {
+    sf::View view = Game::get().game_view.view;
+    sf::Vector2f bar_position = view.getCenter() - view.getSize() / (2.0f + 0.1f);
+    float width = view.getSize().x * relative_to_screen_width;
+    till_next_level_bar.draw(
+        bar_position, width, (float)experience.value / Experience::needs_exp_for_level(experience.level)
+    );
+
+    level_text.setString(std::to_string(experience.level));
+    center_text_origin(level_text);
+    sf::Vector2f text_position = bar_position;
+    text_position.x += width + level_text.getGlobalBounds().width / 3.0f * 2.0f;
+    text_position.y += width * till_next_level_bar.height_factor / 2.0f;
+    level_text.setPosition(text_position);
+    level_text.setScale(sf::Vector2f(1.0f, 1.0f) * text_ratio / Game::world_size);
+    window.draw(level_text);
 }
 
 void LevelUpCanvas::draw() {}
@@ -782,19 +809,23 @@ void ActorsView::draw(const Actor &actor) {
 
 void ActorsView::draw_ui(const Actor &actor) {
     float bar_width = actor.size / Game::world_size * 1.2f;
-    max_health_bar.setSize(sf::Vector2f(1.0f, health_bar_height_factor) * bar_width);
-    max_health_bar.setPosition(actor.position - sf::Vector2f(bar_width, bar_width) / 2.0f);
-    max_health_bar.setFillColor(sf::Color(255, 255, 255, 127));
-    window.draw(max_health_bar);
-
-    float health_ratio = std::max(0.0f, actor.health) / actor.characteristics.max_health;
-
-    current_health_bar.setSize(
-        {max_health_bar.getSize().x * health_ratio, max_health_bar.getSize().y}
+    health_bar.draw(
+        actor.position - bar_width / 2.0f,
+        bar_width,
+        std::max(0.0f, actor.health) / actor.characteristics.max_health
     );
-    current_health_bar.setPosition(max_health_bar.getPosition());
-    current_health_bar.setFillColor(set_transparency(sf::Color::Green, 127));
-    window.draw(current_health_bar);
+}
+
+void ProgressBarView::draw(sf::Vector2f position, float bar_width, float ratio) {
+    max_bar.setSize(sf::Vector2f(1.0f, height_factor) * bar_width);
+    max_bar.setPosition(position);
+    max_bar.setFillColor(max_bar_color);
+    window.draw(max_bar);
+
+    cur_bar.setSize({max_bar.getSize().x * ratio, max_bar.getSize().y});
+    cur_bar.setPosition(max_bar.getPosition());
+    cur_bar.setFillColor(cur_bar_color);
+    window.draw(cur_bar);
 }
 
 void ItemsView::draw(const Item &item, sf::Vector2f position) {
@@ -985,10 +1016,6 @@ void Actor::take_damage(float amount, Actor &source) {
 }
 
 ActorClass &Actor::get_class() const { return Game::get().actor_classes[actor_class_index]; }
-
-void ExperienceView::draw(Experience &experience) {
-    // TODO
-}
 
 void Experience::gain(size_t amount) {
     value += amount;

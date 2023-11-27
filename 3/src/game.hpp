@@ -25,6 +25,25 @@ const std::string path_to_resources = "";
 const std::string path_to_resources = "resources/";
 #endif
 
+sf::Color set_alpha(sf::Color color, sf::Uint8 transparency);
+
+class ProgressBarView {
+    sf::RenderWindow &window;
+public:
+
+    float height_factor;
+
+    sf::Color max_bar_color;
+    sf::Color cur_bar_color;
+
+    sf::RectangleShape max_bar;
+    sf::RectangleShape cur_bar;
+
+    ProgressBarView(sf::RenderWindow &window, sf::Color max_bar_color, sf::Color cur_bar_color, float height_factor = 0.1f) : window(window), height_factor(height_factor), max_bar_color(max_bar_color), cur_bar_color(cur_bar_color) {}
+
+    void draw(sf::Vector2f position, float bar_width, float ratio);
+};
+
 template <typename T>
 class SetAbsoluteValue {
     T value;
@@ -370,10 +389,10 @@ public:
 };
 
 class Experience {
+public:
     size_t level;
     size_t value;
 
-public:
     Experience() = default;
     Experience(size_t level) : level(level) {}
 
@@ -387,9 +406,19 @@ class ExperienceView {
     sf::RenderWindow &window;
 
 public:
-    ExperienceView(sf::RenderWindow &window) : window(window) {}
+    float relative_to_screen_width = 0.3f;
+    float text_ratio = 0.1f;
 
-    void draw(Experience &experience);
+    ProgressBarView till_next_level_bar;
+
+    sf::Text level_text;
+
+    ExperienceView(sf::RenderWindow &window) :
+        window(window),
+        till_next_level_bar(window, sf::Color::White, sf::Color(0xFF, 0xA5, 0x00)) {}
+
+    void init();
+    void draw(const Experience &experience);
 };
 
 class LevelUpCanvas {
@@ -516,11 +545,9 @@ class ActorsView {
 private:
     sf::RenderWindow &window;
 
-    float health_bar_height_factor = 0.1f;
     float death_color_multiplier = 0.4f;
 
-    sf::RectangleShape max_health_bar;
-    sf::RectangleShape current_health_bar;
+    ProgressBarView health_bar;
 
     SpriteColorAnimator taked_damage_animator =
         SpriteColorAnimator(sf::Color::White, sf::Color(200, 0, 0), sf::seconds(0.15f));
@@ -528,8 +555,10 @@ private:
 public:
     ItemsView items_view;
 
-    ActorsView(sf::RenderWindow &window) : window(window), items_view(window) {}
-    ~ActorsView() = default;
+    ActorsView(sf::RenderWindow &window) :
+        window(window),
+        health_bar(window, set_alpha(sf::Color::White, 127), set_alpha(sf::Color::Green, 127)),
+        items_view(window) {}
 
     void draw(const Actor &actor);
     void draw_ui(const Actor &actor);
