@@ -476,14 +476,9 @@ public:
     bool is_moving(float epsilon = 0.001f) const;
 
     sf::FloatRect get_axes_aligned_bounding_box() const;
-    bool intersects(const RigidBody &other, sf::Vector2f &intersection_point) const;
-    bool intersects(const RigidBody &other) const;
 };
 
 sf::Vector2f center(const sf::FloatRect &a);
-bool intersects(
-    const sf::FloatRect &aabb1, const sf::FloatRect &aabb2, sf::Vector2f &intersection_point
-);
 
 class ActorClass {
 public:

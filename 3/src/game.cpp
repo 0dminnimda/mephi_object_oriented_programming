@@ -1077,27 +1077,6 @@ sf::Vector2f center(const sf::FloatRect &a) {
     return sf::Vector2f(a.left + a.width / 2, a.top + a.height / 2);
 }
 
-bool intersects(
-    const sf::FloatRect &aabb1, const sf::FloatRect &aabb2, sf::Vector2f &intersection_point
-) {
-    sf::FloatRect intersection;
-    if (aabb1.intersects(aabb2, intersection)) {
-        intersection_point = center(intersection);
-        return true;
-    }
-    return false;
-}
-
-bool RigidBody::intersects(const RigidBody &other, sf::Vector2f &intersection_point) const {
-    return ::intersects(
-        get_axes_aligned_bounding_box(), other.get_axes_aligned_bounding_box(), intersection_point
-    );
-}
-
-bool RigidBody::intersects(const RigidBody &other) const {
-    return get_axes_aligned_bounding_box().intersects(other.get_axes_aligned_bounding_box());
-}
-
 void Player::init() {}
 
 void Player::deepcopy_to(Player &other) const {
