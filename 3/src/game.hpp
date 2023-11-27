@@ -182,63 +182,67 @@ public:
     Weapon(size_t item_class_index, RangeOfLong damage_range)
         : Item(item_class_index), damage_range(damage_range) {}
 
-    virtual void try_to_attack(Actor &source, Actor &target) = 0;
+    virtual bool try_to_attack(Actor &source, Actor &target) = 0;
     virtual float get_damage(Actor &target);
     virtual bool is_in_range(const Actor &source, sf::Vector2f target) const = 0;
 };
 
-class Hammer : public Weapon {
+class MeleeWeapon : public Weapon {
 public:
-    DeepCopy(Hammer);
+    DeepCopy(MeleeWeapon);
 
-    float hit_range;
     sf::Clock since_last_use;
     sf::Time cooldown_time;
     float push_back_force_multiplier;
     bool on_cooldown = false;
 
-    Hammer(
-        size_t item_class_index, RangeOfLong damage_range, float hit_range,
-        float push_back_force_multiplier = 5000.0f, sf::Time cooldown_time = sf::seconds(1.0f)
+    MeleeWeapon(
+        size_t item_class_index, RangeOfLong damage_range,
+        float push_back_force_multiplier, sf::Time cooldown_time
     )
         : Weapon(item_class_index, damage_range),
-          hit_range(hit_range),
           cooldown_time(cooldown_time),
           push_back_force_multiplier(push_back_force_multiplier) {}
 
-    std::shared_ptr<Item> deepcopy_item() const override;
-
     ItemUseResult use(Actor &source) override;
     bool cooldown();
-    void try_to_attack(Actor &source, Actor &target) override;
+    bool try_to_attack(Actor &source, Actor &target) override;
+};
+
+class Hammer : public MeleeWeapon {
+public:
+    DeepCopy(Hammer);
+
+    float hit_range;
+
+    Hammer(
+        size_t item_class_index, RangeOfLong damage_range, float hit_range,
+        float push_back_force_multiplier, sf::Time cooldown_time
+    )
+        : MeleeWeapon(item_class_index, damage_range, push_back_force_multiplier, cooldown_time),
+          hit_range(hit_range) {}
+
+    std::shared_ptr<Item> deepcopy_item() const override;
+
     bool is_in_range(const Actor &source, sf::Vector2f target) const override;
 };
 
-class Sword : public Weapon {
+class Sword : public MeleeWeapon {
 public:
     DeepCopy(Sword);
 
     // TODO: add direction dependant range
     float hit_range;
-    sf::Clock since_last_use;
-    sf::Time cooldown_time;
-    bool on_cooldown = false;
-    float push_back_force_multiplier;
 
     Sword(
         size_t item_class_index, RangeOfLong damage_range, float hit_range,
-        float push_back_force_multiplier = 1000.0f, sf::Time cooldown_time = sf::seconds(0.3f)
+        float push_back_force_multiplier, sf::Time cooldown_time
     )
-        : Weapon(item_class_index, damage_range),
-          hit_range(hit_range),
-          cooldown_time(cooldown_time),
-          push_back_force_multiplier(push_back_force_multiplier) {}
+        : MeleeWeapon(item_class_index, damage_range, push_back_force_multiplier, cooldown_time),
+          hit_range(hit_range) {}
 
     std::shared_ptr<Item> deepcopy_item() const override;
 
-    ItemUseResult use(Actor &source) override;
-    bool cooldown();
-    void try_to_attack(Actor &source, Actor &target) override;
     bool is_in_range(const Actor &source, sf::Vector2f target) const override;
 };
 

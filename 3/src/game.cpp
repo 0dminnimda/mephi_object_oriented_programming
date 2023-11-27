@@ -1242,7 +1242,22 @@ void Weapon::deepcopy_to(Weapon &other) const {
 
 float Weapon::get_damage(Actor &target) { return damage_range.get_random(); }
 
-bool Hammer::cooldown() {
+bool MeleeWeapon::try_to_attack(Actor &source, Actor &target) {
+    if (!is_in_range(source, target.position)) return false;
+
+    float damage = get_damage(target);
+    if (enchantment) damage = enchantment->apply(damage, target);
+
+    target.apply_force(
+        -normalized(source.position - target.position) * damage / (float)damage_range.max *
+        push_back_force_multiplier
+    );
+    target.take_damage(damage, source);
+
+    return true;
+}
+
+bool MeleeWeapon::cooldown() {
     if (!on_cooldown) {
         since_last_use.restart();
         on_cooldown = true;
@@ -1257,31 +1272,31 @@ bool Hammer::cooldown() {
     return true;
 }
 
-ItemUseResult Hammer::use(Actor &source) {
+ItemUseResult MeleeWeapon::use(Actor &source) {
     if (cooldown()) return ItemUseResult();
+
+    bool reached_anything = true;
 
     if (source.actor_class_index == Game::player_class_index) {
         for (auto &enemy : Game::get().dungeon.get_current_level()->enemies) {
-            try_to_attack(source, enemy);
+            reached_anything &= try_to_attack(source, enemy);
         }
     } else {
-        try_to_attack(source, Game::get().dungeon.player);
+        reached_anything &= try_to_attack(source, Game::get().dungeon.player);
+    }
+
+    if (!reached_anything) {
+        since_last_use.restart();
     }
 
     return ItemUseResult();
 }
 
-void Hammer::try_to_attack(Actor &source, Actor &target) {
-    if (!is_in_range(source, target.position)) return;
-
-    float damage = get_damage(target);
-    if (enchantment) damage = enchantment->apply(damage, target);
-
-    target.apply_force(
-        -normalized(source.position - target.position) * damage / damage_range.max *
-        push_back_force_multiplier
-    );
-    target.take_damage(damage, source);
+void MeleeWeapon::deepcopy_to(MeleeWeapon &other) const {
+    Weapon::deepcopy_to(other);
+    other.since_last_use = since_last_use;
+    other.cooldown_time = cooldown_time;
+    other.on_cooldown = on_cooldown;
 }
 
 bool Hammer::is_in_range(const Actor &source, sf::Vector2f target) const {
@@ -1289,67 +1304,19 @@ bool Hammer::is_in_range(const Actor &source, sf::Vector2f target) const {
 }
 
 void Hammer::deepcopy_to(Hammer &other) const {
-    Weapon::deepcopy_to(other);
+    MeleeWeapon::deepcopy_to(other);
     other.hit_range = hit_range;
-    other.since_last_use = since_last_use;
-    other.cooldown_time = cooldown_time;
-    other.on_cooldown = on_cooldown;
 }
 
 std::shared_ptr<Item> Hammer::deepcopy_item() const { return deepcopy_shared(*this); }
-
-bool Sword::cooldown() {
-    if (!on_cooldown) {
-        since_last_use.restart();
-        on_cooldown = true;
-        return false;
-    }
-
-    if (since_last_use.getElapsedTime() > cooldown_time) {
-        since_last_use.restart();
-        return false;
-    }
-
-    return true;
-}
-
-ItemUseResult Sword::use(Actor &source) {
-    if (cooldown()) return ItemUseResult();
-
-    if (source.actor_class_index == Game::player_class_index) {
-        for (auto &enemy : Game::get().dungeon.get_current_level()->enemies) {
-            try_to_attack(source, enemy);
-        }
-    } else {
-        try_to_attack(source, Game::get().dungeon.player);
-    }
-
-    return ItemUseResult();
-}
-
-void Sword::try_to_attack(Actor &source, Actor &target) {
-    if (!is_in_range(source, target.position)) return;
-
-    float damage = get_damage(target);
-    if (enchantment) damage = enchantment->apply(damage, target);
-
-    target.apply_force(
-        -normalized(source.position - target.position) * damage / damage_range.max *
-        push_back_force_multiplier
-    );
-    target.take_damage(damage, source);
-}
 
 bool Sword::is_in_range(const Actor &source, sf::Vector2f target) const {
     return length_squared(source.position - target) <= hit_range * hit_range;
 }
 
 void Sword::deepcopy_to(Sword &other) const {
-    Weapon::deepcopy_to(other);
+    MeleeWeapon::deepcopy_to(other);
     other.hit_range = hit_range;
-    other.since_last_use = since_last_use;
-    other.cooldown_time = cooldown_time;
-    other.on_cooldown = on_cooldown;
 }
 
 std::shared_ptr<Item> Sword::deepcopy_item() const { return deepcopy_shared(*this); }
