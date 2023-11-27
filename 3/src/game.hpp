@@ -584,7 +584,7 @@ public:
     sf::Vector2f initial_player_position;
     float tile_size;
     float chest_size_factor;
-    size_t actors_spawned_per_class = 30;
+    size_t actors_spawned_per_class = 100;
     float rebounce_factor = 0.8f;
 
     void init();
