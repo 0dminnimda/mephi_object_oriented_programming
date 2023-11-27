@@ -478,7 +478,7 @@ public:
     void apply_force(sf::Vector2f forece);
     void apply_impulse(sf::Vector2f impulse);
     void apply_friction();
-    void fixed_update(float delta_time);
+    virtual void fixed_update(float delta_time);
 
     bool is_moving(float epsilon = 0.001f) const;
 
@@ -590,6 +590,7 @@ public:
     Player(const Actor &actor) : Actor(actor) {}
 
     void init() override;
+    void fixed_update(float delta_time) override;
     void update(float delta_time) override;
     void handle_movement(float delta_time);
     void handle_equipment_use();
@@ -611,6 +612,7 @@ public:
     Enemy(const Actor &actor) : Actor(actor) {}
 
     void init() override;
+    void fixed_update(float delta_time) override;
     void update(float delta_time) override;
     void handle_movement(float delta_time);
     void handle_equipment_use();

@@ -1104,6 +1104,14 @@ void Player::deepcopy_to(Player &other) const {
     other.experience = experience;
 }
 
+void Player::fixed_update(float delta_time) {
+    RigidBody::fixed_update(delta_time);
+
+    if (!alive) return;
+
+    handle_movement(delta_time);
+}
+
 void Player::update(float delta_time) {
     if (!alive) return;
 
@@ -1114,7 +1122,6 @@ void Player::update(float delta_time) {
         }
     }
 
-    handle_movement(delta_time);
     handle_equipment_use();
     handle_inventory_selection();
     handle_inventory_use();
@@ -1215,9 +1222,16 @@ void Player::die(Actor &reason) { alive = false; }
 
 void Enemy::init() {}
 
+void Enemy::fixed_update(float delta_time) {
+    RigidBody::fixed_update(delta_time);
+
+    if (!alive) return;
+
+    handle_movement(delta_time);
+}
+
 void Enemy::update(float delta_time) {
     if (!alive) return;
-    handle_movement(delta_time);
     handle_equipment_use();
 }
 
