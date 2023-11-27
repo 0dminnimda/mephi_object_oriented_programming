@@ -374,9 +374,22 @@ class Experience {
     size_t value;
 
 public:
-    void gain(size_t amount, Actor &actor);
+    Experience() = default;
+    Experience(size_t level) : level(level) {}
+
+    void gain(size_t amount);
     static size_t needs_exp_for_level(size_t level);
+    size_t as_value_after_death();
     void level_up();
+};
+
+class ExperienceView {
+    sf::RenderWindow &window;
+
+public:
+    ExperienceView(sf::RenderWindow &window) : window(window) {}
+
+    void draw(Experience &experience);
 };
 
 class LevelUpCanvas {
@@ -462,16 +475,18 @@ public:
     size_t actor_class_index;
     float health;
     Equipment equipment;
+    Experience experience;
     Characteristics characteristics;
     bool alive = true;
     sf::Clock since_last_taken_damage;
 
     Actor() = default;
-    Actor(size_t class_index, float size, Characteristics characteristics)
+    Actor(size_t class_index, float size, Characteristics characteristics, size_t level)
         : RigidBody(size, size),
           actor_class_index(class_index),
           health(characteristics.max_health),
-          characteristics(characteristics) {}
+          characteristics(characteristics),
+          experience(level) {}
     virtual ~Actor() = default;
 
     virtual void take_damage(float amount, Actor &source);
@@ -527,12 +542,11 @@ public:
     DeepCopy(Player);
 
     Inventory inventory;
-    Experience experience;
     static constexpr float pick_up_range = 1.2f;
 
     Player() = default;
-    Player(size_t class_index, float size, Characteristics characteristics)
-        : Actor(class_index, size, characteristics) {}
+    Player(size_t class_index, float size, Characteristics characteristics, size_t level)
+        : Actor(class_index, size, characteristics, level) {}
     Player(const Actor &actor) : Actor(actor) {}
 
     void init() override;
@@ -552,8 +566,8 @@ public:
     DeepCopy(Enemy);
 
     Enemy() = default;
-    Enemy(size_t class_index, float size, Characteristics characteristics)
-        : Actor(class_index, size, characteristics) {}
+    Enemy(size_t class_index, float size, Characteristics characteristics, size_t level)
+        : Actor(class_index, size, characteristics, level) {}
     Enemy(const Actor &actor) : Actor(actor) {}
 
     void init() override;
@@ -663,6 +677,7 @@ public:
     DungeonLevelView dungeon_level_view;
     InventoryView inventory_view;
     LevelUpCanvas level_up_canvas;
+    ExperienceView experience_view;
 
 private:
     sf::Texture logo_texture;
@@ -675,7 +690,7 @@ public:
     sf::Text death_message;
 
     GameView()
-        : window(), dungeon_level_view(window), inventory_view(window), level_up_canvas(window) {}
+        : window(), dungeon_level_view(window), inventory_view(window), level_up_canvas(window), experience_view(window) {}
     ~GameView() = default;
 
     bool init(unsigned int width, unsigned int height);

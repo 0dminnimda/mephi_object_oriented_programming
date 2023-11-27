@@ -287,6 +287,7 @@ void GameView::draw() {
 
     dungeon_level_view.draw(*level);
     inventory_view.draw(Game::get().dungeon.player.inventory);
+    experience_view.draw(Game::get().dungeon.player.experience);
 
     if (!Game::get().dungeon.player.alive) {
         death_message.setString("YOU DIED");
@@ -985,7 +986,11 @@ void Actor::take_damage(float amount, Actor &source) {
 
 ActorClass &Actor::get_class() const { return Game::get().actor_classes[actor_class_index]; }
 
-void Experience::gain(size_t amount, Actor &actor) {
+void ExperienceView::draw(Experience &experience) {
+    // TODO
+}
+
+void Experience::gain(size_t amount) {
     value += amount;
     for (;;) {
         size_t needs = needs_exp_for_level(level);
@@ -996,6 +1001,10 @@ void Experience::gain(size_t amount, Actor &actor) {
             break;
         }
     }
+}
+
+size_t Experience::as_value_after_death() {
+    return level * level * level;
 }
 
 size_t Experience::needs_exp_for_level(size_t level) { return 4 * level * level + 10 * level + 10; }
@@ -1207,7 +1216,12 @@ void Enemy::handle_equipment_use() {
     }
 }
 
-void Enemy::die(Actor &reason) { alive = false; }
+void Enemy::die(Actor &reason) {
+    if (!alive) return;
+
+    alive = false;
+    reason.experience.gain(experience.as_value_after_death());
+}
 
 void Enemy::on_deletion() {
     std::optional<DungeonLevel> &level = Game::get().dungeon.get_current_level();
