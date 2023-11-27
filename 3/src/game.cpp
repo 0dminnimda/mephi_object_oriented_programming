@@ -1036,6 +1036,7 @@ void Actor::deepcopy_to(Actor &other) const {
 }
 
 void Actor::take_damage(float amount, Actor &source) {
+    if (!alive) return;
     since_last_taken_damage.restart();
     health -= std::max(0.0f, amount - characteristics.defence);
     if (health <= 0.0f) {
