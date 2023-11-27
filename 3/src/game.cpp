@@ -302,6 +302,19 @@ void GameView::draw() {
 #endif  // DEBUG
 }
 
+void LockPicks::use(Actor &target) {
+    std::optional<DungeonLevel> &level = Game::get().dungeon.get_current_level();
+    if (!level) return;
+
+    auto coords = level->get_tile_coordinates(target.position);
+    if (!coords) return;
+
+    Tile &tile = level->tiles[coords->first][coords->second];
+    if (!tile.building) return;
+
+    tile.building->try_to_pick(target, *this, coords->first, coords->second);
+}
+
 void LockPicks::deepcopy_to(LockPicks &other) const {
     Item::deepcopy_to(other);
     other.count = count;
@@ -321,6 +334,15 @@ bool StackOfItems::add_item(std::shared_ptr<Item> new_item) {
 
     ++size;
     return true;
+}
+
+std::shared_ptr<Item> Inventory::get_selected() {
+    if (0 <= selection && selection <= slots.size()) {
+        if (slots[selection].size != 0) {
+            return slots[selection].item;
+        }
+    }
+    return nullptr;
 }
 
 bool Inventory::add_item(std::shared_ptr<Item> item) {
@@ -358,7 +380,7 @@ void InventoryView::draw(const Inventory &inventory) {
 
     for (size_t i = 0; i < count; ++i) {
         sf::Vector2f position(x_base + actual_size * i, y);
-        stack_of_items_view.draw(inventory.slots[i], position, inventory_item_size);
+        stack_of_items_view.draw(inventory.slots[i], position, inventory_item_size, i == inventory.selection);
     }
 }
 
@@ -742,36 +764,48 @@ void StackOfItemsView::init() {
     count_text.setCharacterSize(40);
     count_text.setFillColor(sf::Color::White);
     count_text.setOutlineColor(sf::Color::Black);
-    count_text.setOutlineThickness(2);
+    count_text.setOutlineThickness(3);
 }
 
-void StackOfItemsView::draw(const StackOfItems &stack, sf::Vector2f position, float size) {
+void StackOfItemsView::draw(const StackOfItems &stack, sf::Vector2f position, float size, bool selected) {
+    float resulting_size;
+    sf::Sprite sprite;
+
     if (stack.size == 0) {
-        sf::Sprite sprite;
-        sprite.setScale(sf::Vector2f(1, 1) * size / Game::world_size);
-        sprite.setPosition(position);
-        window.draw(sprite);
-        return;
+        resulting_size = size;
+    } else {
+        auto &cls = stack.item->get_class();
+        sprite = cls.sprite;
+        resulting_size = cls.size;
     }
 
-    auto &cls = stack.item->get_class();
-    sf::Sprite &sprite = cls.sprite;
     sf::Vector2f saved = sprite.getScale();
 
-    sprite.setScale(saved * size / Game::world_size);
+    sprite.setScale(saved * resulting_size / Game::world_size);
     sprite.setPosition(position);
+
+    if (selected) {
+        sf::FloatRect bounds = sprite.getGlobalBounds();
+        sf::RectangleShape rect;
+        rect.setPosition(bounds.getPosition());
+        rect.setSize(bounds.getSize());
+        rect.setFillColor(sf::Color::Transparent);
+        rect.setOutlineColor(selection_color);
+        rect.setOutlineThickness(selection_thickness / Game::world_size);
+        window.draw(rect);
+    }
     window.draw(sprite);
 
-    count_text.setString(std::to_string(stack.size));
-    center_text_origin(count_text);
-    count_text.setPosition(
-        position + sprite.getGlobalBounds().getSize() / 2 -
-        count_text.getGlobalBounds().getSize() * 2 / 3
-    );
-    count_text.setScale(saved * size * text_ratio / Game::world_size);
-    window.draw(count_text);
-
-    sprite.setScale(saved);
+    if (stack.size != 0) {
+        count_text.setString(std::to_string(stack.size));
+        center_text_origin(count_text);
+        count_text.setPosition(
+            position + sprite.getGlobalBounds().getSize() / 2 -
+            count_text.getGlobalBounds().getSize() * 2 / 3
+        );
+        count_text.setScale(saved * resulting_size * text_ratio / Game::world_size);
+        window.draw(count_text);
+    }
 }
 
 void Dungeon::add_level(const DungeonLevel &level) { all_levels.push_back(level); }
@@ -818,8 +852,6 @@ void Chest::try_to_pick(const Actor &source, LockPicks &picks, size_t i, size_t 
     if (picks.count == 0) return;
 
     auto result = simulate_picking(source);
-    std::cout << "lock_picked = " << result.lock_picked << " pick_broken = " << result.pick_broken
-              << std::endl;
     if (result.pick_broken) {
         picks.count -= 1;
     }
@@ -1003,7 +1035,6 @@ void Player::init() {}
 void Player::deepcopy_to(Player &other) const {
     Actor::deepcopy_to(other);
     other.inventory = inventory;
-    other.lock_picks = lock_picks;
     other.experience = experience;
 }
 
@@ -1019,7 +1050,8 @@ void Player::update(float delta_time) {
 
     handle_movement(delta_time);
     handle_equipment_use();
-    handle_lock_picking();
+    handle_inventory_selection();
+    handle_inventory_use();
     handle_picking_up_items();
 }
 
@@ -1050,26 +1082,40 @@ void Player::handle_movement(float delta_time) {
 }
 
 void Player::handle_equipment_use() {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-        if (equipment.weapon) {
-            equipment.weapon->use(*this);
+    if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) return;
+
+    if (!equipment.weapon) return;
+
+    equipment.weapon->use(*this);
+}
+
+void Player::handle_inventory_selection() {
+    std::vector<sf::Keyboard::Key> keys = {
+        sf::Keyboard::Num1,
+        sf::Keyboard::Num2,
+        sf::Keyboard::Num3,
+        sf::Keyboard::Num4,
+        sf::Keyboard::Num5,
+        sf::Keyboard::Num6,
+        sf::Keyboard::Num7,
+        sf::Keyboard::Num8,
+        sf::Keyboard::Num9,
+        sf::Keyboard::Num0,
+    };
+    for (size_t i = 0; i < keys.size(); ++i) {
+        if (sf::Keyboard::isKeyPressed(keys[i])) {
+            inventory.selection = i;
         }
     }
 }
 
-void Player::handle_lock_picking() {
+void Player::handle_inventory_use() {
     if (!sf::Keyboard::isKeyPressed(sf::Keyboard::F)) return;
 
-    std::optional<DungeonLevel> &level = Game::get().dungeon.get_current_level();
-    if (!level) return;
+    std::shared_ptr<Item> item = inventory.get_selected();
+    if (!item) return;
 
-    auto coords = level->get_tile_coordinates(position);
-    if (!coords) return;
-
-    Tile &tile = level->tiles[coords->first][coords->second];
-    if (!tile.building) return;
-
-    tile.building->try_to_pick(*this, lock_picks, coords->first, coords->second);
+    item->use(*this);
 }
 
 void Player::throw_out_item(std::shared_ptr<Item> item) const {

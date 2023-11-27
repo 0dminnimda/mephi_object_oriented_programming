@@ -267,6 +267,7 @@ public:
     LockPicks() = default;
     LockPicks(size_t item_class_index, size_t count) : Item(item_class_index), count(count) {}
 
+    void use(Actor &target) override;
     std::shared_ptr<Item> deepcopy_item() const override;
 };
 
@@ -288,17 +289,21 @@ class Inventory {
 public:
     size_t max_size;
     std::vector<StackOfItems> slots;
+    long selection = -1;
 
     Inventory() : Inventory(10) {}
     Inventory(size_t max_size) : max_size(max_size), slots(max_size) {}
 
     bool add_item(std::shared_ptr<Item> item);
+    std::shared_ptr<Item> get_selected();
 };
 
 class StackOfItemsView {
     sf::RenderWindow &window;
 
     float text_ratio = 2.0f;
+    float selection_thickness = 0.3f;
+    sf::Color selection_color = sf::Color::Yellow;
 
     sf::Text count_text;
 
@@ -307,7 +312,7 @@ public:
     ~StackOfItemsView() = default;
 
     void init();
-    void draw(const StackOfItems &stack, sf::Vector2f position, float size);
+    void draw(const StackOfItems &stack, sf::Vector2f position, float size, bool selected);
 };
 
 class InventoryView {
@@ -515,7 +520,6 @@ public:
     DeepCopy(Player);
 
     Inventory inventory;
-    LockPicks lock_picks;
     Experience experience;
     static constexpr float pick_up_range = 1.2f;
 
@@ -528,7 +532,8 @@ public:
     void update(float delta_time) override;
     void handle_movement(float delta_time);
     void handle_equipment_use();
-    void handle_lock_picking();
+    void handle_inventory_use();
+    void handle_inventory_selection();
     void die(Actor &reason) override;
     void handle_picking_up_items();
     bool pick_up_item(std::shared_ptr<Item> item) override;
