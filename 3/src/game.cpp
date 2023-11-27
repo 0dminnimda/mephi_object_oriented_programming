@@ -373,26 +373,24 @@ void Inventory::use_item(size_t index, Actor &target) {
     if (result.was_broken) {
         slots[index].remove_item(1);
     }
-
-    recalculate_selection();
 }
 
-void Inventory::recalculate_selection() {
-    if (0 <= selection && selection <= slots.size()) {
-        if (slots[selection].size != 0) {
-            return;
-        }
-    }
+// void Inventory::recalculate_selection() {
+//     if (0 <= selection && selection <= slots.size()) {
+//         if (slots[selection].size != 0) {
+//             return;
+//         }
+//     }
 
-    for (size_t i = 0; i < slots.size(); ++i) {
-        if (slots[i].size != 0) {
-            selection = i;
-            return;
-        }
-    }
+//     for (size_t i = 0; i < slots.size(); ++i) {
+//         if (slots[i].size != 0) {
+//             selection = i;
+//             return;
+//         }
+//     }
 
-    selection = 0;
-}
+//     selection = 0;
+// }
 
 bool Inventory::add_item(std::shared_ptr<Item> item) {
     // first check non empty slots to see if we can stack the item

@@ -296,7 +296,7 @@ public:
     Inventory() : Inventory(10) {}
     Inventory(size_t max_size) : max_size(max_size), slots(max_size) {}
 
-    void recalculate_selection();
+    // void recalculate_selection();
     bool add_item(std::shared_ptr<Item> item);
     void use_item(size_t index, Actor &target);
     std::shared_ptr<Item> get_item(size_t index);
