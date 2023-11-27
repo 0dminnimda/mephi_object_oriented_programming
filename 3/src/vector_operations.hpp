@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <ostream>
 
-
 template <typename T>
 float dot(const sf::Vector2<T> &a, const sf::Vector2<T> &b) {
     return a.x * b.x + a.y * b.y;

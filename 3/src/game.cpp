@@ -316,7 +316,8 @@ ItemUseResult LockPick::use(Actor &target) {
 
     auto result = tile.building->simulate_picking(target);
 
-    auto tile_position = sf::Vector2f(coords->first, coords->second) * level->tile_coords_to_world_coords_factor();
+    auto tile_position =
+        sf::Vector2f(coords->first, coords->second) * level->tile_coords_to_world_coords_factor();
     if (result.lock_picked) {
         for (auto &slot : tile.building->inventory.slots) {
             for (size_t k = 0; k < slot.size; ++k) {
@@ -330,9 +331,7 @@ ItemUseResult LockPick::use(Actor &target) {
     return ItemUseResult(result.pick_broken);
 }
 
-void LockPick::deepcopy_to(LockPick &other) const {
-    Item::deepcopy_to(other);
-}
+void LockPick::deepcopy_to(LockPick &other) const { Item::deepcopy_to(other); }
 
 std::shared_ptr<Item> LockPick::deepcopy_item() const { return deepcopy_shared(*this); }
 
@@ -429,7 +428,9 @@ void InventoryView::draw(const Inventory &inventory) {
 
     for (size_t i = 0; i < count; ++i) {
         sf::Vector2f position(x_base + actual_size * i, y);
-        stack_of_items_view.draw(inventory.slots[i], position, inventory_item_size, i == inventory.selection);
+        stack_of_items_view.draw(
+            inventory.slots[i], position, inventory_item_size, i == inventory.selection
+        );
     }
 }
 
@@ -446,7 +447,8 @@ void ExperienceView::draw(const Experience &experience) {
     sf::Vector2f bar_position = view.getCenter() - view.getSize() / (2.0f + 0.1f);
     float width = view.getSize().x * relative_to_screen_width;
     till_next_level_bar.draw(
-        bar_position, width, (float)experience.value / Experience::needs_exp_for_level(experience.level)
+        bar_position, width,
+        (float)experience.value / Experience::needs_exp_for_level(experience.level)
     );
 
     level_text.setString(std::to_string(experience.level));
@@ -812,8 +814,7 @@ void ActorsView::draw(const Actor &actor) {
 void ActorsView::draw_ui(const Actor &actor) {
     float bar_width = actor.size / Game::world_size * 1.2f;
     health_bar.draw(
-        actor.position - bar_width / 2.0f,
-        bar_width,
+        actor.position - bar_width / 2.0f, bar_width,
         std::max(0.0f, actor.health) / actor.characteristics.max_health
     );
 }
@@ -848,7 +849,9 @@ void StackOfItemsView::init() {
     count_text.setOutlineThickness(3);
 }
 
-void StackOfItemsView::draw(const StackOfItems &stack, sf::Vector2f position, float size, bool selected) {
+void StackOfItemsView::draw(
+    const StackOfItems &stack, sf::Vector2f position, float size, bool selected
+) {
     float resulting_size;
     sf::Sprite sprite;
 
@@ -1001,9 +1004,7 @@ bool Actor::ready_to_be_deleted() const {
            (!is_moving() || since_last_taken_damage.getElapsedTime() > ready_to_be_deleted_after);
 }
 
-void Actor::recalculate_characteristics() {
-    
-}
+void Actor::recalculate_characteristics() {}
 
 void Actor::deepcopy_to(Actor &other) const {
     RigidBody::deepcopy_to(other);
@@ -1038,9 +1039,7 @@ void Experience::gain(size_t amount) {
     }
 }
 
-size_t Experience::as_value_after_death() {
-    return level * level * level;
-}
+size_t Experience::as_value_after_death() { return level * level * level; }
 
 size_t Experience::needs_exp_for_level(size_t level) { return 4 * level * level + 10 * level + 10; }
 
@@ -1138,16 +1137,9 @@ void Player::handle_equipment_use() {
 
 void Player::handle_inventory_selection() {
     std::vector<sf::Keyboard::Key> keys = {
-        sf::Keyboard::Num1,
-        sf::Keyboard::Num2,
-        sf::Keyboard::Num3,
-        sf::Keyboard::Num4,
-        sf::Keyboard::Num5,
-        sf::Keyboard::Num6,
-        sf::Keyboard::Num7,
-        sf::Keyboard::Num8,
-        sf::Keyboard::Num9,
-        sf::Keyboard::Num0,
+        sf::Keyboard::Num1, sf::Keyboard::Num2, sf::Keyboard::Num3, sf::Keyboard::Num4,
+        sf::Keyboard::Num5, sf::Keyboard::Num6, sf::Keyboard::Num7, sf::Keyboard::Num8,
+        sf::Keyboard::Num9, sf::Keyboard::Num0,
     };
     for (size_t i = 0; i < keys.size(); ++i) {
         if (sf::Keyboard::isKeyPressed(keys[i])) {

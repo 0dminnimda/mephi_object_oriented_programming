@@ -81,7 +81,9 @@ void setup_items(Game &game) {
     game.item_templates[lock_pick_id] = std::make_unique<LockPick>(lock_pick_id);
 
     game.player_template.pick_up_item(game.make_item(hammer_id));
-    game.enemy_templates[game.actor_class_index_by_name("goblin")].pick_up_item(game.make_item(sword_id));
+    game.enemy_templates[game.actor_class_index_by_name("goblin")].pick_up_item(
+        game.make_item(sword_id)
+    );
 }
 
 int sub_main() {

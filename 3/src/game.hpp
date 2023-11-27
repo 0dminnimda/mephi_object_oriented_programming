@@ -29,8 +29,8 @@ sf::Color set_alpha(sf::Color color, sf::Uint8 transparency);
 
 class ProgressBarView {
     sf::RenderWindow &window;
-public:
 
+public:
     float height_factor;
 
     sf::Color max_bar_color;
@@ -39,7 +39,14 @@ public:
     sf::RectangleShape max_bar;
     sf::RectangleShape cur_bar;
 
-    ProgressBarView(sf::RenderWindow &window, sf::Color max_bar_color, sf::Color cur_bar_color, float height_factor = 0.1f) : window(window), height_factor(height_factor), max_bar_color(max_bar_color), cur_bar_color(cur_bar_color) {}
+    ProgressBarView(
+        sf::RenderWindow &window, sf::Color max_bar_color, sf::Color cur_bar_color,
+        float height_factor = 0.1f
+    )
+        : window(window),
+          height_factor(height_factor),
+          max_bar_color(max_bar_color),
+          cur_bar_color(cur_bar_color) {}
 
     void draw(sf::Vector2f position, float bar_width, float ratio);
 };
@@ -105,7 +112,7 @@ public:
     virtual std::shared_ptr<Item> deepcopy_item() const = 0;
 
     virtual ItemUseResult use(Actor &target) { return ItemUseResult(false); }
-    virtual void update_characteristics_as_an_equipment(Characteristics &characteristics){}
+    virtual void update_characteristics_as_an_equipment(Characteristics &characteristics) {}
 
     ItemClass &get_class() const;
 };
@@ -216,8 +223,8 @@ public:
     bool on_cooldown = false;
 
     MeleeWeapon(
-        size_t item_class_index, RangeOfLong damage_range,
-        float push_back_force_multiplier, sf::Time cooldown_time
+        size_t item_class_index, RangeOfLong damage_range, float push_back_force_multiplier,
+        sf::Time cooldown_time
     )
         : Weapon(item_class_index, damage_range),
           cooldown_time(cooldown_time),
@@ -418,9 +425,9 @@ public:
 
     sf::Text level_text;
 
-    ExperienceView(sf::RenderWindow &window) :
-        window(window),
-        till_next_level_bar(window, sf::Color::White, sf::Color(0xFF, 0xA5, 0x00)) {}
+    ExperienceView(sf::RenderWindow &window)
+        : window(window),
+          till_next_level_bar(window, sf::Color::White, sf::Color(0xFF, 0xA5, 0x00)) {}
 
     void init();
     void draw(const Experience &experience);
@@ -559,10 +566,10 @@ private:
 public:
     ItemsView items_view;
 
-    ActorsView(sf::RenderWindow &window) :
-        window(window),
-        health_bar(window, set_alpha(sf::Color::White, 127), set_alpha(sf::Color::Green, 127)),
-        items_view(window) {}
+    ActorsView(sf::RenderWindow &window)
+        : window(window),
+          health_bar(window, set_alpha(sf::Color::White, 127), set_alpha(sf::Color::Green, 127)),
+          items_view(window) {}
 
     void draw(const Actor &actor);
     void draw_ui(const Actor &actor);
@@ -723,7 +730,11 @@ public:
     sf::Text death_message;
 
     GameView()
-        : window(), dungeon_level_view(window), inventory_view(window), level_up_canvas(window), experience_view(window) {}
+        : window(),
+          dungeon_level_view(window),
+          inventory_view(window),
+          level_up_canvas(window),
+          experience_view(window) {}
     ~GameView() = default;
 
     bool init(unsigned int width, unsigned int height);
