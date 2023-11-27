@@ -84,18 +84,18 @@ bool Game::init(unsigned int width, unsigned int height) {
 }
 
 void Game::start_playing() {
-    if (is_playing) return;
+    if (is_in_game) return;
 
-    is_playing = true;
+    is_in_game = true;
     clock.restart();
 
     dungeon.load_level(0);
 }
 
 void Game::stop_playing() {
-    if (!is_playing) return;
+    if (!is_in_game) return;
 
-    is_playing = false;
+    is_in_game = false;
 
     dungeon.unload_current_level();
 }
@@ -111,13 +111,13 @@ void Game::handle_events() {
     sf::Event event;
     while (window.pollEvent(event)) {
         if ((event.type == sf::Event::Closed) ||
-            (!is_playing && is_pressed(event, sf::Keyboard::Escape)))
+            (!is_in_game && is_pressed(event, sf::Keyboard::Escape)))
         {
             window.close();
             break;
         }
 
-        if (is_playing && is_pressed(event, sf::Keyboard::Escape)) {
+        if (is_in_game && is_pressed(event, sf::Keyboard::Escape)) {
             stop_playing();
         }
 
@@ -134,12 +134,15 @@ void Game::handle_events() {
     }
 }
 
-void Game::update(float delta_time) {
-    if (!dungeon.player.alive) return;
+bool Game::is_playing() const { return dungeon.player.alive; }
 
-    std::optional<DungeonLevel> &level = dungeon.get_current_level();
-    if (level) {
-        level->update(delta_time);
+void Game::update(float delta_time) { dungeon.update(delta_time); }
+
+void Game::handle_fixed_update(float delta_time) {
+    fixed_delta_time_leftover += delta_time;
+    while (fixed_delta_time_leftover >= fixed_delta_time) {
+        fixed_delta_time_leftover -= fixed_delta_time;
+        dungeon.fixed_update(fixed_delta_time);
     }
 }
 
@@ -148,7 +151,10 @@ bool Game::run() {
         handle_events();
 
         float delta_time = clock.restart().asSeconds();
-        update(delta_time);
+        if (is_playing()) {
+            update(delta_time);
+            handle_fixed_update(delta_time);
+        }
 
         game_view.clear();
         game_view.draw();
@@ -261,7 +267,7 @@ void GameView::clear() { window.clear(sf::Color(50, 50, 50)); }
 void GameView::display() { window.display(); }
 
 void GameView::draw() {
-    if (!Game::get().is_playing) {
+    if (!Game::get().is_in_game) {
         window.draw(logo);
         window.draw(menu_message);
 
@@ -470,6 +476,18 @@ void Dungeon::init() {
     Game::get().dungeon.player.init();
 }
 
+void Dungeon::update(float delta_time) {
+    if (current_level) {
+        current_level->update(delta_time);
+    }
+}
+
+void Dungeon::fixed_update(float delta_time) {
+    if (current_level) {
+        current_level->fixed_update(delta_time);
+    }
+}
+
 void DungeonLevel::init() {
     for (auto &emeny : enemies) {
         emeny.init();
@@ -558,14 +576,16 @@ void DungeonLevel::update(float delta_time) {
     }
     Game::get().dungeon.player.apply_friction();
 
-    for (auto &enemy : enemies) {
-        enemy.physics_update(delta_time);
-    }
-    Game::get().dungeon.player.physics_update(delta_time);
-
     delete_dead_actors();
     delete_picked_up_items();
     handle_collitions();
+}
+
+void DungeonLevel::fixed_update(float delta_time) {
+    for (auto &enemy : enemies) {
+        enemy.fixed_update(delta_time);
+    }
+    Game::get().dungeon.player.fixed_update(delta_time);
 }
 
 void DungeonLevel::delete_dead_actors() {
@@ -1061,7 +1081,7 @@ void RigidBody::apply_impulse(sf::Vector2f impulse) { velocity += impulse / mass
 
 void RigidBody::apply_friction() { apply_force(-(velocity)*friction_coefficient * mass); }
 
-void RigidBody::physics_update(float delta_time) {
+void RigidBody::fixed_update(float delta_time) {
     velocity += acceleration * delta_time;
     position += velocity * delta_time;
     acceleration = sf::Vector2f(0, 0);

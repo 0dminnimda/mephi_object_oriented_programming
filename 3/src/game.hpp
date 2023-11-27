@@ -478,7 +478,7 @@ public:
     void apply_force(sf::Vector2f forece);
     void apply_impulse(sf::Vector2f impulse);
     void apply_friction();
-    void physics_update(float delta_time);
+    void fixed_update(float delta_time);
 
     bool is_moving(float epsilon = 0.001f) const;
 
@@ -651,6 +651,7 @@ public:
     Tile *get_tile(sf::Vector2f position);
     void add_laying_item(std::unique_ptr<LayingItem> item);
     void update(float delta_time);
+    void fixed_update(float delta_time);
     void handle_collitions();
     void handle_actor_actor_collitions(std::vector<RigidBody *> &bodies);
     void handle_rigid_body_level_collitions(std::vector<RigidBody *> &bodies);
@@ -698,6 +699,8 @@ public:
     Player player;
 
     void init();
+    void update(float delta_time);
+    void fixed_update(float delta_time);
     void add_level(const DungeonLevel &level);
     bool load_level(size_t index);
     void on_load_level(DungeonLevel &level);
@@ -719,11 +722,9 @@ public:
     LevelUpCanvas level_up_canvas;
     ExperienceView experience_view;
 
-private:
     sf::Texture logo_texture;
     sf::Sprite logo;
 
-public:
     sf::Font font;
     sf::Text menu_message;
     sf::Text info_message;
@@ -742,8 +743,6 @@ public:
     bool is_open() const;
     void clear();
     void display();
-
-    friend DungeonLevelView;
 };
 
 class Game {
@@ -755,7 +754,9 @@ public:
 
     Dungeon dungeon;
 
-    bool is_playing = false;
+    bool is_in_game = false;
+    bool is_playing() const;
+
     static constexpr float view_size = 10.0f;   // sets up the view size
     static constexpr float world_size = 10.0f;  // adjusts the sizes of the objects
 
@@ -767,20 +768,21 @@ public:
     std::vector<ItemClass> item_classes;
     std::vector<std::unique_ptr<Item>> item_templates;  // follows the item_classes
 
+    static constexpr float fixed_delta_time = 1.0f / 60.0f;
+    float fixed_delta_time_leftover = 0.0f;
+
     Game() = default;
     ~Game() = default;
 
     static Game &get();
 
-    void pause();
-    void unpause();
+    bool init(unsigned int width, unsigned int height);
     void update(float delta_time);
-
+    void handle_fixed_update(float delta_time);
+    bool run();
     void handle_events();
     void start_playing();
     void stop_playing();
-    bool init(unsigned int width, unsigned int height);
-    bool run();
 
     size_t add_actor_class(const ActorClass &cls);
     long actor_class_index_by_name(const std::string &name);
