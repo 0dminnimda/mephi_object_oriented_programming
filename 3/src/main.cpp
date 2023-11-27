@@ -75,7 +75,7 @@ void setup_items(Game &game) {
 
     game.item_templates.resize(game.item_classes.size());
     game.item_templates[hammer_id] =
-        std::make_unique<Hammer>(hammer_id, RangeOfLong(20, 40), 4.0f, 1000.0f, sf::seconds(1.0f));
+        std::make_unique<Hammer>(hammer_id, RangeOfLong(20, 40), 6.0f, 1000.0f, sf::seconds(1.0f));
     game.item_templates[sword_id] =
         std::make_unique<Sword>(sword_id, RangeOfLong(3, 5), 2.0f, 10.0f, sf::seconds(0.3f));
     game.item_templates[lock_pick_id] = std::make_unique<LockPick>(lock_pick_id);

@@ -999,6 +999,10 @@ bool Actor::ready_to_be_deleted() const {
            (!is_moving() || since_last_taken_damage.getElapsedTime() > ready_to_be_deleted_after);
 }
 
+void Actor::recalculate_characteristics() {
+    
+}
+
 void Actor::deepcopy_to(Actor &other) const {
     RigidBody::deepcopy_to(other);
     other.actor_class_index = actor_class_index;

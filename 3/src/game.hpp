@@ -284,6 +284,10 @@ private:
     RangeOfLong defence_range;
 };
 
+// class Shield : public Wearable {
+// public:
+// };
+
 class LockPick : public Item {
 public:
     DeepCopy(LockPick);
@@ -506,9 +510,11 @@ public:
     float health;
     Equipment equipment;
     Experience experience;
-    Characteristics characteristics;
+    Characteristics base_characteristics;
     bool alive = true;
     sf::Clock since_last_taken_damage;
+
+    Characteristics characteristics;
 
     Actor() = default;
     Actor(size_t class_index, float size, Characteristics characteristics, size_t level)
@@ -516,6 +522,7 @@ public:
           actor_class_index(class_index),
           health(characteristics.max_health),
           characteristics(characteristics),
+          base_characteristics(characteristics),
           experience(level) {}
     virtual ~Actor() = default;
 
@@ -526,6 +533,7 @@ public:
     virtual bool pick_up_item(std::shared_ptr<Item> item) { return false; };
     virtual void on_deletion(){};
 
+    void recalculate_characteristics();
     bool ready_to_be_deleted() const;
     ActorClass &get_class() const;
 };
@@ -628,7 +636,7 @@ public:
     sf::Vector2f initial_player_position;
     float tile_size;
     float chest_size_factor;
-    size_t actors_spawned_per_class = 100;
+    size_t actors_spawned_per_class = 1000;
     float rebounce_factor = 0.8f;
 
     void init();
