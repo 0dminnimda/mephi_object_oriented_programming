@@ -331,6 +331,7 @@ class StackOfItemsView {
     float text_ratio = 2.0f;
     float selection_thickness = 0.3f;
     sf::Color selection_color = sf::Color::Yellow;
+    sf::Color background_color = set_alpha(sf::Color::White, 127);
 
     sf::Text count_text;
 

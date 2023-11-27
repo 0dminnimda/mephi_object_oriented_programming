@@ -863,16 +863,18 @@ void StackOfItemsView::draw(const StackOfItems &stack, sf::Vector2f position, fl
     sprite.setScale(saved * resulting_size / Game::world_size);
     sprite.setPosition(position);
 
+    sf::FloatRect bounds = sprite.getGlobalBounds();
+
+    sf::RectangleShape background;
+    background.setPosition(bounds.getPosition());
+    background.setSize(bounds.getSize());
+    background.setFillColor(background_color);
     if (selected) {
-        sf::FloatRect bounds = sprite.getGlobalBounds();
-        sf::RectangleShape rect;
-        rect.setPosition(bounds.getPosition());
-        rect.setSize(bounds.getSize());
-        rect.setFillColor(sf::Color::Transparent);
-        rect.setOutlineColor(selection_color);
-        rect.setOutlineThickness(selection_thickness / Game::world_size);
-        window.draw(rect);
+        background.setOutlineColor(selection_color);
+        background.setOutlineThickness(selection_thickness / Game::world_size);
     }
+    window.draw(background);
+
     window.draw(sprite);
 
     if (stack.size != 0) {
