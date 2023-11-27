@@ -619,6 +619,8 @@ void DungeonLevel::handle_collitions() {
 }
 
 void DungeonLevel::handle_actor_actor_collitions(std::vector<RigidBody *> &bodies) {
+    // optimisation: space partitioning algorithm to get rid of O(n^2)
+
     std::vector<sf::FloatRect> aabbs(bodies.size());
     for (size_t i = 0; i < bodies.size(); ++i) {
         aabbs[i] = bodies[i]->get_axes_aligned_bounding_box();
