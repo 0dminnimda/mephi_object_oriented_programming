@@ -302,25 +302,37 @@ void GameView::draw() {
 #endif  // DEBUG
 }
 
-void LockPicks::use(Actor &target) {
+ItemUseResult LockPick::use(Actor &target) {
     std::optional<DungeonLevel> &level = Game::get().dungeon.get_current_level();
-    if (!level) return;
+    if (!level) return ItemUseResult();
 
     auto coords = level->get_tile_coordinates(target.position);
-    if (!coords) return;
+    if (!coords) return ItemUseResult();
 
     Tile &tile = level->tiles[coords->first][coords->second];
-    if (!tile.building) return;
+    if (!tile.building) return ItemUseResult();
 
-    tile.building->try_to_pick(target, *this, coords->first, coords->second);
+    auto result = tile.building->simulate_picking(target);
+
+    auto tile_position = sf::Vector2f(coords->first, coords->second) * level->tile_coords_to_world_coords_factor();
+    if (result.lock_picked) {
+        for (auto &slot : tile.building->inventory.slots) {
+            for (size_t k = 0; k < slot.size; ++k) {
+                LayingItem laying_item(slot.item->deepcopy_item(), tile_position);
+                level->laying_items.push_back(laying_item);
+            }
+        }
+        tile.building = nullptr;
+    }
+
+    return ItemUseResult(result.pick_broken);
 }
 
-void LockPicks::deepcopy_to(LockPicks &other) const {
+void LockPick::deepcopy_to(LockPick &other) const {
     Item::deepcopy_to(other);
-    other.count = count;
 }
 
-std::shared_ptr<Item> LockPicks::deepcopy_item() const { return deepcopy_shared(*this); }
+std::shared_ptr<Item> LockPick::deepcopy_item() const { return deepcopy_shared(*this); }
 
 bool StackOfItems::add_item(std::shared_ptr<Item> new_item) {
     if (size == 0) {
@@ -336,13 +348,50 @@ bool StackOfItems::add_item(std::shared_ptr<Item> new_item) {
     return true;
 }
 
-std::shared_ptr<Item> Inventory::get_selected() {
-    if (0 <= selection && selection <= slots.size()) {
-        if (slots[selection].size != 0) {
-            return slots[selection].item;
+void StackOfItems::remove_item(size_t amount) {
+    amount = std::min(amount, size);
+    size -= amount;
+    if (size == 0) {
+        item = nullptr;
+    }
+}
+
+std::shared_ptr<Item> Inventory::get_item(size_t index) {
+    if (0 <= index && index <= slots.size()) {
+        if (slots[index].size != 0) {
+            return slots[index].item;
         }
     }
     return nullptr;
+}
+
+void Inventory::use_item(size_t index, Actor &target) {
+    std::shared_ptr<Item> item = get_item(index);
+    if (!item) return;
+
+    auto result = item->use(target);
+    if (result.was_broken) {
+        slots[index].remove_item(1);
+    }
+
+    recalculate_selection();
+}
+
+void Inventory::recalculate_selection() {
+    if (0 <= selection && selection <= slots.size()) {
+        if (slots[selection].size != 0) {
+            return;
+        }
+    }
+
+    for (size_t i = 0; i < slots.size(); ++i) {
+        if (slots[i].size != 0) {
+            selection = i;
+            return;
+        }
+    }
+
+    selection = 0;
 }
 
 bool Inventory::add_item(std::shared_ptr<Item> item) {
@@ -848,29 +897,6 @@ LockPickingResult Chest::simulate_picking(const Actor &source) {
     return {false, (float)range.get_random() * source.characteristics.luck <= 1};
 }
 
-void Chest::try_to_pick(const Actor &source, LockPicks &picks, size_t i, size_t j) {
-    if (picks.count == 0) return;
-
-    auto result = simulate_picking(source);
-    if (result.pick_broken) {
-        picks.count -= 1;
-    }
-
-    std::optional<DungeonLevel> &level = Game::get().dungeon.get_current_level();
-    if (!level) return;
-
-    auto tile_position = sf::Vector2f(i, j) * level->tile_coords_to_world_coords_factor();
-    if (result.lock_picked) {
-        for (auto &slot : inventory.slots) {
-            for (size_t k = 0; k < slot.size; ++k) {
-                LayingItem laying_item(slot.item->deepcopy_item(), tile_position);
-                level->laying_items.push_back(laying_item);
-            }
-        }
-        level->tiles[i][j].building = nullptr;
-    }
-}
-
 void CharacteristicsModifier::apply(Characteristics &value) {
     if (max_health) {
         value.max_health =
@@ -1112,10 +1138,7 @@ void Player::handle_inventory_selection() {
 void Player::handle_inventory_use() {
     if (!sf::Keyboard::isKeyPressed(sf::Keyboard::F)) return;
 
-    std::shared_ptr<Item> item = inventory.get_selected();
-    if (!item) return;
-
-    item->use(*this);
+    inventory.use_item(inventory.selection, *this);
 }
 
 void Player::throw_out_item(std::shared_ptr<Item> item) const {
@@ -1207,7 +1230,10 @@ ItemClass &Item::get_class() const { return Game::get().item_classes[item_class_
 
 void Potion::apply(Actor &target) { modifier.apply(target.characteristics); }
 
-void Potion::use(Actor &target) { apply(target); }
+ItemUseResult Potion::use(Actor &target) {
+    apply(target);
+    return ItemUseResult();
+}
 
 void Weapon::deepcopy_to(Weapon &other) const {
     Item::deepcopy_to(other);
@@ -1215,8 +1241,6 @@ void Weapon::deepcopy_to(Weapon &other) const {
     other.enchantment = enchantment;
     other.damage_range = damage_range;
 }
-
-void Weapon::use(Actor &target) { attack_by(target); }
 
 float Weapon::get_damage(Actor &target) { return damage_range.get_random(); }
 
@@ -1235,8 +1259,8 @@ bool Hammer::cooldown() {
     return true;
 }
 
-void Hammer::attack_by(Actor &source) {
-    if (cooldown()) return;
+ItemUseResult Hammer::use(Actor &source) {
+    if (cooldown()) return ItemUseResult();
 
     if (source.actor_class_index == Game::player_class_index) {
         for (auto &enemy : Game::get().dungeon.get_current_level()->enemies) {
@@ -1245,6 +1269,8 @@ void Hammer::attack_by(Actor &source) {
     } else {
         try_to_attack(source, Game::get().dungeon.player);
     }
+
+    return ItemUseResult();
 }
 
 void Hammer::try_to_attack(Actor &source, Actor &target) {
@@ -1289,8 +1315,8 @@ bool Sword::cooldown() {
     return true;
 }
 
-void Sword::attack_by(Actor &source) {
-    if (cooldown()) return;
+ItemUseResult Sword::use(Actor &source) {
+    if (cooldown()) return ItemUseResult();
 
     if (source.actor_class_index == Game::player_class_index) {
         for (auto &enemy : Game::get().dungeon.get_current_level()->enemies) {
@@ -1299,6 +1325,8 @@ void Sword::attack_by(Actor &source) {
     } else {
         try_to_attack(source, Game::get().dungeon.player);
     }
+
+    return ItemUseResult();
 }
 
 void Sword::try_to_attack(Actor &source, Actor &target) {

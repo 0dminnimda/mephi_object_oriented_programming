@@ -65,6 +65,11 @@ public:
 class Actor;
 class ItemClass;
 
+class ItemUseResult {
+public:
+    bool was_broken = false;
+};
+
 class Item {
 public:
     DeepCopy(Item);
@@ -80,8 +85,8 @@ public:
 
     virtual std::shared_ptr<Item> deepcopy_item() const = 0;
 
-    virtual void use(Actor &target){};
-    virtual void update_characteristics_as_an_equipment(Characteristics &characteristics){};
+    virtual ItemUseResult use(Actor &target) { return ItemUseResult(false); }
+    virtual void update_characteristics_as_an_equipment(Characteristics &characteristics){}
 
     ItemClass &get_class() const;
 };
@@ -129,7 +134,7 @@ public:
     Potion(size_t item_class_index, CharacteristicsModifier modifier)
         : Item(item_class_index), modifier(modifier) {}
 
-    void use(Actor &target) override;
+    ItemUseResult use(Actor &target) override;
     void apply(Actor &target);
 };
 
@@ -177,8 +182,6 @@ public:
     Weapon(size_t item_class_index, RangeOfLong damage_range)
         : Item(item_class_index), damage_range(damage_range) {}
 
-    void use(Actor &target) override;
-    virtual void attack_by(Actor &source) = 0;
     virtual void try_to_attack(Actor &source, Actor &target) = 0;
     virtual float get_damage(Actor &target);
     virtual bool is_in_range(const Actor &source, sf::Vector2f target) const = 0;
@@ -205,7 +208,7 @@ public:
 
     std::shared_ptr<Item> deepcopy_item() const override;
 
-    void attack_by(Actor &source) override;
+    ItemUseResult use(Actor &source) override;
     bool cooldown();
     void try_to_attack(Actor &source, Actor &target) override;
     bool is_in_range(const Actor &source, sf::Vector2f target) const override;
@@ -233,7 +236,7 @@ public:
 
     std::shared_ptr<Item> deepcopy_item() const override;
 
-    void attack_by(Actor &source) override;
+    ItemUseResult use(Actor &source) override;
     bool cooldown();
     void try_to_attack(Actor &source, Actor &target) override;
     bool is_in_range(const Actor &source, sf::Vector2f target) const override;
@@ -258,16 +261,14 @@ private:
     RangeOfLong defence_range;
 };
 
-class LockPicks : public Item {
+class LockPick : public Item {
 public:
-    DeepCopy(LockPicks);
+    DeepCopy(LockPick);
 
-    size_t count;
+    LockPick() = default;
+    LockPick(size_t item_class_index) : Item(item_class_index) {}
 
-    LockPicks() = default;
-    LockPicks(size_t item_class_index, size_t count) : Item(item_class_index), count(count) {}
-
-    void use(Actor &target) override;
+    ItemUseResult use(Actor &target) override;
     std::shared_ptr<Item> deepcopy_item() const override;
 };
 
@@ -283,19 +284,22 @@ public:
     size_t size = 0;
 
     bool add_item(std::shared_ptr<Item> item);
+    void remove_item(size_t amount = 1);
 };
 
 class Inventory {
 public:
     size_t max_size;
     std::vector<StackOfItems> slots;
-    long selection = -1;
+    size_t selection = 0;
 
     Inventory() : Inventory(10) {}
     Inventory(size_t max_size) : max_size(max_size), slots(max_size) {}
 
+    void recalculate_selection();
     bool add_item(std::shared_ptr<Item> item);
-    std::shared_ptr<Item> get_selected();
+    void use_item(size_t index, Actor &target);
+    std::shared_ptr<Item> get_item(size_t index);
 };
 
 class StackOfItemsView {
@@ -338,7 +342,6 @@ public:
     explicit Chest(size_t level) : inventory(1), level(level) {}
 
     LockPickingResult simulate_picking(const Actor &source);
-    void try_to_pick(const Actor &source, LockPicks &picks, size_t i, size_t j);
 };
 
 class Tile {

@@ -56,7 +56,6 @@ void setup_actors(Game &game) {
     game.player_template = Player(player_id, 10.0f, Characteristics(100.0f, 20.0f, 5.0f));
     game.player_template.pushable = false;
     game.player_template.mass = 10000.0f;
-    game.player_template.inventory.selection = 0;
     game.enemy_templates[goblin_id] = Enemy(goblin_id, 7.0f, Characteristics(40.0f, 2.0f, 2.0f));
     game.enemy_templates[pepe_id] = Enemy(pepe_id, 5.0f, Characteristics(40.0f, 0.0f, 4.0f));
 }
@@ -79,7 +78,7 @@ void setup_items(Game &game) {
         std::make_unique<Hammer>(hammer_id, RangeOfLong(20, 40), 4.0f, 6000.0f);
     game.item_templates[sword_id] =
         std::make_unique<Sword>(sword_id, RangeOfLong(3, 5), 2.0f, 100.0f);
-    game.item_templates[lock_pick_id] = std::make_unique<LockPicks>(lock_pick_id, 2);
+    game.item_templates[lock_pick_id] = std::make_unique<LockPick>(lock_pick_id);
 
     game.player_template.pick_up_item(game.make_item(hammer_id));
     game.enemy_templates[game.actor_class_index_by_name("goblin")].pick_up_item(game.make_item(sword_id));
