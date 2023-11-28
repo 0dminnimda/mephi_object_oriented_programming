@@ -112,7 +112,7 @@ public:
     virtual std::shared_ptr<Item> deepcopy_item() const = 0;
 
     virtual ItemUseResult use(Actor &target) { return ItemUseResult(false); }
-    virtual void update_characteristics_as_an_equipment(Characteristics &characteristics) {}
+    virtual void update_owner_characteristics(Characteristics &characteristics) {}
 
     ItemClass &get_class() const;
 };
@@ -514,10 +514,9 @@ public:
     Equipment equipment;
     Experience experience;
     Characteristics base_characteristics;
+    Characteristics characteristics;
     bool alive = true;
     sf::Clock since_last_taken_damage;
-
-    Characteristics characteristics;
 
     Actor() = default;
     Actor(size_t class_index, float size, Characteristics characteristics, size_t level)
@@ -535,6 +534,7 @@ public:
     virtual void die(Actor &reason){};
     virtual bool pick_up_item(std::shared_ptr<Item> item) { return false; };
     virtual void on_deletion(){};
+    virtual void recalculate_characteristics();
 
     void recalculate_characteristics();
     bool ready_to_be_deleted() const;
@@ -601,6 +601,7 @@ public:
     void handle_picking_up_items();
     bool pick_up_item(std::shared_ptr<Item> item) override;
     void throw_out_item(std::shared_ptr<Item> item) const;
+    void recalculate_characteristics() override;
 };
 
 class Enemy : public Actor {

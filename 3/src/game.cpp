@@ -1042,7 +1042,16 @@ bool Actor::ready_to_be_deleted() const {
            (!is_moving() || since_last_taken_damage.getElapsedTime() > ready_to_be_deleted_after);
 }
 
-void Actor::recalculate_characteristics() {}
+void Actor::recalculate_characteristics() {
+    characteristics = base_characteristics;
+    if (equipment.weapon) {
+        equipment.weapon->update_owner_characteristics(characteristics);
+    }
+    for (auto &it : equipment.wearables) {
+        if (!it.second) continue;
+        it.second->update_owner_characteristics(characteristics);
+    }
+}
 
 void Actor::deepcopy_to(Actor &other) const {
     RigidBody::deepcopy_to(other);
@@ -1050,6 +1059,7 @@ void Actor::deepcopy_to(Actor &other) const {
     other.health = health;
     equipment.deepcopy_to(other.equipment);
     other.characteristics = characteristics;
+    other.base_characteristics = base_characteristics;
     other.alive = alive;
 }
 
@@ -1213,13 +1223,18 @@ void Player::throw_out_item(std::shared_ptr<Item> item) const {
 }
 
 bool Player::pick_up_item(std::shared_ptr<Item> item) {
+    bool result;
     if (item->get_class().kind == Item::Kind::Weapon) {
-        return equipment.equip_weapon(item);
+        result = equipment.equip_weapon(item);
     } else if (item->get_class().kind == Item::Kind::Wearable) {
-        return equipment.equip_wearable(item);
+        result = equipment.equip_wearable(item);
     } else {
-        return inventory.add_item(item);
+        result = inventory.add_item(item);
     }
+    if (result) {
+        recalculate_characteristics();
+    }
+    return result;
 }
 
 void Player::handle_picking_up_items() {
@@ -1237,6 +1252,16 @@ void Player::handle_picking_up_items() {
             if (pick_up_item(item.item)) {
                 item.picked_up = true;
             }
+        }
+    }
+}
+
+void Player::recalculate_characteristics() {
+    Actor::recalculate_characteristics();
+    for (auto &slot : inventory.slots) {
+        if (!slot.item) continue;
+        for (size_t i = 0; i < slot.size; ++i) {
+            slot.item->update_owner_characteristics(characteristics);
         }
     }
 }
