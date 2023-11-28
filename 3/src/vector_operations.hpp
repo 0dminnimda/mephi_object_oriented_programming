@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SFML/System/Vector2.hpp"
 #ifndef VECTOR_OPERATIONS_H
 #define VECTOR_OPERATIONS_H
 
@@ -56,6 +57,26 @@ template <typename T>
 sf::Vector2<T> normalized(const sf::Vector2<T> &a) {
     T len = length(a);
     if (len) return a / len;
+    return a;
+}
+
+template <typename T>
+sf::Vector2<T> move_towards(const sf::Vector2<T> &current, const sf::Vector2<T> &target, T max_distance_delta) {
+    sf::Vector2<T> delta = target - current;
+    if (length_squared(delta) > max_distance_delta * max_distance_delta) {
+        delta = normalized(delta) * max_distance_delta;
+    }
+    return current + delta;
+}
+
+template <typename T>
+sf::Vector2<T> clamp_magnitude(const sf::Vector2<T> &a, T max_magnitude) {
+    if (!max_magnitude) return sf::Vector2<T>(0, 0);
+    T len = length(a);
+    if (!len) return sf::Vector2<T>(0, 0);
+    if (len > max_magnitude) {
+        return a / len * max_magnitude;
+    }
     return a;
 }
 

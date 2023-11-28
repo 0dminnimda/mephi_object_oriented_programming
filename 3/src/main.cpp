@@ -53,11 +53,11 @@ void setup_actors(Game &game) {
     size_t pepe_id = game.add_actor_class(ActorClass("pepe", "he angy", "pepe_angry.jpeg"));
 
     game.enemy_templates.resize(game.actor_classes.size());
-    game.player_template = Player(player_id, 10.0f, Characteristics(200.0f, 4.0f, 5.0f), 0);
+    game.player_template = Player(player_id, 10.0f, Characteristics(200.0f, 4.0f, 10.0f), 0);
     game.player_template.pushable = false;
     game.player_template.mass = 10000.0f;
-    game.enemy_templates[pepe_id] = Enemy(pepe_id, 5.0f, Characteristics(40.0f, 0.0f, 4.0f), 1);
-    game.enemy_templates[goblin_id] = Enemy(goblin_id, 7.0f, Characteristics(40.0f, 2.0f, 2.0f), 2);
+    game.enemy_templates[pepe_id] = Enemy(pepe_id, 5.0f, Characteristics(40.0f, 0.0f, 8.0f), 1);
+    game.enemy_templates[goblin_id] = Enemy(goblin_id, 7.0f, Characteristics(40.0f, 2.0f, 4.0f), 2);
 }
 
 void setup_items(Game &game) {
@@ -75,7 +75,7 @@ void setup_items(Game &game) {
 
     game.item_templates.resize(game.item_classes.size());
     game.item_templates[hammer_id] =
-        std::make_unique<Hammer>(hammer_id, RangeOfLong(20, 40), 6.0f, 5000.0f, sf::seconds(1.0f));
+        std::make_unique<Hammer>(hammer_id, RangeOfLong(1, 10), 6.0f, 30000.0f, sf::seconds(1.0f));
     game.item_templates[sword_id] =
         std::make_unique<Sword>(sword_id, RangeOfLong(3, 5), 2.0f, 10.0f, sf::seconds(0.3f));
     game.item_templates[lock_pick_id] = std::make_unique<LockPick>(lock_pick_id);

@@ -571,17 +571,19 @@ void DungeonLevel::update(float delta_time) {
     }
     Game::get().dungeon.player.update(delta_time);
 
-    for (auto &enemy : enemies) {
-        enemy.apply_friction();
-    }
-    Game::get().dungeon.player.apply_friction();
-
     delete_dead_actors();
     delete_picked_up_items();
     handle_collitions();
 }
 
 void DungeonLevel::fixed_update(float delta_time) {
+    for (auto &enemy : enemies) {
+        // enemy.apply_damping();
+        enemy.apply_friction();
+    }
+    // Game::get().dungeon.player.apply_damping();
+    Game::get().dungeon.player.apply_friction();
+
     for (auto &enemy : enemies) {
         enemy.fixed_update(delta_time);
     }
@@ -1076,11 +1078,31 @@ bool RigidBody::is_moving(float epsilon) const {
     return velocity.x > epsilon || velocity.y > epsilon;
 }
 
+void RigidBody::move(sf::Vector2f direction, float speed, float delta_time) {
+    direction = normalized(direction);
+    sf::Vector2f target_velocity = direction * speed;
+    sf::Vector2f target_acceleration = (target_velocity - velocity) / delta_time;
+    apply_force(target_acceleration);
+    // apply_force(clamp_magnitude(target_acceleration, max_acceleration));
+}
+
 void RigidBody::apply_force(sf::Vector2f forece) { acceleration += forece / mass; }
 
 void RigidBody::apply_impulse(sf::Vector2f impulse) { velocity += impulse / mass; }
 
-void RigidBody::apply_friction() { apply_force(-(velocity)*friction_coefficient * mass); }
+void RigidBody::apply_friction() {
+    apply_force(-normalized(velocity) * dynamic_friction_coefficient * mass);
+    // if (length_squared(acceleration) * mass * mass < static_friction_threshold *
+    // static_friction_threshold) {
+    //     acceleration = sf::Vector2f(0, 0);
+    // } else {
+    //     apply_force(-normalized(velocity) * dynamic_friction_coefficient * mass);
+    // }
+}
+
+// void RigidBody::apply_damping() {
+//     velocity *= damping_coefficient;
+// }
 
 void RigidBody::fixed_update(float delta_time) {
     velocity += acceleration * delta_time;
@@ -1130,29 +1152,29 @@ void Player::update(float delta_time) {
 }
 
 void Player::handle_movement(float delta_time) {
-    sf::Vector2f resulting(0, 0);
+    sf::Vector2f direction(0, 0);
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
     {
-        resulting.y -= 1;
+        direction.y -= 1;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) ||
         sf::Keyboard::isKeyPressed(sf::Keyboard::S))
     {
-        resulting.y += 1;
+        direction.y += 1;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ||
         sf::Keyboard::isKeyPressed(sf::Keyboard::A))
     {
-        resulting.x -= 1;
+        direction.x -= 1;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) ||
         sf::Keyboard::isKeyPressed(sf::Keyboard::D))
     {
-        resulting.x += 1;
+        direction.x += 1;
     }
 
-    position += normalized(resulting) * (float)characteristics.speed * delta_time;
+    move(direction, characteristics.speed, delta_time);
 }
 
 void Player::handle_equipment_use() {
@@ -1247,8 +1269,7 @@ bool Enemy::pick_up_item(std::shared_ptr<Item> item) {
 }
 
 void Enemy::handle_movement(float delta_time) {
-    sf::Vector2f direction = Game::get().dungeon.player.position - position;
-    position += normalized(direction) * (float)characteristics.speed * delta_time;
+    move(Game::get().dungeon.player.position - position, characteristics.speed, delta_time);
 }
 
 void Enemy::handle_equipment_use() {
