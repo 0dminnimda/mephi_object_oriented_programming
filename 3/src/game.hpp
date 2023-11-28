@@ -291,7 +291,7 @@ public:
     DeepCopy(Wearable);
 
     enum Kind {
-        Helmet,
+        Helmet = 0,
         ChestPlate,
         Leggins,
         Boots,
@@ -473,8 +473,18 @@ class Equipment {
 public:
     DeepCopy(Equipment);
 
-    std::unordered_map<Wearable::Kind, std::shared_ptr<Item>> wearables;
-    std::shared_ptr<Item> weapon;
+    // Wearable::Count (wearables) + 1 (weapon)
+    static constexpr size_t size = Wearable::Count + 1;
+
+    using Items = std::shared_ptr<Item>[size];
+    using Wearables = std::shared_ptr<Item>[Wearable::Count];
+
+    Items items;
+
+    std::shared_ptr<Item> &weapon();
+    const std::shared_ptr<Item> &weapon() const;
+    Wearables &wearables();
+    const Wearables &wearables() const;
 
     bool equip_wearable(std::shared_ptr<Item> item);
     bool equip_weapon(std::shared_ptr<Item> weapon);

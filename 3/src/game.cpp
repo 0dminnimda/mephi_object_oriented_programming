@@ -846,7 +846,7 @@ void ActorsView::draw(const Actor &actor) {
     window.draw(sprite);
     sprite.setScale(saved);
 
-    if (actor.equipment.weapon) items_view.draw(*actor.equipment.weapon, actor.position);
+    if (actor.equipment.weapon()) items_view.draw(*actor.equipment.weapon(), actor.position);
 }
 
 void ActorsView::draw_ui(const Actor &actor) {
@@ -995,35 +995,42 @@ float Enchantment::apply(float value, const Actor &target) const {
     return value;
 }
 
+std::shared_ptr<Item> &Equipment::weapon() { return items[Wearable::Count]; }
+
+const std::shared_ptr<Item> &Equipment::weapon() const { return items[Wearable::Count]; }
+
+Equipment::Wearables &Equipment::wearables() { return *reinterpret_cast<Wearables *>(&items); }
+
+const Equipment::Wearables &Equipment::wearables() const {
+    return *reinterpret_cast<const Wearables *>(&items);
+}
+
 bool Equipment::equip_wearable(std::shared_ptr<Item> item) {
     Wearable &as_wearable = dynamic_cast<Wearable &>(*item);
 
-    auto it = wearables.find(as_wearable.kind);
-    if (it == wearables.end()) {
-        wearables.insert({as_wearable.kind, item});
-        return true;
-    }
-    if (!it->second) {
-        it->second = item;
+    auto &it = wearables()[as_wearable.kind];
+    if (!it) {
+        it = item;
         return true;
     }
     return false;
 }
 
 bool Equipment::equip_weapon(std::shared_ptr<Item> item) {
-    if (!weapon) {
-        weapon = item;
+    if (!weapon()) {
+        weapon() = item;
         return true;
     }
     return false;
 }
 
 void Equipment::deepcopy_to(Equipment &other) const {
-    other.wearables = wearables;
-    if (weapon)
-        other.weapon = weapon->deepcopy_item();
-    else
-        other.weapon = nullptr;
+    for (size_t i = 0; i < size; ++i) {
+        if (items[i])
+            other.items[i] = items[i]->deepcopy_item();
+        else
+            other.items[i] = nullptr;
+    }
 }
 
 bool Actor::ready_to_be_deleted() const {
@@ -1033,12 +1040,9 @@ bool Actor::ready_to_be_deleted() const {
 
 void Actor::recalculate_characteristics() {
     characteristics = base_characteristics;
-    if (equipment.weapon) {
-        equipment.weapon->update_owner_characteristics(characteristics);
-    }
-    for (auto &it : equipment.wearables) {
-        if (!it.second) continue;
-        it.second->update_owner_characteristics(characteristics);
+    for (auto &it : equipment.items) {
+        if (!it) continue;
+        it->update_owner_characteristics(characteristics);
     }
 }
 
@@ -1054,9 +1058,9 @@ void Actor::deepcopy_to(Actor &other) const {
 
 float Actor::calculate_defence() {
     float defence = characteristics.defence;
-    for (auto &it : equipment.wearables) {
-        if (!it.second) continue;
-        defence += it.second->generate_defence();
+    for (auto &it : equipment.wearables()) {
+        if (!it) continue;
+        defence += it->generate_defence();
     }
     return defence;
 }
@@ -1147,18 +1151,18 @@ void Player::update(float delta_time) {
     if (!alive) return;
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::G)) {
-        if (equipment.weapon) {
-            throw_out_item(equipment.weapon);
-            equipment.weapon = nullptr;
+        if (equipment.weapon()) {
+            throw_out_item(equipment.weapon());
+            equipment.weapon() = nullptr;
             recalculate_characteristics();
         }
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::H)) {
-        for (auto &it : equipment.wearables) {
-            if (!it.second) continue;
-            throw_out_item(it.second);
-            it.second = nullptr;
+        for (auto &it : equipment.wearables()) {
+            if (!it) continue;
+            throw_out_item(it);
+            it = nullptr;
             recalculate_characteristics();
         }
     }
@@ -1198,9 +1202,9 @@ void Player::handle_movement(float delta_time) {
 void Player::handle_equipment_use() {
     if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) return;
 
-    if (!equipment.weapon) return;
+    if (!equipment.weapon()) return;
 
-    equipment.weapon->use(*this);
+    equipment.weapon()->use(*this);
 }
 
 void Player::handle_inventory_selection() {
@@ -1306,8 +1310,8 @@ void Enemy::handle_movement(float delta_time) {
 }
 
 void Enemy::handle_equipment_use() {
-    if (equipment.weapon) {
-        equipment.weapon->use(*this);
+    if (equipment.weapon()) {
+        equipment.weapon()->use(*this);
     }
 }
 
