@@ -1367,38 +1367,31 @@ bool MeleeWeapon::try_to_attack(Actor &source, Actor &target) {
     return true;
 }
 
-bool MeleeWeapon::cooldown() {
-    if (!on_cooldown) {
-        since_last_use.restart();
-        on_cooldown = true;
-        return false;
-    }
-
-    if (since_last_use.getElapsedTime() > cooldown_time) {
-        since_last_use.restart();
-        return false;
-    }
-
+bool MeleeWeapon::test_cooldown() {
+    if (!on_cooldown) return false;
+    if (since_last_use.getElapsedTime() > cooldown_time) return false;
     return true;
 }
 
-ItemUseResult MeleeWeapon::use(Actor &source) {
-    if (cooldown()) return ItemUseResult();
+void MeleeWeapon::ensure_cooldown() {
+    since_last_use.restart();
+    on_cooldown = true;
+}
 
-    bool reached_anything = true;
+ItemUseResult MeleeWeapon::use(Actor &source) {
+    if (test_cooldown()) return ItemUseResult();
+
+    bool reached_anything = false;
 
     if (source.actor_class_index == Game::player_class_index) {
         for (auto &enemy : Game::get().dungeon.get_current_level()->enemies) {
-            reached_anything &= try_to_attack(source, enemy);
+            reached_anything = try_to_attack(source, enemy) || reached_anything;
         }
     } else {
-        reached_anything &= try_to_attack(source, Game::get().dungeon.player);
+        reached_anything = try_to_attack(source, Game::get().dungeon.player) || reached_anything;
     }
 
-    if (!reached_anything) {
-        since_last_use.restart();
-    }
-
+    if (reached_anything) ensure_cooldown();
     return ItemUseResult();
 }
 

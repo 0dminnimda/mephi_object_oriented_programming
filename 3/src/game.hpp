@@ -232,7 +232,8 @@ public:
           push_back_force_multiplier(push_back_force_multiplier) {}
 
     ItemUseResult use(Actor &source) override;
-    bool cooldown();
+    bool test_cooldown();
+    void ensure_cooldown();
     bool try_to_attack(Actor &source, Actor &target) override;
 };
 
