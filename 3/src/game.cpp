@@ -1025,7 +1025,7 @@ bool Equipment::equip_weapon(std::shared_ptr<Item> item) {
 }
 
 void Equipment::deepcopy_to(Equipment &other) const {
-    for (size_t i = 0; i < size; ++i) {
+    for (size_t i = 0; i < items.size(); ++i) {
         if (items[i])
             other.items[i] = items[i]->deepcopy_item();
         else

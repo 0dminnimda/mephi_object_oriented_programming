@@ -7,6 +7,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <array>
 #include <memory>
 #include <optional>
 #include <random>
@@ -18,6 +19,7 @@
 
 #include "deepcopy.hpp"
 #include "matrix.hpp"
+
 
 #ifdef SFML_SYSTEM_IOS
 const std::string path_to_resources = "";
@@ -474,11 +476,8 @@ public:
     DeepCopy(Equipment);
 
     // Wearable::Count (wearables) + 1 (weapon)
-    static constexpr size_t size = Wearable::Count + 1;
-
-    using Items = std::shared_ptr<Item>[size];
-    using Wearables = std::shared_ptr<Item>[Wearable::Count];
-
+    using Items = std::array<std::shared_ptr<Item>, Wearable::Count + 1>;
+    using Wearables = std::array<std::shared_ptr<Item>, Wearable::Count>;
     Items items;
 
     std::shared_ptr<Item> &weapon();
