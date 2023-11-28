@@ -920,7 +920,7 @@ void StackOfItemsView::draw(
 
     window.draw(sprite);
 
-    if (stack.size != 0) {
+    if (stack.size > 1) {
         count_text.setString(std::to_string(stack.size));
         center_text_origin(count_text);
         count_text.setPosition(
