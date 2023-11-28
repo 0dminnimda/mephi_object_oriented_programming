@@ -72,10 +72,16 @@ void setup_items(Game &game) {
         "lock pick", "you sneaky pick", "lock_pick_with_fabric.png", 7.0f, Item::Kind::Custom
     ));
     game.item_classes[lock_pick_id].max_stack_size = 16;
-    size_t shield_id = game.add_item_class(ItemClass(
-        "shield", "use protection", "shield_wood_metal.png", 8.0f,
+    size_t wooden_shield_id = game.add_item_class(ItemClass(
+        "wooden shield", "use protection", "shield_wood_metal.png", 8.0f,
         Item::Kind::Wearable
     ));
+    size_t golden_shield_id = game.add_item_class(ItemClass(
+        "golden shield", "magic", "shield_gold.png", 8.0f,
+        Item::Kind::Wearable
+    ));
+    game.item_classes[golden_shield_id].artefact = CharacteristicsModifier();
+    game.item_classes[golden_shield_id].artefact->speed = AddToValue<float>(3.0f);
 
     game.item_templates.resize(game.item_classes.size());
     game.item_templates[hammer_id] =
@@ -83,7 +89,8 @@ void setup_items(Game &game) {
     game.item_templates[sword_id] =
         std::make_unique<Sword>(sword_id, RangeOfLong(3, 5), 2.0f, 10.0f, sf::seconds(0.3f));
     game.item_templates[lock_pick_id] = std::make_unique<LockPick>(lock_pick_id);
-    game.item_templates[shield_id] = std::make_unique<Shield>(shield_id, RangeOfLong(10, 20));
+    game.item_templates[wooden_shield_id] = std::make_unique<Shield>(wooden_shield_id, RangeOfLong(10, 20));
+    game.item_templates[golden_shield_id] = std::make_unique<Shield>(golden_shield_id, RangeOfLong(5, 10));
 
     game.player_template.pick_up_item(game.make_item(hammer_id));
     game.enemy_templates[game.actor_class_index_by_name("goblin")].pick_up_item(

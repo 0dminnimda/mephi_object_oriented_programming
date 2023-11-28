@@ -1003,17 +1003,11 @@ bool Equipment::equip_wearable(std::shared_ptr<Item> item) {
         wearables.insert({as_wearable.kind, item});
         return true;
     }
+    if (!it->second) {
+        it->second = item;
+        return true;
+    }
     return false;
-
-    // Wearable& as_wearable = dynamic_cast<Wearable&>(*item);
-
-    // auto it = wearables.find(as_wearable.kind);
-    // if (it != wearables.end()) {
-    //     throw_out_item(it->second);
-    //     it->second = item;
-    // } else {
-    //     wearables.insert({as_wearable.kind, item});
-    // }
 }
 
 bool Equipment::equip_weapon(std::shared_ptr<Item> item) {
@@ -1022,11 +1016,6 @@ bool Equipment::equip_weapon(std::shared_ptr<Item> item) {
         return true;
     }
     return false;
-
-    // if (weapon) {
-    //     throw_out_item(weapon);
-    // }
-    // weapon = item;
 }
 
 void Equipment::deepcopy_to(Equipment &other) const {
@@ -1161,6 +1150,16 @@ void Player::update(float delta_time) {
         if (equipment.weapon) {
             throw_out_item(equipment.weapon);
             equipment.weapon = nullptr;
+            recalculate_characteristics();
+        }
+    }
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::H)) {
+        for (auto &it : equipment.wearables) {
+            if (!it.second) continue;
+            throw_out_item(it.second);
+            it.second = nullptr;
+            recalculate_characteristics();
         }
     }
 
@@ -1332,6 +1331,12 @@ void Enemy::on_deletion() {
 
 void Enemy::deepcopy_to(Enemy &other) const { Actor::deepcopy_to(other); }
 
+void Item::update_owner_characteristics(Characteristics &characteristics) {
+    auto &artefact = get_class().artefact;
+    if (!artefact) return;
+    artefact->apply(characteristics);
+}
+
 void Item::deepcopy_to(Item &other) const { other.item_class_index = item_class_index; }
 
 ItemClass &Item::get_class() const { return Game::get().item_classes[item_class_index]; }
@@ -1345,7 +1350,6 @@ ItemUseResult Potion::use(Actor &target) {
 
 void Weapon::deepcopy_to(Weapon &other) const {
     Item::deepcopy_to(other);
-    other.artefact = artefact;
     other.enchantment = enchantment;
     other.damage_range = damage_range;
 }
@@ -1435,7 +1439,6 @@ void Wearable::deepcopy_to(Wearable &other) const {
     Item::deepcopy_to(other);
     other.kind = kind;
     other.defence_range = defence_range;
-    other.artefact = artefact;
 }
 
 void Shield::deepcopy_to(Shield &other) const { Wearable::deepcopy_to(other); }

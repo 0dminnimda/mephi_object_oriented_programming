@@ -53,17 +53,17 @@ public:
 
 template <typename T>
 class SetAbsoluteValue {
+public:
     T value;
 
-public:
     T apply(T) { return this->value; }
 };
 
 template <typename T>
 class AddToValue {
+public:
     T value;
 
-public:
     T apply(T value) { return value + this->value; }
 };
 
@@ -112,7 +112,7 @@ public:
     virtual std::shared_ptr<Item> deepcopy_item() const = 0;
 
     virtual ItemUseResult use(Actor &target) { return ItemUseResult(false); }
-    virtual void update_owner_characteristics(Characteristics &characteristics) {}
+    virtual void update_owner_characteristics(Characteristics &characteristics);
     virtual float generate_defence() { return 0; }
 
     ItemClass &get_class() const;
@@ -127,6 +127,7 @@ public:
     sf::Sprite sprite;
     float size;
     Item::Kind kind;
+    std::optional<CharacteristicsModifier> artefact;
     size_t max_stack_size = 1;
 
     ItemClass(
@@ -199,7 +200,6 @@ public:
 
 class Weapon : public Item {
 protected:
-    std::optional<CharacteristicsModifier> artefact;
     std::optional<Enchantment> enchantment;
     RangeOfLong damage_range;
 
@@ -301,7 +301,6 @@ public:
 
     Kind kind;
     RangeOfLong defence_range;
-    std::optional<CharacteristicsModifier> artefact;
 
     Wearable(size_t item_class_index, Kind kind, RangeOfLong defence_range)
         : Item(item_class_index), kind(kind), defence_range(defence_range) {}
