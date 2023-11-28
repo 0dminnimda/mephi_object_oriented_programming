@@ -100,7 +100,7 @@ class Item {
 public:
     DeepCopy(Item);
 
-    enum Kind { Weapon, Wearable, Custom };
+    enum Kind { Weapon, Wearable, Custom, Count };
 
     size_t item_class_index;
 
@@ -297,6 +297,7 @@ public:
         Boots,
         Shield,
         Amulet,
+        Count,
     };
 
     Kind kind;
@@ -411,6 +412,7 @@ public:
         ClosedDor,
         UpLaddor,
         DownLaddor,
+        Count,
     };
 
     std::shared_ptr<Chest> building;
