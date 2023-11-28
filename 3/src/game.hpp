@@ -214,21 +214,32 @@ public:
     virtual bool is_in_range(const Actor &source, sf::Vector2f target) const = 0;
 };
 
-class MeleeWeapon : public Weapon {
+class WeaponWithCooldown : public Weapon {
 public:
-    DeepCopy(MeleeWeapon);
+    DeepCopy(WeaponWithCooldown);
 
     sf::Clock since_last_use;
     sf::Time cooldown_time;
-    float push_back_force_multiplier;
     bool on_cooldown = false;
+
+    WeaponWithCooldown(size_t item_class_index, RangeOfLong damage_range, sf::Time cooldown_time)
+        : Weapon(item_class_index, damage_range), cooldown_time(cooldown_time) {}
+
+    bool test_cooldown();
+    void ensure_cooldown();
+};
+
+class MeleeWeapon : public WeaponWithCooldown {
+public:
+    DeepCopy(MeleeWeapon);
+
+    float push_back_force_multiplier;
 
     MeleeWeapon(
         size_t item_class_index, RangeOfLong damage_range, float push_back_force_multiplier,
         sf::Time cooldown_time
     )
-        : Weapon(item_class_index, damage_range),
-          cooldown_time(cooldown_time),
+        : WeaponWithCooldown(item_class_index, damage_range, cooldown_time),
           push_back_force_multiplier(push_back_force_multiplier) {}
 
     ItemUseResult use(Actor &source) override;
@@ -292,7 +303,8 @@ public:
     RangeOfLong defence_range;
     std::optional<CharacteristicsModifier> artefact;
 
-    Wearable(size_t item_class_index, Kind kind, RangeOfLong defence_range) : Item(item_class_index), kind(kind), defence_range(defence_range) {}
+    Wearable(size_t item_class_index, Kind kind, RangeOfLong defence_range)
+        : Item(item_class_index), kind(kind), defence_range(defence_range) {}
 
     float generate_defence() override;
 };
@@ -301,7 +313,8 @@ class Shield : public Wearable {
 public:
     DeepCopy(Shield);
 
-    Shield(size_t item_class_index, RangeOfLong defence_range) : Wearable(item_class_index, Wearable::Shield, defence_range) {}
+    Shield(size_t item_class_index, RangeOfLong defence_range)
+        : Wearable(item_class_index, Wearable::Shield, defence_range) {}
 
     std::shared_ptr<Item> deepcopy_item() const override;
 };

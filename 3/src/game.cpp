@@ -1352,6 +1352,13 @@ void Weapon::deepcopy_to(Weapon &other) const {
 
 float Weapon::get_damage(Actor &target) { return damage_range.get_random(); }
 
+void WeaponWithCooldown::deepcopy_to(WeaponWithCooldown &other) const {
+    Weapon::deepcopy_to(other);
+    other.since_last_use = since_last_use;
+    other.cooldown_time = cooldown_time;
+    other.on_cooldown = on_cooldown;
+}
+
 bool MeleeWeapon::try_to_attack(Actor &source, Actor &target) {
     if (!is_in_range(source, target.position)) return false;
 
@@ -1396,10 +1403,8 @@ ItemUseResult MeleeWeapon::use(Actor &source) {
 }
 
 void MeleeWeapon::deepcopy_to(MeleeWeapon &other) const {
-    Weapon::deepcopy_to(other);
-    other.since_last_use = since_last_use;
-    other.cooldown_time = cooldown_time;
-    other.on_cooldown = on_cooldown;
+    WeaponWithCooldown::deepcopy_to(other);
+    other.push_back_force_multiplier = push_back_force_multiplier;
 }
 
 bool Hammer::is_in_range(const Actor &source, sf::Vector2f target) const {
