@@ -74,7 +74,7 @@ docs:
 
 .PHONY: uml
 uml:
-	hpp2plantuml -i src/game.hpp -o design.puml
+	hpp2plantuml -i "src/**/*.hpp" -o design.puml
 	$(PYTHON) fix_puml.py design.puml
 
 .PHONY: clean
