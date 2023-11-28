@@ -1063,10 +1063,19 @@ void Actor::deepcopy_to(Actor &other) const {
     other.alive = alive;
 }
 
+float Actor::calculate_defence() {
+    float defence = characteristics.defence;
+    for (auto &it : equipment.wearables) {
+        if (!it.second) continue;
+        defence += it.second->generate_defence();
+    }
+    return defence;
+}
+
 void Actor::take_damage(float amount, Actor &source) {
     if (!alive) return;
     since_last_taken_damage.restart();
-    health -= std::max(0.0f, amount - characteristics.defence);
+    health -= std::max(0.0f, amount - calculate_defence());
     if (health <= 0.0f) {
         health = 0.0f;
         die(source);
@@ -1421,3 +1430,16 @@ void Sword::deepcopy_to(Sword &other) const {
 }
 
 std::shared_ptr<Item> Sword::deepcopy_item() const { return deepcopy_shared(*this); }
+
+float Wearable::generate_defence() { return defence_range.get_random(); }
+
+void Wearable::deepcopy_to(Wearable &other) const {
+    Item::deepcopy_to(other);
+    other.kind = kind;
+    other.defence_range = defence_range;
+    other.artefact = artefact;
+}
+
+void Shield::deepcopy_to(Shield &other) const { Wearable::deepcopy_to(other); }
+
+std::shared_ptr<Item> Shield::deepcopy_item() const { return deepcopy_shared(*this); }

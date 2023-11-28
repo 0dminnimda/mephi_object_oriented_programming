@@ -113,6 +113,7 @@ public:
 
     virtual ItemUseResult use(Actor &target) { return ItemUseResult(false); }
     virtual void update_owner_characteristics(Characteristics &characteristics) {}
+    virtual float generate_defence() { return 0; }
 
     ItemClass &get_class() const;
 };
@@ -275,6 +276,8 @@ public:
 // aka armour or equipment
 class Wearable : public Item {
 public:
+    DeepCopy(Wearable);
+
     enum Kind {
         Helmet,
         ChestPlate,
@@ -285,15 +288,22 @@ public:
     };
 
     Kind kind;
-
-private:
-    std::optional<CharacteristicsModifier> artefact;
     RangeOfLong defence_range;
+    std::optional<CharacteristicsModifier> artefact;
+
+    Wearable(size_t item_class_index, Kind kind, RangeOfLong defence_range) : Item(item_class_index), kind(kind), defence_range(defence_range) {}
+
+    float generate_defence() override;
 };
 
-// class Shield : public Wearable {
-// public:
-// };
+class Shield : public Wearable {
+public:
+    DeepCopy(Shield);
+
+    Shield(size_t item_class_index, RangeOfLong defence_range) : Wearable(item_class_index, Wearable::Shield, defence_range) {}
+
+    std::shared_ptr<Item> deepcopy_item() const override;
+};
 
 class LockPick : public Item {
 public:
@@ -528,7 +538,6 @@ public:
           experience(level) {}
     virtual ~Actor() = default;
 
-    virtual void take_damage(float amount, Actor &source);
     virtual void init(){};
     virtual void update(float delta_time){};
     virtual void die(Actor &reason){};
@@ -536,7 +545,8 @@ public:
     virtual void on_deletion(){};
     virtual void recalculate_characteristics();
 
-    void recalculate_characteristics();
+    void take_damage(float amount, Actor &source);
+    float calculate_defence();
     bool ready_to_be_deleted() const;
     ActorClass &get_class() const;
 };
