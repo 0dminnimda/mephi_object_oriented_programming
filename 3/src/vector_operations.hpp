@@ -1,9 +1,9 @@
 #pragma once
 
-#include "SFML/System/Vector2.hpp"
 #ifndef VECTOR_OPERATIONS_H
 #define VECTOR_OPERATIONS_H
 
+#include <SFML/System/Vector2.hpp>
 #include <SFML/System.hpp>
 #include <algorithm>
 #include <ostream>

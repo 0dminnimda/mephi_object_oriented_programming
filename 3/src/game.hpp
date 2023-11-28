@@ -461,11 +461,8 @@ public:
 
     float size = 1.0f;
     float mass = 1.0f;
-    float dynamic_friction_coefficient = 10.0f;  // mu * gravity
-    float static_friction_threshold = 0.1f;
-    // float damping_coefficient = 0.95f;
+    float friction_coefficient = 2.0f;  // mu * gravity
 
-    float max_acceleration = 10.0f;
     sf::Vector2f position;
     sf::Vector2f velocity;
     sf::Vector2f acceleration;
@@ -481,7 +478,6 @@ public:
     void apply_force(sf::Vector2f forece);
     void apply_impulse(sf::Vector2f impulse);
     void apply_friction();
-    void apply_damping();
     virtual void fixed_update(float delta_time);
 
     void move(sf::Vector2f direction, float speed, float delta_time);
@@ -645,7 +641,7 @@ public:
     sf::Vector2f initial_player_position;
     float tile_size;
     float chest_size_factor;
-    size_t actors_spawned_per_class = 51;
+    size_t actors_spawned_per_class = 1000;
     float rebounce_factor = 0.8f;
 
     void init();
