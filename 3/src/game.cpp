@@ -520,6 +520,12 @@ Tile *DungeonLevel::get_tile(sf::Vector2f position) {
 
 void DungeonLevel::resize_tiles(size_t width, size_t height) { tiles.resize(width, height); }
 
+void DungeonLevel::regenerate() {
+    regenerate_tiles();
+    regenerate_enemies();
+    regenerate_laying_items();
+}
+
 void DungeonLevel::regenerate_tiles() {
     RangeOfLong range_chest_spawn(0, 50);
     size_t max_level = 9;
@@ -549,18 +555,30 @@ void DungeonLevel::regenerate_tiles() {
 void DungeonLevel::regenerate_enemies() {
     enemies.clear();
 
-    RangeOfLong range_x(2, tiles.size() - 2);
-    RangeOfLong range_y(2, tiles.row_size() - 2);
-    RangeOfLong range_wiggle(-10, 10);
+    RangeOfFloat range_x(2, tiles.size() - 2);
+    RangeOfFloat range_y(2, tiles.row_size() - 2);
 
     for (size_t class_index = 1; class_index < Game::get().actor_classes.size(); ++class_index) {
         for (size_t i = 0; i < actors_spawned_per_class; ++i) {
             Enemy &enemy = enemies.emplace_back(Game::get().make_enemy(class_index));
-            enemy.position = sf::Vector2f(
-                range_x.get_random() + (float)range_wiggle.get_random() / 10,
-                range_y.get_random() + (float)range_wiggle.get_random() / 10
-            );
+            enemy.position = sf::Vector2f(range_x.get_random(), range_y.get_random());
             enemy.position *= tile_coords_to_world_coords_factor();
+        }
+    }
+}
+
+void DungeonLevel::regenerate_laying_items() {
+    laying_items.clear();
+
+    RangeOfFloat range_x(2, tiles.size() - 2);
+    RangeOfFloat range_y(2, tiles.row_size() - 2);
+
+    for (size_t class_index = 1; class_index < Game::get().item_classes.size(); ++class_index) {
+        for (size_t i = 0; i < laying_items_spawned_per_class; ++i) {
+            LayingItem &litem =
+                laying_items.emplace_back(LayingItem(Game::get().make_item(class_index)));
+            litem.position = sf::Vector2f(range_x.get_random(), range_y.get_random());
+            litem.position *= tile_coords_to_world_coords_factor();
         }
     }
 }

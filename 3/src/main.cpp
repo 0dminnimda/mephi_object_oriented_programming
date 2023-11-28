@@ -93,16 +93,9 @@ int sub_main() {
     setup_items(game);
 
     DungeonLevel level;
-
-    level.tile_size = 10.0f;
-    level.chest_size_factor = 1.0f;
-
     level.resize_tiles(30, 30);
-    level.regenerate_tiles();
-
+    level.regenerate();
     level.initial_player_position = level.center();
-
-    level.regenerate_enemies();
 
     game.dungeon.add_level(level);
 

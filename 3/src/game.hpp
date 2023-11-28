@@ -639,17 +639,20 @@ public:
     std::vector<LayingItem> laying_items;
     Matrix<Tile> tiles;
     sf::Vector2f initial_player_position;
-    float tile_size;
-    float chest_size_factor;
-    size_t actors_spawned_per_class = 1000;
+    float tile_size = 10.0f;
+    float chest_size_factor = 1.0f;
+    size_t actors_spawned_per_class = 50;
+    size_t laying_items_spawned_per_class = 5;
     float rebounce_factor = 0.8f;
 
     void init();
     float tile_coords_to_world_coords_factor() const;
     sf::Vector2f center() const;
     void resize_tiles(size_t width, size_t height);
+    void regenerate();
     void regenerate_tiles();
     void regenerate_enemies();
+    void regenerate_laying_items();
     std::optional<std::pair<size_t, size_t>> get_tile_coordinates(sf::Vector2f position) const;
     Tile *get_tile(sf::Vector2f position);
     void add_laying_item(std::unique_ptr<LayingItem> item);
