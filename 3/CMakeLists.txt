@@ -9,12 +9,19 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
-if(NOT ANDROID)
+if(WIN32)
     include(FetchContent)
     FetchContent_Declare(SFML
         SOURCE_DIR ../../SFML
     )
     FetchContent_MakeAvailable(SFML)
+else()
+    find_package(SFML 2.6 COMPONENTS window system graphics audio REQUIRED) 
+
+    if(NOT SFML_FOUND)
+        message( SEND_ERROR "You need to have SFML to compile this." )
+    endif()
+    include_directories(${SFML_INCLUDE_DIRS}) 
 endif()
 
 if(NOT WIN32)
