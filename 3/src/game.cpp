@@ -1,5 +1,13 @@
 #include "game.hpp"
 
+#include <stdlib.h>
+
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/System.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Window/Keyboard.hpp>
+#include <algorithm>
+
 #ifdef NDEBUG
 #undef NDEBUG
 #include <cassert>
@@ -8,23 +16,12 @@
 #include <cassert>
 #endif
 
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Rect.hpp>
-#include <SFML/System.hpp>
-#include <SFML/System/Vector2.hpp>
-#include <SFML/Window/Keyboard.hpp>
-#include <algorithm>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
 #include <cmath>
-#include <cstdlib>
-#include <fstream>
 #include <iostream>
 #include <iterator>
 
+#include "SFML/Graphics/Rect.hpp"
 #include "color_operations.hpp"
-#include "game_exports.hpp"
-#include "shared.hpp"
 #include "vector_operations.hpp"
 
 constexpr float PI = 3.14159265358979323846f;
@@ -112,37 +109,6 @@ void Game::stop_playing() {
     dungeon.unload_current_level();
 }
 
-void Game::save(const std::string &filename) {
-    TRY_CATCH_ALL({
-        std::ofstream ofs(filename);
-        boost::archive::text_oarchive oa(ofs);
-        oa << *this;
-    })
-    //  catch (...) {
-    //     std::cout << "Failed to save game" << std::endl;
-    // }
-}
-
-void Game::load(const std::string &filename) {
-    TRY_CATCH_ALL({
-        std::ifstream ifs(filename);
-        boost::archive::text_iarchive ia(ifs);
-        ia >> *this;
-    })
-    // } catch (...) {
-    //     std::cout << "Failed to load game" << std::endl;
-    // }
-}
-
-void Game::handle_save_load() {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::L)) {
-        load("save.txt");
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::O)) {
-        save("save.txt");
-    }
-}
-
 bool is_pressed(const sf::Event &event, sf::Keyboard::Key key) {
     return (event.type == sf::Event::KeyPressed) && (event.key.code == key);
 }
@@ -194,7 +160,6 @@ bool Game::run() {
 
     while (game_view.is_open()) {
         handle_events();
-        handle_save_load();
 
         accumulated_time += time_scale;
         if (accumulated_time >= (1.0f - time_scale_epsilon) && is_playing()) {
@@ -325,7 +290,7 @@ void GameView::draw() {
         return;
     }
 
-    auto &level = Game::get().dungeon.get_current_level();
+    std::optional<DungeonLevel> &level = Game::get().dungeon.get_current_level();
     if (!level) {
         info_message.setString("No levels are loaded");
         center_text_origin(info_message);
@@ -370,7 +335,7 @@ void GameView::draw() {
 }
 
 ItemUseResult LockPick::use(Actor &target) {
-    auto &level = Game::get().dungeon.get_current_level();
+    std::optional<DungeonLevel> &level = Game::get().dungeon.get_current_level();
     if (!level) return ItemUseResult();
 
     auto coords = level->get_tile_coordinates(target.position);
@@ -589,13 +554,13 @@ sf::Vector2f DungeonLevel::center() const {
            2.0f;
 }
 
-boost::optional<std::pair<size_t, size_t>> DungeonLevel::get_tile_coordinates(sf::Vector2f position
+std::optional<std::pair<size_t, size_t>> DungeonLevel::get_tile_coordinates(sf::Vector2f position
 ) const {
     sf::Vector2f world_coords = position / tile_coords_to_world_coords_factor();
     if (position.x < 0 || position.x >= tiles.size() || position.y < 0 ||
         position.y >= tiles.row_size())
-        return boost::none;
-    return std::make_pair<size_t, size_t>(position.x, position.y);
+        return std::nullopt;
+    return std::make_pair(position.x, position.y);
 }
 
 Tile *DungeonLevel::get_tile(sf::Vector2f position) {
@@ -1029,9 +994,9 @@ void Dungeon::on_load_level(DungeonLevel &level) {
     player.position = level.initial_player_position;
 }
 
-void Dungeon::unload_current_level() { current_level = boost::none; }
+void Dungeon::unload_current_level() { current_level = std::nullopt; }
 
-boost::optional<DungeonLevel> &Dungeon::get_current_level() { return current_level; }
+std::optional<DungeonLevel> &Dungeon::get_current_level() { return current_level; }
 
 bool ActorClass::init() {
     if (!texture.loadFromFile(path_to_resources + texture_name)) return false;
@@ -1055,20 +1020,17 @@ LockPickingResult Chest::simulate_picking(const Actor &source) {
 
 void CharacteristicsModifier::apply(Characteristics &value) {
     if (max_health) {
-        value.max_health = boost::apply_visitor(
-            [&](auto &&v) -> auto { return v.apply(value.max_health); }, *max_health
-        );
+        value.max_health =
+            std::visit([&](auto &&v) -> auto { return v.apply(value.max_health); }, *max_health);
     }
 
     if (defence) {
-        value.defence = boost::apply_visitor(
-            [&](auto &&v) -> auto { return v.apply(value.defence); }, *defence
-        );
+        value.defence =
+            std::visit([&](auto &&v) -> auto { return v.apply(value.defence); }, *defence);
     }
 
     if (speed) {
-        value.speed =
-            boost::apply_visitor([&](auto &&v) -> auto { return v.apply(value.speed); }, *speed);
+        value.speed = std::visit([&](auto &&v) -> auto { return v.apply(value.speed); }, *speed);
     }
 }
 
@@ -1422,7 +1384,7 @@ void Enemy::die(Actor &reason) {
 }
 
 void Enemy::on_deletion() {
-    auto &level = Game::get().dungeon.get_current_level();
+    std::optional<DungeonLevel> &level = Game::get().dungeon.get_current_level();
     if (!level) return;
 
     RangeOfLong range_chest_item(0, Game::get().item_templates.size() - 1);

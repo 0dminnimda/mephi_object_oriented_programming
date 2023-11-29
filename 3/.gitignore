@@ -36,6 +36,9 @@ gdextension/
 *.idb
 *.exp
 
+# Other stuff
+*.log
+
 # VSCode
 .vscode/*
 !.vscode/extensions.json
@@ -43,7 +46,3 @@ gdextension/
 # UML
 design.puml
 design_dep.puml
-
-# Other stuff
-*.log
-/save.txt
