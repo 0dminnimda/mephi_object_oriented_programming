@@ -3,8 +3,8 @@ ANAL_DIR = analysis
 TEST_DIR = tests/build
 COV_DIR = tests/coverage
 
-CC = clang
-CXX = clang++
+CC = "$(shell (which clang 2>/dev/null || which gcc 2>/dev/null) | head -1)"
+CXX = "$(shell (which clang++ 2>/dev/null || which g++ 2>/dev/null) | head -1)"
 
 PYTHON = "$(shell (which python3 2>/dev/null || which python 2>/dev/null) | head -1)"
 ANAL_BUILD_PATH = "$(shell which analyze-build)"
@@ -13,7 +13,7 @@ prep_executable = $(eval $(1) := $(shell bash ../prep_exec.sh $(2) --use_dir "re
 
 BUILD_TYPE = Release
 
-call_cmake = cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DCMAKE_C_COMPILER="$(CC)" -DCMAKE_CXX_COMPILER="$(CXX)"
+call_cmake = cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DCMAKE_C_COMPILER=$(CC) -DCMAKE_CXX_COMPILER=$(CXX)
 
 DISPLAY = ":1"
 
