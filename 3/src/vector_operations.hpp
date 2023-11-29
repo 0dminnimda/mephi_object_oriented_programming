@@ -3,8 +3,8 @@
 #ifndef VECTOR_OPERATIONS_H
 #define VECTOR_OPERATIONS_H
 
-#include <SFML/System/Vector2.hpp>
 #include <SFML/System.hpp>
+#include <SFML/System/Vector2.hpp>
 #include <algorithm>
 #include <ostream>
 
@@ -61,7 +61,9 @@ sf::Vector2<T> normalized(const sf::Vector2<T> &a) {
 }
 
 template <typename T>
-sf::Vector2<T> move_towards(const sf::Vector2<T> &current, const sf::Vector2<T> &target, T max_distance_delta) {
+sf::Vector2<T> move_towards(
+    const sf::Vector2<T> &current, const sf::Vector2<T> &target, T max_distance_delta
+) {
     sf::Vector2<T> delta = target - current;
     if (length_squared(delta) > max_distance_delta * max_distance_delta) {
         delta = normalized(delta) * max_distance_delta;
