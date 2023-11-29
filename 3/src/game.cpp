@@ -472,18 +472,17 @@ float calculate_inventory_item_x(float length, size_t count, size_t i) {
 
 void HolderOfItemsView::init() { stack_of_items_view.init(); }
 
-void HolderOfItemsView::draw(const StackOfItems *slots, size_t size, size_t selection) {
+void HolderOfItemsView::draw(const StackOfItems *slots, size_t count, size_t selection) {
     sf::View view = Game::get().game_view.view;
 
     float actual_size = item_size / Game::world_size;
-    size_t count = size;
 
     float x_base = view.getCenter().x + (1 - (float)count) * actual_size / 2;
     float y = view.getCenter().y + view.getSize().y / 2 - actual_size / 2;
 
     for (size_t i = 0; i < count; ++i) {
         sf::Vector2f position(x_base + actual_size * i, y);
-        stack_of_items_view.draw(slots[i], position, item_size, i == selection);
+        stack_of_items_view.draw(slots[i], position, item_size - 3, i == selection);
     }
 }
 
@@ -937,20 +936,15 @@ void StackOfItemsView::init() {
 void StackOfItemsView::draw(
     const StackOfItems &stack, sf::Vector2f position, float size, bool selected
 ) {
-    float resulting_size;
     sf::Sprite sprite;
-
-    if (stack.size == 0) {
-        resulting_size = size;
-    } else {
+    if (stack.size != 0) {
         auto &cls = stack.item->get_class();
         sprite = cls.sprite;
-        resulting_size = cls.size;
     }
 
     sf::Vector2f saved = sprite.getScale();
 
-    sprite.setScale(saved * resulting_size / Game::world_size);
+    sprite.setScale(saved * size / Game::world_size);
     sprite.setPosition(position);
 
     sf::FloatRect bounds = sprite.getGlobalBounds();
@@ -974,7 +968,7 @@ void StackOfItemsView::draw(
             position + sprite.getGlobalBounds().getSize() / 2 -
             count_text.getGlobalBounds().getSize() * 2 / 3
         );
-        count_text.setScale(saved * resulting_size * text_ratio / Game::world_size);
+        count_text.setScale(saved * size * text_ratio / Game::world_size);
         window.draw(count_text);
     }
 }

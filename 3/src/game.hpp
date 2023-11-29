@@ -379,7 +379,6 @@ class StackOfItemsView {
 
 public:
     StackOfItemsView(sf::RenderWindow &window) : window(window) {}
-    ~StackOfItemsView() = default;
 
     void init();
     void draw(const StackOfItems &stack, sf::Vector2f position, float size, bool selected);
@@ -394,10 +393,9 @@ class HolderOfItemsView {
 
 public:
     HolderOfItemsView(sf::RenderWindow &window) : window(window), stack_of_items_view(window) {}
-    ~HolderOfItemsView() = default;
 
     void init();
-    void draw(const StackOfItems *slots, size_t size, size_t selection);
+    void draw(const StackOfItems *slots, size_t count, size_t selection);
 };
 
 class Chest {
@@ -470,7 +468,6 @@ class LevelUpCanvas {
 
 public:
     LevelUpCanvas(sf::RenderWindow &window) : window(window) {}
-    ~LevelUpCanvas() = default;
 
     void on_level_up(Experience &exp);
     void draw();
