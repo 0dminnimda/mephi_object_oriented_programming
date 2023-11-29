@@ -5,6 +5,7 @@
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/System.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <SFML/Window/Keyboard.hpp>
 #include <algorithm>
 
 #ifdef NDEBUG
@@ -221,7 +222,7 @@ bool GameView::init(unsigned int width, unsigned int height) {
     if (!font.loadFromFile(path_to_resources + "tuffy.ttf")) return false;
 
     if (!dungeon_level_view.init()) return false;
-    inventory_view.init();
+    holder_of_items_view.init();
     experience_view.init();
 
     if (!logo_texture.loadFromFile(path_to_resources + logo_name)) return false;
@@ -301,7 +302,17 @@ void GameView::draw() {
     window.setView(view);
 
     dungeon_level_view.draw(*level);
-    inventory_view.draw(Game::get().dungeon.player.inventory);
+    if (Game::get().is_inventory_selected) {
+        Inventory &inventory = Game::get().dungeon.player.inventory;
+        holder_of_items_view.draw(
+            inventory.slots.data(), inventory.slots.size(), inventory.selection
+        );
+    } else {
+        Equipment &equipment = Game::get().dungeon.player.equipment;
+        holder_of_items_view.draw(
+            equipment.slots.data(), equipment.slots.size(), equipment.selection
+        );
+    }
     experience_view.draw(Game::get().dungeon.player.experience);
 
     if (!Game::get().dungeon.player.alive) {
@@ -459,22 +470,20 @@ float calculate_inventory_item_x(float length, size_t count, size_t i) {
     return (0.5f + (float)i) * length / (float)count;
 }
 
-void InventoryView::init() { stack_of_items_view.init(); }
+void HolderOfItemsView::init() { stack_of_items_view.init(); }
 
-void InventoryView::draw(const Inventory &inventory) {
+void HolderOfItemsView::draw(const StackOfItems *slots, size_t size, size_t selection) {
     sf::View view = Game::get().game_view.view;
 
-    float actual_size = inventory_item_size / Game::world_size;
-    size_t count = inventory.slots.size();
+    float actual_size = item_size / Game::world_size;
+    size_t count = size;
 
     float x_base = view.getCenter().x + (1 - (float)count) * actual_size / 2;
     float y = view.getCenter().y + view.getSize().y / 2 - actual_size / 2;
 
     for (size_t i = 0; i < count; ++i) {
         sf::Vector2f position(x_base + actual_size * i, y);
-        stack_of_items_view.draw(
-            inventory.slots[i], position, inventory_item_size, i == inventory.selection
-        );
+        stack_of_items_view.draw(slots[i], position, item_size, i == selection);
     }
 }
 
@@ -1033,14 +1042,14 @@ float Enchantment::apply(float value, const Actor &target) const {
     return value;
 }
 
-StackOfItems &Equipment::weapon() { return items[Wearable::Count]; }
+StackOfItems &Equipment::weapon() { return slots[Wearable::Count]; }
 
-const StackOfItems &Equipment::weapon() const { return items[Wearable::Count]; }
+const StackOfItems &Equipment::weapon() const { return slots[Wearable::Count]; }
 
-Equipment::Wearables &Equipment::wearables() { return *reinterpret_cast<Wearables *>(&items); }
+Equipment::Wearables &Equipment::wearables() { return *reinterpret_cast<Wearables *>(&slots); }
 
 const Equipment::Wearables &Equipment::wearables() const {
-    return *reinterpret_cast<const Wearables *>(&items);
+    return *reinterpret_cast<const Wearables *>(&slots);
 }
 
 bool Equipment::equip_wearable(std::shared_ptr<Item> item) {
@@ -1063,9 +1072,10 @@ bool Equipment::equip_weapon(std::shared_ptr<Item> item) {
 }
 
 void Equipment::deepcopy_to(Equipment &other) const {
-    for (size_t i = 0; i < items.size(); ++i) {
-        items[i].deepcopy_to(other.items[i]);
+    for (size_t i = 0; i < slots.size(); ++i) {
+        slots[i].deepcopy_to(other.slots[i]);
     }
+    other.selection = selection;
 }
 
 bool Actor::ready_to_be_deleted() const {
@@ -1075,7 +1085,7 @@ bool Actor::ready_to_be_deleted() const {
 
 void Actor::recalculate_characteristics() {
     characteristics = base_characteristics;
-    for (auto &it : equipment.items) {
+    for (auto &it : equipment.slots) {
         if (!it) continue;
         it.item->update_owner_characteristics(characteristics);
     }
@@ -1203,7 +1213,7 @@ void Player::update(float delta_time) {
     }
 
     handle_equipment_use();
-    handle_inventory_selection();
+    handle_slot_selection();
     handle_inventory_use();
     handle_picking_up_items();
 }
@@ -1242,7 +1252,11 @@ void Player::handle_equipment_use() {
     }
 }
 
-void Player::handle_inventory_selection() {
+void Player::handle_slot_selection() {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) {
+        Game::get().is_inventory_selected = !Game::get().is_inventory_selected;
+    }
+
     std::vector<sf::Keyboard::Key> keys = {
         sf::Keyboard::Num1, sf::Keyboard::Num2, sf::Keyboard::Num3, sf::Keyboard::Num4,
         sf::Keyboard::Num5, sf::Keyboard::Num6, sf::Keyboard::Num7, sf::Keyboard::Num8,
@@ -1250,7 +1264,11 @@ void Player::handle_inventory_selection() {
     };
     for (size_t i = 0; i < keys.size(); ++i) {
         if (sf::Keyboard::isKeyPressed(keys[i])) {
-            inventory.selection = i;
+            if (Game::get().is_inventory_selected) {
+                inventory.selection = i;
+            } else {
+                equipment.selection = i;
+            }
         }
     }
 }

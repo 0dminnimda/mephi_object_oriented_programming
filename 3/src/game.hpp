@@ -385,19 +385,19 @@ public:
     void draw(const StackOfItems &stack, sf::Vector2f position, float size, bool selected);
 };
 
-class InventoryView {
+class HolderOfItemsView {
     sf::RenderWindow &window;
 
     StackOfItemsView stack_of_items_view;
 
-    float inventory_item_size = 10.0f;
+    float item_size = 10.0f;
 
 public:
-    InventoryView(sf::RenderWindow &window) : window(window), stack_of_items_view(window) {}
-    ~InventoryView() = default;
+    HolderOfItemsView(sf::RenderWindow &window) : window(window), stack_of_items_view(window) {}
+    ~HolderOfItemsView() = default;
 
     void init();
-    void draw(const Inventory &inventory);
+    void draw(const StackOfItems *slots, size_t size, size_t selection);
 };
 
 class Chest {
@@ -481,11 +481,12 @@ public:
     DeepCopy(Equipment);
 
     // Wearable::Count (wearables) + 1 (weapon)
-    using Items = std::array<StackOfItems, Wearable::Count + 1>;
+    using Slots = std::array<StackOfItems, Wearable::Count + 1>;
     using Wearables = std::array<StackOfItems, Wearable::Count>;
-    Items items;
+    Slots slots;
+    size_t selection = 0;
 
-    Equipment() : items({0}) {}
+    Equipment() : slots({0}) {}
 
     StackOfItems &weapon();
     const StackOfItems &weapon() const;
@@ -637,7 +638,7 @@ public:
     void handle_movement(float delta_time);
     void handle_equipment_use();
     void handle_inventory_use();
-    void handle_inventory_selection();
+    void handle_slot_selection();
     void die(Actor &reason) override;
     void handle_picking_up_items();
     bool pick_up_item(std::shared_ptr<Item> item) override;
@@ -766,7 +767,7 @@ public:
 #endif  // DEBUG
 
     DungeonLevelView dungeon_level_view;
-    InventoryView inventory_view;
+    HolderOfItemsView holder_of_items_view;
     LevelUpCanvas level_up_canvas;
     ExperienceView experience_view;
 
@@ -781,7 +782,7 @@ public:
     GameView()
         : window(),
           dungeon_level_view(window),
-          inventory_view(window),
+          holder_of_items_view(window),
           level_up_canvas(window),
           experience_view(window) {}
     ~GameView() = default;
@@ -818,6 +819,8 @@ public:
 
     static constexpr float fixed_delta_time = 1.0f / 60.0f;
     float fixed_delta_time_leftover = 0.0f;
+
+    bool is_inventory_selected = true;
 
     Game() = default;
     ~Game() = default;
