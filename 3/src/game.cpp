@@ -1,13 +1,5 @@
 #include "game.hpp"
 
-#include <stdlib.h>
-
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/System.hpp>
-#include <SFML/System/Vector2.hpp>
-#include <SFML/Window/Keyboard.hpp>
-#include <algorithm>
-
 #ifdef NDEBUG
 #undef NDEBUG
 #include <cassert>
@@ -16,11 +8,20 @@
 #include <cassert>
 #endif
 
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/Rect.hpp>
+#include <SFML/System.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Window/Keyboard.hpp>
+#include <algorithm>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #include <cmath>
+#include <cstdlib>
+#include <fstream>
 #include <iostream>
 #include <iterator>
 
-#include "SFML/Graphics/Rect.hpp"
 #include "color_operations.hpp"
 #include "vector_operations.hpp"
 
