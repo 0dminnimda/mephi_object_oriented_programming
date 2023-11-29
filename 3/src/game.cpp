@@ -1065,6 +1065,15 @@ bool Equipment::equip_weapon(std::shared_ptr<Item> item) {
     return false;
 }
 
+StackOfItems *Equipment::get_slot(size_t index) {
+    if (0 <= index && index <= slots.size()) {
+        if (slots[index]) {
+            return &slots[index];
+        }
+    }
+    return nullptr;
+}
+
 void Equipment::deepcopy_to(Equipment &other) const {
     for (size_t i = 0; i < slots.size(); ++i) {
         slots[i].deepcopy_to(other.slots[i]);
@@ -1189,27 +1198,11 @@ void Player::fixed_update(float delta_time) {
 void Player::update(float delta_time) {
     if (!alive) return;
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::G)) {
-        if (equipment.weapon()) {
-            throw_out_item(equipment.weapon().item);
-            equipment.weapon().remove_items(1);
-            recalculate_characteristics();
-        }
-    }
-
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::H)) {
-        for (auto &it : equipment.wearables()) {
-            if (!it) continue;
-            throw_out_item(it.item);
-            it.remove_items(1);
-            recalculate_characteristics();
-        }
-    }
-
     handle_equipment_use();
     handle_slot_selection();
     handle_inventory_use();
     handle_picking_up_items();
+    handle_throwing_items();
 }
 
 void Player::handle_movement(float delta_time) {
@@ -1263,6 +1256,22 @@ void Player::handle_slot_selection() {
             } else {
                 equipment.selection = i;
             }
+        }
+    }
+}
+
+void Player::handle_throwing_items() {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::T)) {
+        StackOfItems *slot;
+        if (Game::get().is_inventory_selected) {
+            slot = inventory.get_slot(inventory.selection);
+        } else {
+            slot = equipment.get_slot(equipment.selection);
+        }
+        if (slot && *slot) {
+            throw_out_item(slot->item);
+            slot->remove_items(1);
+            recalculate_characteristics();
         }
     }
 }

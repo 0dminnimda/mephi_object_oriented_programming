@@ -492,6 +492,7 @@ public:
 
     bool equip_wearable(std::shared_ptr<Item> item);
     bool equip_weapon(std::shared_ptr<Item> weapon);
+    StackOfItems *get_slot(size_t index);
 };
 
 class RigidBody {
@@ -636,8 +637,9 @@ public:
     void handle_equipment_use();
     void handle_inventory_use();
     void handle_slot_selection();
-    void die(Actor &reason) override;
     void handle_picking_up_items();
+    void handle_throwing_items();
+    void die(Actor &reason) override;
     bool pick_up_item(std::shared_ptr<Item> item) override;
     void throw_out_item(std::shared_ptr<Item> item) const;
     void recalculate_characteristics() override;
