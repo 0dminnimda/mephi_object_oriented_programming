@@ -17,6 +17,13 @@ if(NOT ANDROID)
     FetchContent_MakeAvailable(SFML)
 endif()
 
+if(NOT WIN32)
+    # add_compile_options(-fsanitize=address,undefined)
+    # add_link_options(-fsanitize=address,undefined)
+    add_compile_options(-g)
+    add_link_options(-g)
+endif()
+
 if (CMAKE_BUILD_TYPE EQUAL "DEBUG")
     add_compile_definitions(DEBUG)
 endif()
