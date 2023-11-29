@@ -20,7 +20,6 @@
 #include "deepcopy.hpp"
 #include "matrix.hpp"
 
-
 #ifdef SFML_SYSTEM_IOS
 const std::string path_to_resources = "";
 #else
@@ -340,15 +339,21 @@ public:
 
 class StackOfItems {
 public:
-    std::shared_ptr<Item> item;
+    DeepCopy(StackOfItems);
+
+    std::shared_ptr<Item> item = nullptr;
     size_t size = 0;
 
+    operator bool() const;
     bool add_item(std::shared_ptr<Item> item);
-    void remove_item(size_t amount = 1);
+    void remove_items(size_t amount);
+    void use(Actor &target);
 };
 
 class Inventory {
 public:
+    DeepCopy(Inventory);
+
     size_t max_size;
     std::vector<StackOfItems> slots;
     size_t selection = 0;
@@ -359,7 +364,7 @@ public:
     // void recalculate_selection();
     bool add_item(std::shared_ptr<Item> item);
     void use_item(size_t index, Actor &target);
-    std::shared_ptr<Item> get_item(size_t index);
+    StackOfItems *get_slot(size_t index);
 };
 
 class StackOfItemsView {
@@ -433,7 +438,7 @@ public:
     size_t value;
 
     Experience() = default;
-    Experience(size_t level) : level(level) {}
+    Experience(size_t level) : level(level), value(0) {}
 
     void gain(size_t amount);
     static size_t needs_exp_for_level(size_t level);
@@ -476,12 +481,14 @@ public:
     DeepCopy(Equipment);
 
     // Wearable::Count (wearables) + 1 (weapon)
-    using Items = std::array<std::shared_ptr<Item>, Wearable::Count + 1>;
-    using Wearables = std::array<std::shared_ptr<Item>, Wearable::Count>;
+    using Items = std::array<StackOfItems, Wearable::Count + 1>;
+    using Wearables = std::array<StackOfItems, Wearable::Count>;
     Items items;
 
-    std::shared_ptr<Item> &weapon();
-    const std::shared_ptr<Item> &weapon() const;
+    Equipment() : items({0}) {}
+
+    StackOfItems &weapon();
+    const StackOfItems &weapon() const;
     Wearables &wearables();
     const Wearables &wearables() const;
 

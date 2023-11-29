@@ -349,6 +349,12 @@ void LockPick::deepcopy_to(LockPick &other) const { Item::deepcopy_to(other); }
 
 std::shared_ptr<Item> LockPick::deepcopy_item() const { return deepcopy_shared(*this); }
 
+StackOfItems::operator bool() const {
+    if (size)
+        assert((item != nullptr) && "Welp, ur fuct. StackOfItems has nullptr item when size > 0");
+    return size;
+}
+
 bool StackOfItems::add_item(std::shared_ptr<Item> new_item) {
     if (size == 0) {
         item = new_item;
@@ -363,7 +369,7 @@ bool StackOfItems::add_item(std::shared_ptr<Item> new_item) {
     return true;
 }
 
-void StackOfItems::remove_item(size_t amount) {
+void StackOfItems::remove_items(size_t amount) {
     amount = std::min(amount, size);
     size -= amount;
     if (size == 0) {
@@ -371,34 +377,49 @@ void StackOfItems::remove_item(size_t amount) {
     }
 }
 
-std::shared_ptr<Item> Inventory::get_item(size_t index) {
+void StackOfItems::use(Actor &target) {
+    auto result = item->use(target);
+    if (result.was_broken) {
+        remove_items(1);
+    }
+}
+
+void StackOfItems::deepcopy_to(StackOfItems &other) const {
+    if (item) {
+        assert(size != 0 && "Welp, ur fuct. StackOfItems is not nullptr item when size = 0");
+        other.item = item->deepcopy_item();
+        assert(other.item && "Welp, ur fuct. deepcopy_item produces nullptr");
+    } else {
+        assert(size == 0 && "Welp, ur fuct. StackOfItems has nullptr item when size != 0");
+        other.item = nullptr;
+    }
+    other.size = size;
+}
+
+StackOfItems *Inventory::get_slot(size_t index) {
     if (0 <= index && index <= slots.size()) {
-        if (slots[index].size != 0) {
-            return slots[index].item;
+        if (slots[index]) {
+            return &slots[index];
         }
     }
     return nullptr;
 }
 
 void Inventory::use_item(size_t index, Actor &target) {
-    std::shared_ptr<Item> item = get_item(index);
-    if (!item) return;
-
-    auto result = item->use(target);
-    if (result.was_broken) {
-        slots[index].remove_item(1);
-    }
+    StackOfItems *slot = get_slot(index);
+    if (!slot) return;
+    slot->use(target);
 }
 
 // void Inventory::recalculate_selection() {
 //     if (0 <= selection && selection <= slots.size()) {
-//         if (slots[selection].size != 0) {
+//         if (slots[selection]) {
 //             return;
 //         }
 //     }
 
 //     for (size_t i = 0; i < slots.size(); ++i) {
-//         if (slots[i].size != 0) {
+//         if (slots[i]) {
 //             selection = i;
 //             return;
 //         }
@@ -410,19 +431,28 @@ void Inventory::use_item(size_t index, Actor &target) {
 bool Inventory::add_item(std::shared_ptr<Item> item) {
     // first check non empty slots to see if we can stack the item
     for (auto &slot : slots) {
-        if (slot.size && slot.add_item(item)) {
+        if (slot && slot.add_item(item)) {
             return true;
         }
     }
 
     // and only if we cannot stack the item, we should use one more slot
     for (auto &slot : slots) {
-        if (!slot.size && slot.add_item(item)) {
+        if (!slot && slot.add_item(item)) {
             return true;
         }
     }
 
     return false;
+}
+
+void Inventory::deepcopy_to(Inventory &other) const {
+    other.max_size = max_size;
+    other.slots.resize(slots.size());
+    for (size_t i = 0; i < slots.size(); ++i) {
+        slots[i].deepcopy_to(other.slots[i]);
+    }
+    other.selection = selection;
 }
 
 float calculate_inventory_item_x(float length, size_t count, size_t i) {
@@ -854,7 +884,7 @@ void ActorsView::draw(const Actor &actor) {
     window.draw(sprite);
     sprite.setScale(saved);
 
-    if (actor.equipment.weapon()) items_view.draw(*actor.equipment.weapon(), actor.position);
+    if (actor.equipment.weapon()) items_view.draw(*(actor.equipment.weapon().item), actor.position);
 }
 
 void ActorsView::draw_ui(const Actor &actor) {
@@ -1003,9 +1033,9 @@ float Enchantment::apply(float value, const Actor &target) const {
     return value;
 }
 
-std::shared_ptr<Item> &Equipment::weapon() { return items[Wearable::Count]; }
+StackOfItems &Equipment::weapon() { return items[Wearable::Count]; }
 
-const std::shared_ptr<Item> &Equipment::weapon() const { return items[Wearable::Count]; }
+const StackOfItems &Equipment::weapon() const { return items[Wearable::Count]; }
 
 Equipment::Wearables &Equipment::wearables() { return *reinterpret_cast<Wearables *>(&items); }
 
@@ -1018,7 +1048,7 @@ bool Equipment::equip_wearable(std::shared_ptr<Item> item) {
 
     auto &it = wearables()[as_wearable.kind];
     if (!it) {
-        it = item;
+        it.add_item(item);
         return true;
     }
     return false;
@@ -1026,7 +1056,7 @@ bool Equipment::equip_wearable(std::shared_ptr<Item> item) {
 
 bool Equipment::equip_weapon(std::shared_ptr<Item> item) {
     if (!weapon()) {
-        weapon() = item;
+        weapon().add_item(item);
         return true;
     }
     return false;
@@ -1034,10 +1064,7 @@ bool Equipment::equip_weapon(std::shared_ptr<Item> item) {
 
 void Equipment::deepcopy_to(Equipment &other) const {
     for (size_t i = 0; i < items.size(); ++i) {
-        if (items[i])
-            other.items[i] = items[i]->deepcopy_item();
-        else
-            other.items[i] = nullptr;
+        items[i].deepcopy_to(other.items[i]);
     }
 }
 
@@ -1050,7 +1077,7 @@ void Actor::recalculate_characteristics() {
     characteristics = base_characteristics;
     for (auto &it : equipment.items) {
         if (!it) continue;
-        it->update_owner_characteristics(characteristics);
+        it.item->update_owner_characteristics(characteristics);
     }
 }
 
@@ -1059,6 +1086,7 @@ void Actor::deepcopy_to(Actor &other) const {
     other.actor_class_index = actor_class_index;
     other.health = health;
     equipment.deepcopy_to(other.equipment);
+    other.experience = experience;
     other.characteristics = characteristics;
     other.base_characteristics = base_characteristics;
     other.alive = alive;
@@ -1068,7 +1096,7 @@ float Actor::calculate_defence() {
     float defence = characteristics.defence;
     for (auto &it : equipment.wearables()) {
         if (!it) continue;
-        defence += it->generate_defence();
+        defence += it.item->generate_defence();
     }
     return defence;
 }
@@ -1143,8 +1171,7 @@ void Player::init() {}
 
 void Player::deepcopy_to(Player &other) const {
     Actor::deepcopy_to(other);
-    other.inventory = inventory;
-    other.experience = experience;
+    inventory.deepcopy_to(other.inventory);
 }
 
 void Player::fixed_update(float delta_time) {
@@ -1160,8 +1187,8 @@ void Player::update(float delta_time) {
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::G)) {
         if (equipment.weapon()) {
-            throw_out_item(equipment.weapon());
-            equipment.weapon() = nullptr;
+            throw_out_item(equipment.weapon().item);
+            equipment.weapon().remove_items(1);
             recalculate_characteristics();
         }
     }
@@ -1169,8 +1196,8 @@ void Player::update(float delta_time) {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::H)) {
         for (auto &it : equipment.wearables()) {
             if (!it) continue;
-            throw_out_item(it);
-            it = nullptr;
+            throw_out_item(it.item);
+            it.remove_items(1);
             recalculate_characteristics();
         }
     }
@@ -1210,9 +1237,9 @@ void Player::handle_movement(float delta_time) {
 void Player::handle_equipment_use() {
     if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) return;
 
-    if (!equipment.weapon()) return;
-
-    equipment.weapon()->use(*this);
+    if (equipment.weapon()) {
+        equipment.weapon().use(*this);
+    }
 }
 
 void Player::handle_inventory_selection() {
@@ -1319,7 +1346,7 @@ void Enemy::handle_movement(float delta_time) {
 
 void Enemy::handle_equipment_use() {
     if (equipment.weapon()) {
-        equipment.weapon()->use(*this);
+        equipment.weapon().use(*this);
     }
 }
 
