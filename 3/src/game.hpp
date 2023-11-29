@@ -820,6 +820,8 @@ public:
     float fixed_delta_time_leftover = 0.0f;
 
     bool is_inventory_selected = true;
+    float time_scale = 0.05f;
+    float time_scale_epsilon = 1e-6;
 
     Game() = default;
     ~Game() = default;

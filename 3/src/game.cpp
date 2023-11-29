@@ -156,11 +156,16 @@ void Game::handle_fixed_update(float delta_time) {
 }
 
 bool Game::run() {
+    float accumulated_time = 0.0f;
+
     while (game_view.is_open()) {
         handle_events();
 
-        float delta_time = clock.restart().asSeconds();
-        if (is_playing()) {
+        accumulated_time += time_scale;
+        if (accumulated_time >= (1.0f - time_scale_epsilon) && is_playing()) {
+            accumulated_time = 0.0f;
+            float delta_time = clock.restart().asSeconds();
+            delta_time *= time_scale;
             update(delta_time);
             handle_fixed_update(delta_time);
         }
