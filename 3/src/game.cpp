@@ -6,7 +6,15 @@
 #include <SFML/System.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <algorithm>
+
+#ifdef NDEBUG
+#undef NDEBUG
 #include <cassert>
+#define NDEBUG
+#else
+#include <cassert>
+#endif
+
 #include <cmath>
 #include <iostream>
 #include <iterator>
