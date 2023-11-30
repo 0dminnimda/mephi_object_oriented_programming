@@ -1092,7 +1092,6 @@ private:
 };
 
 BOOST_CLASS_EXPORT_KEY(DungeonLevel);
-BOOST_CLASS_EXPORT_KEY(Row<Tile>);
 BOOST_CLASS_EXPORT_KEY(Matrix<Tile>);
 
 class DungeonLevelView {

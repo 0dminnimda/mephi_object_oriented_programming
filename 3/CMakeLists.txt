@@ -12,7 +12,7 @@ option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 # set(Boost_USE_STATIC_LIBS ON)
 # set(Boost_USE_MULTITHREADED OFF)
 # set(Boost_USE_STATIC_RUNTIME ON)
-find_package(Boost 1.45.0 COMPONENTS serialization) 
+find_package(Boost 1.45.0 COMPONENTS serialization)
 
 if(NOT Boost_FOUND)
     message( SEND_ERROR "You need to have boost to compile this." )

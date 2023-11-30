@@ -597,15 +597,15 @@ float DungeonLevel::tile_coords_to_world_coords_factor() const {
 }
 
 sf::Vector2f DungeonLevel::center() const {
-    return sf::Vector2f(tiles.size(), tiles.row_size()) * tile_coords_to_world_coords_factor() /
+    return sf::Vector2f(tiles.row_count(), tiles.column_count()) * tile_coords_to_world_coords_factor() /
            2.0f;
 }
 
 boost::optional<std::pair<size_t, size_t>> DungeonLevel::get_tile_coordinates(sf::Vector2f position
 ) const {
     sf::Vector2f world_coords = position / tile_coords_to_world_coords_factor();
-    if (position.x < 0 || position.x >= tiles.size() || position.y < 0 ||
-        position.y >= tiles.row_size())
+    if (position.x < 0 || position.x >= tiles.row_count() || position.y < 0 ||
+        position.y >= tiles.column_count())
         return boost::none;
     return std::make_pair<size_t, size_t>(position.x, position.y);
 }
@@ -630,9 +630,9 @@ void DungeonLevel::regenerate_tiles() {
     RangeOfLong range_chest_level(0, (max_level + 1) * (max_level + 1) - 1);
     RangeOfLong range_chest_item(0, Game::get().item_templates.size() - 1);
 
-    for (size_t i = 0; i < tiles.size(); ++i) {
-        for (size_t j = 0; j < tiles.row_size(); ++j) {
-            if (i == 0 || i == tiles.size() - 1 || j == 0 || j == tiles.row_size() - 1)
+    for (size_t i = 0; i < tiles.row_count(); ++i) {
+        for (size_t j = 0; j < tiles.column_count(); ++j) {
+            if (i == 0 || i == tiles.row_count() - 1 || j == 0 || j == tiles.column_count() - 1)
                 tiles[i][j].kind = Tile::Barrier;
             else
                 tiles[i][j].kind = Tile::Flor;
@@ -653,8 +653,8 @@ void DungeonLevel::regenerate_tiles() {
 void DungeonLevel::regenerate_enemies() {
     enemies.clear();
 
-    RangeOfFloat range_x(2, tiles.size() - 2);
-    RangeOfFloat range_y(2, tiles.row_size() - 2);
+    RangeOfFloat range_x(2, tiles.row_count() - 2);
+    RangeOfFloat range_y(2, tiles.column_count() - 2);
 
     for (size_t class_index = 1; class_index < Game::get().actor_classes.size(); ++class_index) {
         for (size_t i = 0; i < actors_spawned_per_class; ++i) {
@@ -668,8 +668,8 @@ void DungeonLevel::regenerate_enemies() {
 void DungeonLevel::regenerate_laying_items() {
     laying_items.clear();
 
-    RangeOfFloat range_x(2, tiles.size() - 2);
-    RangeOfFloat range_y(2, tiles.row_size() - 2);
+    RangeOfFloat range_x(2, tiles.row_count() - 2);
+    RangeOfFloat range_y(2, tiles.column_count() - 2);
 
     for (size_t class_index = 1; class_index < Game::get().item_classes.size(); ++class_index) {
         for (size_t i = 0; i < laying_items_spawned_per_class; ++i) {
@@ -805,8 +805,8 @@ void DungeonLevel::handle_rigid_body_level_collitions(std::vector<RigidBody *> &
         aabbs[i] = bodies[i]->get_axes_aligned_bounding_box();
     }
 
-    float right_wall = tiles.size() * tile_coords_to_world_coords_factor();
-    float down_wall = tiles.row_size() * tile_coords_to_world_coords_factor();
+    float right_wall = tiles.row_count() * tile_coords_to_world_coords_factor();
+    float down_wall = tiles.column_count() * tile_coords_to_world_coords_factor();
 
     for (size_t i = 0; i < bodies.size(); ++i) {
         if (aabbs[i].left < 0) {
@@ -858,9 +858,9 @@ bool DungeonLevelView::init() {
 }
 
 void DungeonLevelView::draw(const DungeonLevel &level) {
-    for (size_t i = 0; i < level.tiles.size(); ++i) {
+    for (size_t i = 0; i < level.tiles.row_count(); ++i) {
         auto &row = level.tiles[i];
-        for (size_t j = 0; j < row.size(); ++j) {
+        for (size_t j = 0; j < level.tiles.column_count(); ++j) {
             draw_tile(
                 row[j], sf::Vector2f(i, j), level.tile_coords_to_world_coords_factor(),
                 level.chest_size_factor
