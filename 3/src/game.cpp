@@ -1,5 +1,12 @@
 #include "game.hpp"
 
+#if 1
+#include <stdlib.h>
+#else
+// manna see magic on wsl?)
+#include <cstdlib>
+#endif
+
 #ifdef NDEBUG
 #undef NDEBUG
 #include <cassert>
@@ -17,7 +24,6 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <cmath>
-#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <iterator>
