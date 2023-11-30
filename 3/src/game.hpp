@@ -1107,6 +1107,12 @@ private:
     sf::Texture closed_dor_tile_texture;
     sf::Sprite closed_dor_tile_sprite;
 
+    sf::Texture up_laddor_tile_texture;
+    sf::Sprite up_laddor_tile_sprite;
+
+    sf::Texture down_laddor_tile_texture;
+    sf::Sprite down_laddor_tile_sprite;
+
     sf::Texture barrier_tile_texture;
     sf::Sprite barrier_tile_sprite;
 

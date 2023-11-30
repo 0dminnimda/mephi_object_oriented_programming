@@ -88,6 +88,8 @@ static const char *const flor_tile_name = "dungeon_floor_4x4_yellow.png";
 static const char *const open_dor_tile_name = "dungeon_open_door.jpeg";
 static const char *const closed_dor_tile_name = "dungeon_closed_door.jpeg";
 static const char *const barrier_tile_name = "black.jpeg";
+static const char *const up_laddor_tile_name = "up_ladder.jpeg";
+static const char *const down_laddor_tile_name = "down_ladder.jpeg";
 static const char *const chest_name = "chest.png";
 
 bool Game::init(unsigned int width, unsigned int height) {
@@ -646,8 +648,34 @@ void DungeonLevel::regenerate_tiles() {
         }
     }
 
-    tiles[4][4].kind = Tile::OpenDor;
-    tiles[4][5].kind = Tile::ClosedDor;
+    RangeOfLong range_x(0, tiles.row_count() - 1);
+    RangeOfLong range_y(0, tiles.column_count() - 1);
+
+    long x1 = range_x.get_random();
+    long y1 = range_y.get_random();
+    tiles[x1][y1].kind = Tile::UpLaddor;
+    initial_player_position = sf::Vector2f(x1, y1) * tile_coords_to_world_coords_factor();
+
+    long x2 = range_x.get_random();
+    long y2 = range_y.get_random();
+    if (x1 == x2) {
+        if (x2 == 0) {
+            x2 += 1;
+        } else {
+            x2 -= 1;
+        }
+    }
+    if (y1 == y2) {
+        if (y2 == 0) {
+            y2 += 1;
+        } else {
+            y2 -= 1;
+        }
+    }
+    tiles[x2][y2].kind = Tile::DownLaddor;
+
+    // tiles[4][4].kind = Tile::OpenDor;
+    // tiles[4][5].kind = Tile::ClosedDor;
 }
 
 void DungeonLevel::regenerate_enemies() {
@@ -839,6 +867,8 @@ bool DungeonLevelView::init() {
         return false;
     if (!barrier_tile_texture.loadFromFile(path_to_resources + barrier_tile_name)) return false;
     if (!chest_texture.loadFromFile(path_to_resources + chest_name)) return false;
+    if (!up_laddor_tile_texture.loadFromFile(path_to_resources + up_laddor_tile_name)) return false;
+    if (!down_laddor_tile_texture.loadFromFile(path_to_resources + down_laddor_tile_name)) return false;
 
     setup_sprite(flor_tile_texture, flor_tile_sprite);
     flor_tile_sprite.setOrigin({0, 0});
@@ -848,6 +878,12 @@ bool DungeonLevelView::init() {
 
     setup_sprite(closed_dor_tile_texture, closed_dor_tile_sprite);
     closed_dor_tile_sprite.setOrigin({0, 0});
+
+    setup_sprite(up_laddor_tile_texture, up_laddor_tile_sprite);
+    up_laddor_tile_sprite.setOrigin({0, 0});
+
+    setup_sprite(down_laddor_tile_texture, down_laddor_tile_sprite);
+    down_laddor_tile_sprite.setOrigin({0, 0});
 
     setup_sprite(barrier_tile_texture, barrier_tile_sprite);
     barrier_tile_sprite.setOrigin({0, 0});
@@ -889,14 +925,18 @@ void DungeonLevelView::draw_tile(
     const Tile &tile, sf::Vector2f position, float factor, float chest_size_factor
 ) {
     sf::Sprite sprite;
-    if (tile.kind == Tile::Flor) {
+    if (tile.kind == Tile::Barrier) {
+        sprite = barrier_tile_sprite;
+    } else if (tile.kind == Tile::Flor) {
         sprite = flor_tile_sprite;
     } else if (tile.kind == Tile::OpenDor) {
         sprite = open_dor_tile_sprite;
     } else if (tile.kind == Tile::ClosedDor) {
         sprite = closed_dor_tile_sprite;
-    } else if (tile.kind == Tile::Barrier) {
-        sprite = barrier_tile_sprite;
+    } else if (tile.kind == Tile::UpLaddor) {
+        sprite = up_laddor_tile_sprite;
+    } else if (tile.kind == Tile::DownLaddor) {
+        sprite = down_laddor_tile_sprite;
     }
 
     sf::Vector2f saved = sprite.getScale();

@@ -95,7 +95,6 @@ int sub_main() {
     DungeonLevel level;
     level.resize_tiles(30, 30);
     level.regenerate();
-    level.initial_player_position = level.center();
 
     game.dungeon.add_level(level);
 
