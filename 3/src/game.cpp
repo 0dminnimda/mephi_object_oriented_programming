@@ -694,7 +694,6 @@ void DungeonLevel::update(float delta_time) {
 
     delete_dead_actors();
     delete_picked_up_items();
-    handle_collitions();
 }
 
 void DungeonLevel::fixed_update(float delta_time) {
@@ -702,6 +701,8 @@ void DungeonLevel::fixed_update(float delta_time) {
         enemy.fixed_update(delta_time);
     }
     Game::get().dungeon.player.fixed_update(delta_time);
+
+    handle_collitions();
 }
 
 void DungeonLevel::delete_dead_actors() {
