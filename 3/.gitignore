@@ -47,3 +47,5 @@ design_dep.puml
 # Other stuff
 *.log
 /save.txt
+/template_config.txt
+/config.txt

@@ -151,6 +151,37 @@ void Game::handle_save_load() {
     }
 }
 
+void Game::save_config(const std::string &filename) {
+    TRY_CATCH_ALL({
+        std::ofstream ofs(filename);
+        boost::archive::text_oarchive oa(ofs);
+        oa << actor_classes;
+        oa << player_template;
+        oa << enemy_templates;
+        oa << item_classes;
+        oa << item_templates;
+    })
+}
+
+bool Game::load_config(const std::string &filename) {
+    try {
+        std::ifstream ifs(filename);
+        boost::archive::text_iarchive ia(ifs);
+        ia >> actor_classes;
+        ia >> player_template;
+        ia >> enemy_templates;
+        ia >> item_classes;
+        ia >> item_templates;
+        return true;
+    } catch (const std::exception &e) {
+        std::cout << "Error: " << e.what() << std::endl;
+        return false;
+    } catch (...) {
+        std::cout << "Unknwon error occured" << std::endl;
+        return false;
+    }
+}
+
 bool is_pressed(const sf::Event &event, sf::Keyboard::Key key) {
     return (event.type == sf::Event::KeyPressed) && (event.key.code == key);
 }

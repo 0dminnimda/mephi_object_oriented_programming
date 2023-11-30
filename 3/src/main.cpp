@@ -41,7 +41,7 @@ void setup_actors(Game &game) {
     size_t pepe_id = game.add_actor_class(ActorClass("pepe", "he angy", "pepe_angry.jpeg"));
 
     game.enemy_templates.resize(game.actor_classes.size());
-    game.player_template = Player(player_id, 10.0f, Characteristics(2000.0f, 40.0f, 5.0f), 0);
+    game.player_template = Player(player_id, 10.0f, Characteristics(100.0f, 4.0f, 5.0f), 0);
     game.player_template.pushable = false;
     game.player_template.mass = 10000.0f;
     game.enemy_templates[pepe_id] = Enemy(pepe_id, 5.0f, Characteristics(40.0f, 0.0f, 4.0f), 1);
@@ -89,14 +89,19 @@ void setup_items(Game &game) {
 int sub_main() {
     Game &game = Game::get();
 
-    setup_actors(game);
-    setup_items(game);
+    // game.save_config("template_config.txt");
+    if (!game.load_config("config.txt")) {
+        setup_actors(game);
+        setup_items(game);
+    }
+
 {
     DungeonLevel level;
     level.resize_tiles(30, 30);
     level.regenerate();
     game.dungeon.add_level(level);
 }
+
 {
     DungeonLevel level;
     level.resize_tiles(30, 30);

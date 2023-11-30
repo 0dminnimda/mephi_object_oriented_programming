@@ -1245,6 +1245,8 @@ public:
     void save(const std::string &filename);
     void load(const std::string &filename);
     void handle_save_load();
+    void save_config(const std::string &filename);
+    bool load_config(const std::string &filename);
 
     size_t add_actor_class(const ActorClass &cls);
     long actor_class_index_by_name(const std::string &name);
