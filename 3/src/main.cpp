@@ -91,12 +91,18 @@ int sub_main() {
 
     setup_actors(game);
     setup_items(game);
-
+{
     DungeonLevel level;
     level.resize_tiles(30, 30);
     level.regenerate();
-
     game.dungeon.add_level(level);
+}
+{
+    DungeonLevel level;
+    level.resize_tiles(30, 30);
+    level.regenerate();
+    game.dungeon.add_level(level);
+}
 
     if (!game.init(800, 600)) return EXIT_FAILURE;
     if (!game.run()) return EXIT_FAILURE;

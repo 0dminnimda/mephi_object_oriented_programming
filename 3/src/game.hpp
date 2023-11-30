@@ -968,6 +968,7 @@ public:
     void handle_slot_selection();
     void handle_picking_up_items();
     void handle_throwing_items();
+    void handle_level_transition();
     void die(Actor &reason) override;
     bool pick_up_item(std::shared_ptr<Item> item) override;
     void throw_out_item(std::shared_ptr<Item> item) const;
@@ -1136,7 +1137,7 @@ class Dungeon {
 public:
     std::vector<DungeonLevel> all_levels;
     boost::optional<DungeonLevel> current_level;
-
+    long current_level_index = -1;
     Player player;
 
     void init();
@@ -1146,7 +1147,6 @@ public:
     bool load_level(size_t index);
     void on_load_level(DungeonLevel &level);
     void unload_current_level();
-    boost::optional<DungeonLevel> &get_current_level();
 
 private:
     friend class boost::serialization::access;
@@ -1154,6 +1154,7 @@ private:
     template <class Archive>
     void serialize(Archive &ar, const unsigned int version) {
         ar &all_levels;
+        ar &current_level_index;
         ar &current_level;
         ar &player;
     }
@@ -1181,7 +1182,7 @@ public:
     sf::Font font;
     sf::Text menu_message;
     sf::Text info_message;
-    sf::Text death_message;
+    sf::Text important_message;
 
     GameView()
         : window(),
@@ -1207,6 +1208,7 @@ public:
 
     Dungeon dungeon;
 
+    bool have_won = false;
     bool is_in_game = false;
     bool is_playing() const;
 

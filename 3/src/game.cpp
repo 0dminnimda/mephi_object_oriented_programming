@@ -191,7 +191,9 @@ void Game::handle_events() {
     }
 }
 
-bool Game::is_playing() const { return dungeon.player.alive; }
+bool Game::is_playing() const {
+    return dungeon.player.alive && !have_won;
+}
 
 void Game::update(float delta_time) { dungeon.update(delta_time); }
 
@@ -310,13 +312,12 @@ bool GameView::init(unsigned int width, unsigned int height) {
         sf::Vector2f(Game::view_size, Game::view_size) / (float)std::min(width, height)
     );
 
-    death_message.setFont(font);
-    death_message.setCharacterSize(60);
-    death_message.setFillColor(sf::Color::Red);
-    death_message.setOutlineThickness(5);
-    death_message.setOutlineColor(sf::Color::Black);
-    death_message.setPosition(sf::Vector2f(view.getSize()) / 2.0f);
-    death_message.setScale(
+    important_message.setFont(font);
+    important_message.setCharacterSize(60);
+    important_message.setOutlineThickness(5);
+    important_message.setOutlineColor(sf::Color::Black);
+    important_message.setPosition(sf::Vector2f(view.getSize()) / 2.0f);
+    important_message.setScale(
         sf::Vector2f(Game::view_size, Game::view_size) / (float)std::min(width, height)
     );
 
@@ -339,7 +340,7 @@ void GameView::draw() {
         return;
     }
 
-    auto &level = Game::get().dungeon.get_current_level();
+    auto &level = Game::get().dungeon.current_level;
     if (!level) {
         info_message.setString("No levels are loaded");
         center_text_origin(info_message);
@@ -370,10 +371,17 @@ void GameView::draw() {
     experience_view.draw(Game::get().dungeon.player.experience);
 
     if (!Game::get().dungeon.player.alive) {
-        death_message.setString("YOU DIED");
-        center_text_origin(death_message);
-        death_message.setPosition(sf::Vector2f(Game::get().dungeon.player.position));
-        window.draw(death_message);
+        important_message.setString("YOU DIED");
+        center_text_origin(important_message);
+        important_message.setPosition(sf::Vector2f(Game::get().dungeon.player.position));
+        important_message.setFillColor(sf::Color::Red);
+        window.draw(important_message);
+    } else if (Game::get().have_won) {
+        important_message.setString("YOU WON");
+        center_text_origin(important_message);
+        important_message.setPosition(sf::Vector2f(Game::get().dungeon.player.position));
+        important_message.setFillColor(sf::Color::Green);
+        window.draw(important_message);
     }
 
 #ifdef DEBUG
@@ -384,7 +392,7 @@ void GameView::draw() {
 }
 
 ItemUseResult LockPick::use(Actor &target) {
-    auto &level = Game::get().dungeon.get_current_level();
+    auto &level = Game::get().dungeon.current_level;
     if (!level) return ItemUseResult();
 
     auto coords = level->get_tile_coordinates(target.position);
@@ -1073,6 +1081,7 @@ bool Dungeon::load_level(size_t index) {
         return false;
     }
     current_level = all_levels[index];
+    current_level_index = index;
     on_load_level(*current_level);
     return true;
 }
@@ -1082,9 +1091,10 @@ void Dungeon::on_load_level(DungeonLevel &level) {
     player.position = level.initial_player_position;
 }
 
-void Dungeon::unload_current_level() { current_level = boost::none; }
-
-boost::optional<DungeonLevel> &Dungeon::get_current_level() { return current_level; }
+void Dungeon::unload_current_level() {
+    current_level = boost::none;
+    current_level_index = -1;
+}
 
 bool ActorClass::init() {
     if (!texture.loadFromFile(path_to_resources + texture_name)) return false;
@@ -1299,6 +1309,32 @@ void Player::update(float delta_time) {
     handle_inventory_use();
     handle_picking_up_items();
     handle_throwing_items();
+    handle_level_transition();
+}
+
+void Player::handle_level_transition() {
+    if (!Game::get().keys_pressed_on_this_frame[sf::Keyboard::R]) return;
+
+    auto &level = Game::get().dungeon.current_level;
+    if (!level) return;
+
+    auto coords = level->get_tile_coordinates(position);
+    if (!coords) return;
+
+    Tile &tile = level->tiles[coords->first][coords->second];
+
+    // if (tile.kind == Tile::UpLaddor) {
+    //     if (Game::get().dungeon.current_level_index > 1) {
+    //         Game::get().dungeon.load_level(Game::get().dungeon.current_level_index - 1);
+    //     }
+    // } else 
+    if (tile.kind == Tile::DownLaddor) {
+        if (Game::get().dungeon.current_level_index < Game::get().dungeon.all_levels.size() - 1) {
+            Game::get().dungeon.load_level(Game::get().dungeon.current_level_index + 1);
+        } else {
+            Game::get().have_won = true;
+        }
+    }
 }
 
 void Player::handle_movement(float delta_time) {
@@ -1382,7 +1418,7 @@ void Player::throw_out_item(std::shared_ptr<Item> item) const {
     float angle = RangeOfFloat(0, 2 * PI).get_random();
     float len = pick_up_range * 1.5;
     sf::Vector2f item_position = position + sf::Vector2f(std::cos(angle), std::sin(angle)) * len;
-    Game::get().dungeon.get_current_level()->laying_items.push_back(LayingItem(item, item_position)
+    Game::get().dungeon.current_level->laying_items.push_back(LayingItem(item, item_position)
     );
 }
 
@@ -1404,7 +1440,7 @@ bool Player::pick_up_item(std::shared_ptr<Item> item) {
 void Player::handle_picking_up_items() {
     if (!sf::Keyboard::isKeyPressed(sf::Keyboard::E)) return;
 
-    std::vector<LayingItem> &laying_items = Game::get().dungeon.get_current_level()->laying_items;
+    std::vector<LayingItem> &laying_items = Game::get().dungeon.current_level->laying_items;
 
     // laying_items can become larger (but should not go smaller, but still) during the loop
     size_t size = laying_items.size();
@@ -1475,7 +1511,7 @@ void Enemy::die(Actor &reason) {
 }
 
 void Enemy::on_deletion() {
-    auto &level = Game::get().dungeon.get_current_level();
+    auto &level = Game::get().dungeon.current_level;
     if (!level) return;
 
     RangeOfLong range_chest_item(0, Game::get().item_templates.size() - 1);
@@ -1551,7 +1587,7 @@ ItemUseResult MeleeWeapon::use(Actor &source) {
     bool reached_anything = false;
 
     if (source.actor_class_index == Game::player_class_index) {
-        for (auto &enemy : Game::get().dungeon.get_current_level()->enemies) {
+        for (auto &enemy : Game::get().dungeon.current_level->enemies) {
             reached_anything = try_to_attack(source, enemy) || reached_anything;
         }
     } else {
