@@ -9,6 +9,16 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
+# set(Boost_USE_STATIC_LIBS ON)
+# set(Boost_USE_MULTITHREADED OFF)
+# set(Boost_USE_STATIC_RUNTIME ON)
+find_package(Boost 1.45.0 COMPONENTS serialization) 
+
+if(NOT Boost_FOUND)
+    message( SEND_ERROR "You need to have boost to compile this." )
+endif()
+include_directories(${Boost_INCLUDE_DIRS}) 
+
 if(NOT ANDROID)
     include(FetchContent)
     FetchContent_Declare(SFML
@@ -30,7 +40,7 @@ endif()
 
 add_executable(main src/game.cpp src/main.cpp)
 set_target_properties(main PROPERTIES SUFFIX ".out")
-target_link_libraries(main PRIVATE sfml-window sfml-system sfml-graphics sfml-audio)
+target_link_libraries(main PRIVATE sfml-window sfml-system sfml-graphics sfml-audio ${Boost_LIBRARIES})
 
 if(WIN32)
     add_custom_command(

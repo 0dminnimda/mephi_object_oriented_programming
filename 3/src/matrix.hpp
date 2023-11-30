@@ -3,6 +3,9 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/vector.hpp>
 #include <vector>
 
 template <typename T>
@@ -15,6 +18,7 @@ public:
     using const_iterator = typename std::vector<T>::const_iterator;
     using reverse_iterator = typename std::vector<T>::reverse_iterator;
 
+    Row() : Row(0) {}
     Row(size_t size, T initialValue) : items(size, initialValue) {}
     Row(size_t size) : items(size) {}
 
@@ -32,6 +36,14 @@ public:
     const_iterator end() const { return items.end(); }
     const_iterator cbegin() const { return items.cbegin(); }
     const_iterator cend() const { return items.cend(); }
+
+private:
+    friend class boost::serialization::access;
+
+    template <class Archive>
+    void serialize(Archive &ar, const unsigned int version) {
+        ar &items;
+    }
 };
 
 template <typename T>
@@ -73,6 +85,14 @@ public:
     const_iterator end() const { return rows.end(); }
     const_iterator cbegin() const { return rows.cbegin(); }
     const_iterator cend() const { return rows.cend(); }
+
+private:
+    friend class boost::serialization::access;
+
+    template <class Archive>
+    void serialize(Archive &ar, const unsigned int version) {
+        ar &rows;
+    }
 };
 
 #endif  // MATRIX_H

@@ -1,50 +1,38 @@
 #include <stdlib.h>
 
+#include <SFML/Audio.hpp>
+#include <SFML/Graphics.hpp>
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
-
-using std::min, std::max;
-
-#include <SFML/Audio.hpp>
-#include <SFML/Graphics.hpp>
 
 #ifdef SFML_SYSTEM_IOS
 #include <SFML/Main.hpp>
 #endif
 
 #include "game.hpp"
-#include "vector_operations.hpp"
+#include "shared.hpp"
 
-#define TRY_CATCH_ALL(code)                                    \
-    {                                                          \
-        try {                                                  \
-            code;                                              \
-        } catch (const std::exception &e) {                    \
-            std::cout << "Error: " << e.what() << std::endl;   \
-        } catch (...) {                                        \
-            std::cout << "Unknwon error occured" << std::endl; \
-        }                                                      \
-    }
+using std::min, std::max;
 
-float signed_distance_to_axis_aligned_rect(
-    const sf::Vector2f &point, const sf::Vector2f &top_left, const sf::Vector2f &bottom_right
-) {
-    sf::Vector2f d = max(top_left - point, point - bottom_right);
-    return length(max(sf::Vector2f(0, 0), d)) + min(0.0f, max(d.x, d.y));
-}
+// float signed_distance_to_axis_aligned_rect(
+//     const sf::Vector2f &point, const sf::Vector2f &top_left, const sf::Vector2f &bottom_right
+// ) {
+//     sf::Vector2f d = max(top_left - point, point - bottom_right);
+//     return length(max(sf::Vector2f(0, 0), d)) + min(0.0f, max(d.x, d.y));
+// }
 
-float signed_distance_from_rect_to_circle(
-    const sf::RectangleShape &rect, const sf::CircleShape &circle
-) {
-    // rect.getGlobalBounds()
-    return signed_distance_to_axis_aligned_rect(
-               circle.getPosition(), rect.getPosition() - rect.getSize() / 2.0f,
-               rect.getPosition() + rect.getSize() / 2.0f
-           ) -
-           circle.getRadius();
-}
+// float signed_distance_from_rect_to_circle(
+//     const sf::RectangleShape &rect, const sf::CircleShape &circle
+// ) {
+//     // rect.getGlobalBounds()
+//     return signed_distance_to_axis_aligned_rect(
+//                circle.getPosition(), rect.getPosition() - rect.getSize() / 2.0f,
+//                rect.getPosition() + rect.getSize() / 2.0f
+//            ) -
+//            circle.getRadius();
+// }
 
 void setup_actors(Game &game) {
     size_t player_id =
@@ -53,7 +41,7 @@ void setup_actors(Game &game) {
     size_t pepe_id = game.add_actor_class(ActorClass("pepe", "he angy", "pepe_angry.jpeg"));
 
     game.enemy_templates.resize(game.actor_classes.size());
-    game.player_template = Player(player_id, 10.0f, Characteristics(200.0f, 4.0f, 5.0f), 0);
+    game.player_template = Player(player_id, 10.0f, Characteristics(2000.0f, 40.0f, 5.0f), 0);
     game.player_template.pushable = false;
     game.player_template.mass = 10000.0f;
     game.enemy_templates[pepe_id] = Enemy(pepe_id, 5.0f, Characteristics(40.0f, 0.0f, 4.0f), 1);
@@ -73,13 +61,11 @@ void setup_items(Game &game) {
     ));
     game.item_classes[lock_pick_id].max_stack_size = 16;
     size_t wooden_shield_id = game.add_item_class(ItemClass(
-        "wooden shield", "use protection", "shield_wood_metal.png", 8.0f,
-        Item::Kind::Wearable
+        "wooden shield", "use protection", "shield_wood_metal.png", 8.0f, Item::Kind::Wearable
     ));
-    size_t golden_shield_id = game.add_item_class(ItemClass(
-        "golden shield", "magic", "shield_gold.png", 8.0f,
-        Item::Kind::Wearable
-    ));
+    size_t golden_shield_id = game.add_item_class(
+        ItemClass("golden shield", "magic", "shield_gold.png", 8.0f, Item::Kind::Wearable)
+    );
     game.item_classes[golden_shield_id].artefact = CharacteristicsModifier();
     game.item_classes[golden_shield_id].artefact->speed = AddToValue<float>(3.0f);
 
@@ -89,8 +75,10 @@ void setup_items(Game &game) {
     game.item_templates[sword_id] =
         std::make_unique<Sword>(sword_id, RangeOfLong(3, 5), 2.0f, 10.0f, sf::seconds(0.3f));
     game.item_templates[lock_pick_id] = std::make_unique<LockPick>(lock_pick_id);
-    game.item_templates[wooden_shield_id] = std::make_unique<Shield>(wooden_shield_id, RangeOfLong(10, 20));
-    game.item_templates[golden_shield_id] = std::make_unique<Shield>(golden_shield_id, RangeOfLong(5, 10));
+    game.item_templates[wooden_shield_id] =
+        std::make_unique<Shield>(wooden_shield_id, RangeOfLong(10, 20));
+    game.item_templates[golden_shield_id] =
+        std::make_unique<Shield>(golden_shield_id, RangeOfLong(5, 10));
 
     game.player_template.pick_up_item(game.make_item(hammer_id));
     game.enemy_templates[game.actor_class_index_by_name("goblin")].pick_up_item(
