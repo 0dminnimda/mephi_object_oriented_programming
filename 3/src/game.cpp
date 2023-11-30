@@ -1,6 +1,6 @@
 #include "game.hpp"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/System.hpp>
