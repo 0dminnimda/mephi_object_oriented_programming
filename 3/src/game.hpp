@@ -1194,10 +1194,10 @@ public:
 };
 
 class Game {
-private:
-    sf::Clock clock;
-
 public:
+    sf::Clock clock;
+    std::array<bool, sf::Keyboard::KeyCount> keys_pressed_on_this_frame;
+
     GameView game_view;
 
     Dungeon dungeon;

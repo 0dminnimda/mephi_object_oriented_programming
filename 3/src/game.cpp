@@ -141,10 +141,10 @@ void Game::load(const std::string &filename) {
 }
 
 void Game::handle_save_load() {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::L)) {
+    if (keys_pressed_on_this_frame[sf::Keyboard::L]) {
         load("save.txt");
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::O)) {
+    if (keys_pressed_on_this_frame[sf::Keyboard::O]) {
         save("save.txt");
     }
 }
@@ -156,6 +156,8 @@ bool is_pressed(const sf::Event &event, sf::Keyboard::Key key) {
 void Game::handle_events() {
     sf::RenderWindow &window = game_view.window;
     sf::View &view = game_view.view;
+
+    std::fill(keys_pressed_on_this_frame.begin(), keys_pressed_on_this_frame.end(), false);
 
     sf::Event event;
     while (window.pollEvent(event)) {
@@ -179,6 +181,10 @@ void Game::handle_events() {
             view.setSize(sf::Vector2f(Game::view_size * ratio, Game::view_size));
             window.setView(view);
             // cannot draw in step sadly https://en.sfml-dev.org/forums/index.php?topic=5858.0
+        }
+
+        if (event.type == sf::Event::KeyPressed) {
+            keys_pressed_on_this_frame[event.key.code] = true;
         }
     }
 }
@@ -1289,7 +1295,7 @@ void Player::handle_equipment_use() {
 }
 
 void Player::handle_slot_selection() {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) {
+    if (Game::get().keys_pressed_on_this_frame[sf::Keyboard::Q]) {
         Game::get().is_inventory_selected = !Game::get().is_inventory_selected;
     }
 
@@ -1310,7 +1316,7 @@ void Player::handle_slot_selection() {
 }
 
 void Player::handle_throwing_items() {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::T)) {
+    if (Game::get().keys_pressed_on_this_frame[sf::Keyboard::T]) {
         StackOfItems *slot;
         if (Game::get().is_inventory_selected) {
             slot = inventory.get_slot(inventory.selection);
@@ -1326,7 +1332,7 @@ void Player::handle_throwing_items() {
 }
 
 void Player::handle_inventory_use() {
-    if (!sf::Keyboard::isKeyPressed(sf::Keyboard::F)) return;
+    if (!Game::get().keys_pressed_on_this_frame[sf::Keyboard::F]) return;
 
     inventory.use_item(inventory.selection, *this);
 }
