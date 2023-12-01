@@ -116,6 +116,7 @@ void Game::stop_playing() {
     if (!is_in_game) return;
 
     is_in_game = false;
+    have_won = false;
 
     dungeon.unload_current_level();
 }
