@@ -167,17 +167,44 @@ public:
 
     size_t item_class_index;
 
+    /*!
+    Constructs an empty item.
+    */
     Item() = default;
+
+    /*!
+    Constructs an item from an item class.
+    */
     Item(size_t item_class_index) : item_class_index(item_class_index) {}
 
+    /*!
+    Destroys the item. Virtual for polymorphism.
+    */
     virtual ~Item() = default;
 
+    /*!
+    Returns a deep copy of the item.
+    */
     virtual std::shared_ptr<Item> deepcopy_item() const = 0;
 
+    /*!
+    Uses the item. Returns the state of the item after use.
+    */
     virtual ItemUseResult use(Actor &target) { return ItemUseResult(false); }
+
+    /*!
+    Updates the owner's characteristics. Called after equipment/inventory changed.
+    */
     virtual void update_owner_characteristics(Characteristics &characteristics);
+
+    /*!
+    Generates defence randomly.
+    */
     virtual float generate_defence() { return 0; }
 
+    /*!
+    Returns the item class associated with the item.
+    */
     ItemClass &get_class() const;
 
 private:

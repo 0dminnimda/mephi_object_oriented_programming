@@ -1,0 +1,5 @@
+# for Doxyfile 1.9.8
+
+PROJECT_NAME           = Lab3
+OUTPUT_DIRECTORY       = docs/
+INPUT                  = src
