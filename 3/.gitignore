@@ -49,3 +49,4 @@ design_dep.puml
 /save.txt
 /template_config.txt
 /config.txt
+tests/doctest.h

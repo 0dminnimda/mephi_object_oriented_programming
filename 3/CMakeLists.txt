@@ -22,7 +22,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 if(NOT ANDROID)
     include(FetchContent)
     FetchContent_Declare(SFML
-        SOURCE_DIR ../../SFML
+        SOURCE_DIR ${PROJ_ROOT}/../SFML
     )
     FetchContent_MakeAvailable(SFML)
 endif()
@@ -38,9 +38,9 @@ if (CMAKE_BUILD_TYPE EQUAL "DEBUG")
     add_compile_definitions(DEBUG)
 endif()
 
-add_executable(main src/game.cpp src/main.cpp)
+add_executable(main ${PROJ_ROOT}/src/game.cpp ${PROJ_ROOT}/src/main.cpp)
 set_target_properties(main PROPERTIES SUFFIX ".out")
-target_link_libraries(main PRIVATE sfml-window sfml-system sfml-graphics sfml-audio ${Boost_LIBRARIES})
+target_link_libraries(main sfml-window sfml-system sfml-graphics sfml-audio ${Boost_LIBRARIES})
 
 if(WIN32)
     add_custom_command(
