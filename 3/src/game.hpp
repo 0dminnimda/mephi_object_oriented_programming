@@ -550,9 +550,13 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(Shield);
 
+class Tile;
+
 class LockPick : public Item {
 public:
     DeepCopy(LockPick);
+
+    static constexpr float picking_range = 1.5f;
 
     LockPick() = default;
     LockPick(size_t item_class_index) : Item(item_class_index) {}
@@ -561,6 +565,8 @@ public:
     std::shared_ptr<Item> deepcopy_item() const override;
 
 private:
+    const Tile *find_best_choice(Actor &target) const;
+
     friend class boost::serialization::access;
 
     template <class Archive>
@@ -701,6 +707,9 @@ public:
 
     Tile() : Tile(Barrier) {}
     Tile(Kind kind) : building(nullptr), kind(kind) {}
+
+    bool operator==(const Tile &other) const = default;
+    bool operator!=(const Tile &other) const = default;
 
     Tile &set_building(std::shared_ptr<Chest> building);
 

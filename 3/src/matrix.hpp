@@ -110,6 +110,26 @@ public:
     }
 
     /*!
+    Get an indices of the item in the matrix by a reference.
+    */
+    std::pair<std::size_t, std::size_t> indices_of(const T &item) const {
+        std::size_t io = items.index_of(item);
+        return std::make_pair(io / rows, io % rows);
+    }
+
+    /*!
+    Returns a predecate iterator. To check for end use regunal end().
+    */
+    template <typename Pred>
+    auto find(Pred pred) { return items.find(pred); }
+
+    /*!
+    Returns a predecate iterator. To check for end use regunal end(). Const version.
+    */
+    template <typename Pred>
+    auto find(Pred pred) const { return items.find(pred); }
+
+    /*!
     Returns an iterator to the first element.
     */
     iterator begin() { return items.begin(); }

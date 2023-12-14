@@ -475,28 +475,58 @@ void GameView::draw() {
 #endif  // DEBUG
 }
 
+const Tile *LockPick::find_best_choice(Actor &target) const {
+    auto &level = Game::get().dungeon.current_level;
+    if (!level) return nullptr;
+
+    auto coords = level->get_tile_coordinates(target.position);
+    if (!coords) return nullptr;
+
+    auto iter = level->tiles.find([&coords, &level](const Tile &tile) -> bool {
+        auto [i, j] = level->tiles.indices_of(tile);
+        float distance = length_squared(sf::Vector2f(i, j) - sf::Vector2f(coords->first, coords->second));
+        bool close_enough = distance <= picking_range * picking_range;
+        return close_enough && tile.building;
+    });
+
+    const Tile *closest_tile = nullptr;
+    float min_dist_sqared = length_squared(sf::Vector2f(level->tiles.row_count(), level->tiles.column_count()));
+    for (; iter != level->tiles.end(); ++iter) {
+        auto &tile = *iter;
+        if (!tile.building) continue;
+        auto [i, j] = level->tiles.indices_of(tile);
+        std::cout << "iter " << i << " " << j << std::endl;
+
+        float item_dist_sqared = length_squared(sf::Vector2f(i, j) - sf::Vector2f(coords->first, coords->second));
+        if (item_dist_sqared < min_dist_sqared) {
+            min_dist_sqared = item_dist_sqared;
+            closest_tile = &tile;
+        }
+    }
+    return closest_tile;
+}
+
 ItemUseResult LockPick::use(Actor &target) {
     auto &level = Game::get().dungeon.current_level;
     if (!level) return ItemUseResult();
 
-    auto coords = level->get_tile_coordinates(target.position);
-    if (!coords) return ItemUseResult();
+    Tile *tile = (Tile *)find_best_choice(target);
+    if (tile == nullptr) return ItemUseResult();
+    if (!tile->building) return ItemUseResult();
 
-    Tile &tile = level->tiles[coords->first][coords->second];
-    if (!tile.building) return ItemUseResult();
+    auto [x, y] = level->tiles.indices_of(*tile);
 
-    auto result = tile.building->simulate_picking(target);
+    auto result = tile->building->simulate_picking(target);
 
-    auto tile_position =
-        sf::Vector2f(coords->first, coords->second) * level->tile_coords_to_world_coords_factor();
+    auto tile_position = sf::Vector2f(x, y) * level->tile_coords_to_world_coords_factor();
     if (result.lock_picked) {
-        for (auto &slot : tile.building->inventory.slots) {
+        for (auto &slot : tile->building->inventory.slots) {
             for (size_t k = 0; k < slot.size; ++k) {
                 LayingItem laying_item(slot.item->deepcopy_item(), tile_position);
                 level->laying_items.push_back(laying_item);
             }
         }
-        tile.building = nullptr;
+        tile->building = nullptr;
     }
 
     return ItemUseResult(result.pick_broken);

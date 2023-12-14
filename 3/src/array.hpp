@@ -113,6 +113,13 @@ public:
     T &operator[](std::size_t index) { return data[index]; }
 
     /*!
+    Get an index of the item in the array by a reference.
+    */
+    std::size_t index_of(const T &item) const {
+        return (&item) - data;
+    }
+
+    /*!
     Exchanges the contents of this array and `other` array. Does not create copies.
     */
     void swap(Array &other) {
@@ -123,14 +130,15 @@ public:
 
     template <bool is_const>
     class Iterator {
-    private:
+    public:
         using iterator_category = std::forward_iterator_tag;
         using value_type = conditional_const_t<is_const, T>;
         using difference_type = std::ptrdiff_t;
         using pointer = value_type *;
         using reference = value_type &;
-
         using ArrayT = conditional_const_t<is_const, Array<T>>;
+
+    protected:
         ArrayT &array;      /// The reference to the Array that is being iterated.
         std::size_t index;  /// The index of the current item.
 
@@ -176,7 +184,7 @@ public:
         }
 
         /*!
-        Returns a copy of this iterator and advances it to the next busy entry.
+        Returns a copy of this iterator and advances it to the next entry.
         */
         Iterator operator++(int) {
             Iterator result(*this);
@@ -189,7 +197,7 @@ public:
         */
         reference operator*() const { return array.data[index]; }
 
-    private:
+    protected:
         void progress() {
             if (index < array.size) {
                 ++index;
@@ -229,6 +237,74 @@ public:
     Returns a constant iterator to the last entry in the Array.
     */
     const_iterator cend() const { return const_iterator(*this, size); }
+
+    template <bool is_const, typename Pred>
+    class PredecateIterator : public Iterator<is_const> {
+    private:
+        Pred pred;
+
+    public:
+        /*!
+        Disallows the default iterator, which consequently iterates nothing.
+        */
+        PredecateIterator() = delete;
+
+        /*!
+        Constructs an iterator for the `array` starting at index 0.
+        */
+        PredecateIterator(Iterator<is_const>::ArrayT &array, std::size_t i, Pred pred)
+            : Iterator<is_const>(array, i), pred(pred) 
+        {
+            skip_till_pred_is_true();
+        }
+
+        /*!
+        Constructs a copy of the other iterator.
+        */
+        PredecateIterator(const PredecateIterator &) = default;
+
+        /*!
+        Copies the other iterator into this.
+        */
+        PredecateIterator &operator=(const PredecateIterator &) = default;
+
+        /*!
+        Advances the iterator to the next item.
+        */
+        PredecateIterator &operator++() {
+            skip_till_pred_is_true();
+            this->progress();
+            return *this;
+        }
+
+        /*!
+        Returns a copy of this iterator and advances it to the next predeccate approved entry.
+        */
+        PredecateIterator operator++(int) {
+            Iterator result(*this);
+            ++(*this);
+            return result;
+        }
+
+    private:
+        void skip_till_pred_is_true() {
+            while (this->index < this->array.size && !pred(this->array[this->index])) {
+                ++this->index;
+            }
+        }
+    };
+
+    /*!
+    Returns a predecate iterator. To check for end use regunal end().
+    */
+    template <typename Pred>
+    PredecateIterator<false, Pred> find(Pred pred) { return PredecateIterator<false, Pred>(*this, 0, pred); }
+
+    /*!
+    Returns a predecate iterator. To check for end use regunal end(). Const version.
+    */
+    template <typename Pred>
+    PredecateIterator<true, Pred> find(Pred pred) const { return PredecateIterator<true, Pred>(*this, 0, pred); }
 
 private:
     friend class boost::serialization::access;
