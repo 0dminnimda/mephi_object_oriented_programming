@@ -3,6 +3,7 @@
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
+#include "../src/vector_operations.hpp"
 #include "../src/game.cpp"
 
 namespace fs = std::filesystem;
@@ -15,11 +16,9 @@ TEST_CASE("suit") {
         SUBCASE("saving") {
             Game &game = Game::get();
 
-            // game.setup_default_actors();
-            // game.setup_default_items();
+            game.setup_default_actors();
+            game.setup_default_items();
             game.save(save_path);
-
-    
 
             CHECK(true /*deeznuts*/);
         }
@@ -30,7 +29,6 @@ TEST_CASE("suit") {
 
             CHECK(true /*deeznuts*/);
         }
-        
     }
     /*SUBCASE("fuck") {
         DungeonLevel level;
@@ -40,4 +38,28 @@ TEST_CASE("suit") {
 
         CHECK(level.tiles.size() == 30*30);
     }*/
+    
+    SUBCASE("Testing dot function") {
+       sf::Vector2<float> a(1.0f, 2.0f);
+       sf::Vector2<float> b(3.0f, 4.0f);
+       CHECK(dot(a, b) == 11.0f);
+    }
+
+    SUBCASE("Testing length function") {
+       sf::Vector2<float> a(3.0f, 4.0f);
+       CHECK(length(a) == doctest::Approx(5.0f));
+    }
+
+    SUBCASE("Testing vector operations") {
+       SUBCASE("Testing dot function") {
+           sf::Vector2<float> a(1.0f, 2.0f);
+           sf::Vector2<float> b(3.0f, 4.0f);
+           CHECK(dot(a, b) == 11.0f);
+       }
+    
+       SUBCASE("Testing length function") {
+           sf::Vector2<float> a(3.0f, 4.0f);
+           CHECK(length(a) == doctest::Approx(5.0f));
+       }
+    }
 }
