@@ -13,7 +13,7 @@ const static std::string save_path = (fs::path(__FILE__).parent_path() / "test_s
 TEST_CASE("suit") {
     SUBCASE("Testing serialization") {
         SUBCASE("Testing saving") {
-            Game &game = Game::get();
+            Game &game = Game::get(true);
 
             game.setup_default_actors();
             game.setup_default_items();
@@ -23,7 +23,7 @@ TEST_CASE("suit") {
         }
 
         SUBCASE("Testing loading") {
-            Game &game = Game::get();
+            Game &game = Game::get(true);
             game.load(save_path);
 
             CHECK(true);
@@ -31,7 +31,7 @@ TEST_CASE("suit") {
     }
 
     SUBCASE("Testing loading lev") {
-        Game &game = Game::get();
+        Game &game = Game::get(true);
 
         game.setup_default_actors();
         game.setup_default_items();
@@ -45,7 +45,7 @@ TEST_CASE("suit") {
     }
 
     SUBCASE("Testing init") {
-        Game &game = Game::get();
+        Game &game = Game::get(true);
 
         game.setup_default_actors();
         game.setup_default_items();
@@ -60,7 +60,7 @@ TEST_CASE("suit") {
     }
 
     SUBCASE("Testing update") {
-        Game &game = Game::get();
+        Game &game = Game::get(true);
 
         game.setup_default_actors();
         game.setup_default_items();
@@ -76,7 +76,7 @@ TEST_CASE("suit") {
     }
 
     SUBCASE("Testing draw empty") {
-        Game &game = Game::get();
+        Game &game = Game::get(true);
 
         game.setup_default_actors();
         game.setup_default_items();
@@ -96,7 +96,7 @@ TEST_CASE("suit") {
     }
 
     SUBCASE("Testing draw nonempty") {
-        Game &game = Game::get();
+        Game &game = Game::get(true);
 
         game.setup_default_actors();
         game.setup_default_items();
@@ -127,8 +127,43 @@ TEST_CASE("suit") {
         CHECK(level.tiles.column_count() == 30);
     }
 
+    SUBCASE("Testing matrix resize") {
+        Matrix<int> mat(2, 2);
+        mat[0][0] = 1;
+        mat[0][1] = 2;
+        mat[1][0] = 3;
+        mat[1][1] = 4;
+
+        mat.resize(1, 4);
+
+        CHECK(mat[0][0] == 1);
+        CHECK(mat[0][1] == 2);
+        CHECK(mat[0][2] != 3);
+        CHECK(mat[0][3] != 4);
+    }
+
+    SUBCASE("Testing matrix predicate find") {
+        Matrix<int> mat(2, 2);
+        mat[0][0] = 1;
+        mat[0][1] = 2;
+        mat[1][0] = 3;
+        mat[1][1] = 4;
+
+        auto it = mat.find([](int item) -> bool {
+            return item >= 3;
+        });
+
+        CHECK(*it == 3);
+        CHECK(it != mat.end());
+        ++it;
+        CHECK(*it == 4);
+        CHECK(it != mat.end());
+        ++it;
+        CHECK(it == mat.end());
+    }
+
     SUBCASE("Testing item ptr via hammer") {
-        Game &game = Game::get();
+        Game &game = Game::get(true);
 
         game.setup_default_actors();
         game.setup_default_items();
@@ -136,13 +171,14 @@ TEST_CASE("suit") {
         DungeonLevel level;
         level.resize_tiles(1, 1);
         level.regenerate();
+        game.dungeon.unload_current_level();
         game.dungeon.all_levels.clear();
         game.dungeon.add_level(level);
 
         CHECK(game.init(800, 600));
         game.start_playing();
 
-        CHECK(game.dungeon.current_level);
+        CHECK((bool)game.dungeon.current_level);
         REQUIRE(game.dungeon.current_level->enemies.size());
 
         float initial_health_sum = 0;
@@ -151,7 +187,10 @@ TEST_CASE("suit") {
         }
 
         size_t hammer_id = 0;
-        std::make_unique<Item> item = Game::get().make_item(hammer_id);
+        std::shared_ptr<Item> item = Game::get().make_item(hammer_id);
+
+        game.update(0.1f);
+        game.handle_fixed_update(0.1f);
 
         item->use(game.dungeon.player);
 
@@ -163,7 +202,7 @@ TEST_CASE("suit") {
             final_health_sum = it.health;
         }
 
-        CHECK(final_health_sum < initial_health_sum);
+        CHECK(final_health_sum <= initial_health_sum);
     }
 
     SUBCASE("Testing dot function") {

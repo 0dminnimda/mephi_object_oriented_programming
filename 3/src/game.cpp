@@ -73,10 +73,10 @@ Tile &Tile::set_building(std::shared_ptr<Chest> building) {
     return *this;
 }
 
-Game &Game::get() {
+Game &Game::get(bool brand_new) {
     static std::shared_ptr<Game> game = nullptr;
 
-    if (game == nullptr) {
+    if (game == nullptr || brand_new) {
         game = std::make_shared<Game>();
     }
 

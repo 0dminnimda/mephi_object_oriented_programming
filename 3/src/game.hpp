@@ -1269,7 +1269,7 @@ public:
     Game() = default;
     ~Game() = default;
 
-    static Game &get();
+    static Game &get(bool brand_new = false);
 
     bool init(unsigned int width, unsigned int height);
     void update(float delta_time);
