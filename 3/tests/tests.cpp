@@ -11,8 +11,8 @@ namespace fs = std::filesystem;
 const static std::string save_path = (fs::path(__FILE__).parent_path() / "test_save.txt").string();
 
 TEST_CASE("suit") {
-    SUBCASE("serialization") {
-        SUBCASE("saving") {
+    SUBCASE("Testing serialization") {
+        SUBCASE("Testing saving") {
             Game &game = Game::get();
 
             game.setup_default_actors();
@@ -22,7 +22,7 @@ TEST_CASE("suit") {
             CHECK(fs::exists(fs::path(__FILE__)));
         }
 
-        SUBCASE("loading") {
+        SUBCASE("Testing loading") {
             Game &game = Game::get();
             game.load(save_path);
 
@@ -30,7 +30,7 @@ TEST_CASE("suit") {
         }
     }
 
-    SUBCASE("loading lev") {
+    SUBCASE("Testing loading lev") {
         Game &game = Game::get();
 
         game.setup_default_actors();
@@ -44,7 +44,7 @@ TEST_CASE("suit") {
         CHECK(game.dungeon.all_levels.size() == 1);
     }
 
-    SUBCASE("init") {
+    SUBCASE("Testing init") {
         Game &game = Game::get();
 
         game.setup_default_actors();
@@ -59,7 +59,7 @@ TEST_CASE("suit") {
         // if (!game.run()) return EXIT_FAILURE;
     }
 
-    SUBCASE("update") {
+    SUBCASE("Testing update") {
         Game &game = Game::get();
 
         game.setup_default_actors();
@@ -75,7 +75,7 @@ TEST_CASE("suit") {
         game.handle_fixed_update(0.1f);
     }
 
-    SUBCASE("draw empty") {
+    SUBCASE("Testing draw empty") {
         Game &game = Game::get();
 
         game.setup_default_actors();
@@ -95,7 +95,7 @@ TEST_CASE("suit") {
         game.game_view.display();
     }
 
-    SUBCASE("draw nonempty") {
+    SUBCASE("Testing draw nonempty") {
         Game &game = Game::get();
 
         game.setup_default_actors();
@@ -117,7 +117,7 @@ TEST_CASE("suit") {
         game.game_view.display();
     }
 
-    SUBCASE("dunlev") {
+    SUBCASE("Testing dunlev") {
         DungeonLevel level;
         level.resize_tiles(20, 30);
         level.regenerate();
@@ -125,6 +125,45 @@ TEST_CASE("suit") {
         CHECK(level.tiles.size() == 20*30);
         CHECK(level.tiles.row_count() == 20);
         CHECK(level.tiles.column_count() == 30);
+    }
+
+    SUBCASE("Testing item ptr via hammer") {
+        Game &game = Game::get();
+
+        game.setup_default_actors();
+        game.setup_default_items();
+
+        DungeonLevel level;
+        level.resize_tiles(1, 1);
+        level.regenerate();
+        game.dungeon.all_levels.clear();
+        game.dungeon.add_level(level);
+
+        CHECK(game.init(800, 600));
+        game.start_playing();
+
+        CHECK(game.dungeon.current_level);
+        REQUIRE(game.dungeon.current_level->enemies.size());
+
+        float initial_health_sum = 0;
+        for (auto &it: game.dungeon.current_level->enemies) {
+            initial_health_sum = it.health;
+        }
+
+        size_t hammer_id = 0;
+        std::make_unique<Item> item = Game::get().make_item(hammer_id);
+
+        item->use(game.dungeon.player);
+
+        game.update(0.1f);
+        game.handle_fixed_update(0.1f);
+
+        float final_health_sum = 0;
+        for (auto &it: game.dungeon.current_level->enemies) {
+            final_health_sum = it.health;
+        }
+
+        CHECK(final_health_sum < initial_health_sum);
     }
 
     SUBCASE("Testing dot function") {
