@@ -63,11 +63,14 @@ run:
 	$(call prep_executable, EXEC, ./$(OUT_DIR)/bin/main.out)
 	DISPLAY=$(DISPLAY) $(EXEC)
 
+PHONY: com_test
+com_test: $(TEST_DIR) $(COV_DIR)
+	cd $(TEST_DIR) && $(call call_cmake) && cmake --build .
+
 llvm_cov = llvm-cov $(1) $(2) -instr-profile=$(3) --ignore-filename-regex="tests/*"
 
 .PHONY: test
-test: $(TEST_DIR) $(COV_DIR)
-	cd $(TEST_DIR) && $(call call_cmake) && cmake --build .
+test:
 	$(call prep_executable, EXEC, ./$(TEST_DIR)/bin/run_tests.out)
 	DISPLAY=":1" LLVM_PROFILE_FILE="$(COV_DIR)/run_tests.profraw" $(EXEC)
 	llvm-profdata merge -sparse $(COV_DIR)/run_tests.profraw -o $(COV_DIR)/merged.profdata

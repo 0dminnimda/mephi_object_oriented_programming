@@ -38,9 +38,11 @@ if (CMAKE_BUILD_TYPE EQUAL "DEBUG")
     add_compile_definitions(DEBUG)
 endif()
 
-add_executable(main ${PROJ_ROOT}/src/game.cpp ${PROJ_ROOT}/src/main.cpp)
-set_target_properties(main PROPERTIES SUFFIX ".out")
-target_link_libraries(main sfml-window sfml-system sfml-graphics sfml-audio ${Boost_LIBRARIES})
+if(NOT PROJ_NOT_BUILD_MAIN)
+    add_executable(main ${PROJ_ROOT}/src/game.cpp ${PROJ_ROOT}/src/main.cpp)
+    set_target_properties(main PROPERTIES SUFFIX ".out")
+    target_link_libraries(main sfml-window sfml-system sfml-graphics sfml-audio ${Boost_LIBRARIES})
+endif()
 
 if(WIN32)
     add_custom_command(
@@ -49,5 +51,3 @@ if(WIN32)
         PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${SFML_SOURCE_DIR}/extlibs/bin/$<IF:$<EQUAL:${CMAKE_SIZEOF_VOID_P},8>,x64,x86>/openal32.dll $<TARGET_FILE_DIR:main>
         VERBATIM)
 endif()
-
-install(TARGETS main)
