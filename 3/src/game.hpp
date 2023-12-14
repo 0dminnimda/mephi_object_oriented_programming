@@ -1079,7 +1079,7 @@ public:
     sf::Vector2f initial_player_position;
     float tile_size = 10.0f;
     float chest_size_factor = 1.0f;
-    size_t actors_spawned_per_class = 15;
+    size_t actors_spawned_per_class = 100;
     size_t laying_items_spawned_per_class = 5;
     float rebounce_factor = 0.9f;
 
@@ -1274,6 +1274,8 @@ public:
     void handle_save_load();
     void save_config(const std::string &filename);
     bool load_config(const std::string &filename);
+    void setup_default_actors();
+    void setup_default_items();
 
     size_t add_actor_class(const ActorClass &cls);
     long actor_class_index_by_name(const std::string &name);

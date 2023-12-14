@@ -143,6 +143,58 @@ void Game::load(const std::string &filename) {
     // }
 }
 
+void Game::setup_default_actors() {
+    size_t player_id =
+        add_actor_class(ActorClass("player", "plays the game", "hide_the_plan.jpeg"));
+    size_t goblin_id = add_actor_class(ActorClass("goblin", "deez nuts", "rock_smiling.jpeg"));
+    size_t pepe_id = add_actor_class(ActorClass("pepe", "he angy", "pepe_angry.jpeg"));
+
+    enemy_templates.resize(actor_classes.size());
+    player_template = Player(player_id, 10.0f, Characteristics(100.0f, 4.0f, 5.0f), 0);
+    player_template.pushable = false;
+    player_template.mass = 10000.0f;
+    enemy_templates[pepe_id] = Enemy(pepe_id, 5.0f, Characteristics(40.0f, 0.0f, 4.0f), 1);
+    enemy_templates[goblin_id] = Enemy(goblin_id, 7.0f, Characteristics(40.0f, 2.0f, 2.0f), 2);
+}
+
+void Game::setup_default_items() {
+    size_t hammer_id = add_item_class(
+        ItemClass("hammer", "smashes in the face", "hammer.png", 13.0f, Item::Kind::Weapon)
+    );
+    size_t sword_id = add_item_class(ItemClass(
+        "sword", "you can cut yourself just by looking at it", "sword_silver.png", 8.0f,
+        Item::Kind::Weapon
+    ));
+    size_t lock_pick_id = add_item_class(ItemClass(
+        "lock pick", "you sneaky pick", "lock_pick_with_fabric.png", 7.0f, Item::Kind::Custom
+    ));
+    item_classes[lock_pick_id].max_stack_size = 16;
+    size_t wooden_shield_id = add_item_class(ItemClass(
+        "wooden shield", "use protection", "shield_wood_metal.png", 8.0f, Item::Kind::Wearable
+    ));
+    size_t golden_shield_id = add_item_class(
+        ItemClass("golden shield", "magic", "shield_gold.png", 8.0f, Item::Kind::Wearable)
+    );
+    item_classes[golden_shield_id].artefact = CharacteristicsModifier();
+    item_classes[golden_shield_id].artefact->speed = AddToValue<float>(3.0f);
+
+    item_templates.resize(item_classes.size());
+    item_templates[hammer_id] =
+        std::make_unique<Hammer>(hammer_id, RangeOfLong(20, 40), 6.0f, 10000.0f, sf::seconds(1.0f));
+    item_templates[sword_id] =
+        std::make_unique<Sword>(sword_id, RangeOfLong(3, 5), 2.0f, 10.0f, sf::seconds(0.3f));
+    item_templates[lock_pick_id] = std::make_unique<LockPick>(lock_pick_id);
+    item_templates[wooden_shield_id] =
+        std::make_unique<Shield>(wooden_shield_id, RangeOfLong(10, 20));
+    item_templates[golden_shield_id] =
+        std::make_unique<Shield>(golden_shield_id, RangeOfLong(5, 10));
+
+    player_template.pick_up_item(make_item(hammer_id));
+    enemy_templates[actor_class_index_by_name("goblin")].pick_up_item(
+        make_item(sword_id)
+    );
+}
+
 void Game::handle_save_load() {
     if (keys_pressed_on_this_frame[sf::Keyboard::L]) {
         load("save.txt");

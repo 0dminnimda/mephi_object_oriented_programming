@@ -60,7 +60,7 @@ setup_termux_gui:
 
 .PHONY: run
 run:
-	$(call prep_executable, EXEC, $(OUT_DIR)/bin/main.out)
+	$(call prep_executable, EXEC, ./$(OUT_DIR)/bin/main.out)
 	DISPLAY=$(DISPLAY) $(EXEC)
 
 llvm_cov = llvm-cov $(1) $(2) -instr-profile=$(3) --ignore-filename-regex="tests/*"
@@ -68,8 +68,8 @@ llvm_cov = llvm-cov $(1) $(2) -instr-profile=$(3) --ignore-filename-regex="tests
 .PHONY: test
 test: $(TEST_DIR) $(COV_DIR)
 	cd $(TEST_DIR) && $(call call_cmake) && cmake --build .
-	$(call prep_executable, EXEC, $(TEST_DIR)/bin/run_tests.out)
-	LLVM_PROFILE_FILE="$(COV_DIR)/run_tests.profraw" $(EXEC)
+	$(call prep_executable, EXEC, ./$(TEST_DIR)/bin/run_tests.out)
+	DISPLAY=":1" LLVM_PROFILE_FILE="$(COV_DIR)/run_tests.profraw" $(EXEC)
 	llvm-profdata merge -sparse $(COV_DIR)/run_tests.profraw -o $(COV_DIR)/merged.profdata
 	$(call llvm_cov,report,$(EXEC),$(COV_DIR)/merged.profdata)
 	$(call llvm_cov,show,$(EXEC),$(COV_DIR)/merged.profdata) > $(COV_DIR)/report.txt
