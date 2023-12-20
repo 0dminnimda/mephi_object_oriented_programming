@@ -1,2 +1,5 @@
-level_count = 3
-actors_spawned_per_class = 100
+levels = [
+    { actors_spawned_per_class = 1 },
+    { actors_spawned_per_class = 10 },
+    { actors_spawned_per_class = 100 },
+]

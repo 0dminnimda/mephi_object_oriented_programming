@@ -28,11 +28,10 @@
 #include <iostream>
 #include <iterator>
 
-#include "toml++/toml.hpp"
-
 #include "color_operations.hpp"
 #include "game_exports.hpp"
 #include "shared.hpp"
+#include "toml++/toml.hpp"
 #include "vector_operations.hpp"
 
 constexpr float PI = 3.14159265358979323846f;
@@ -216,59 +215,81 @@ void Game::save_config(const std::string &filename) {
     })
 }
 
-template <typename T>
-boost::optional<T> get_as__with_typename(
-    toml::table &table, const char *path, const char *type_name
-) {
-    auto el = table.at_path(path);
+template <typename T, typename P>
+boost::optional<T> get_as__with_typename(P &parent, const char *path, const char *type_name) {
+    toml::node_view<toml::node> el = parent.at_path(path);
     if (!el) return boost::none;
 
     if (auto value = el.value<T>(); value) {
         return *value;
     }
 
-    std::cerr << "TypeError: expected " << path << " to be of type " << type_name << ", got " << el.type()
-              << std::endl;
+    std::cerr << "TypeError: expected " << path << " to be of type " << type_name << ", got "
+              << el.type() << std::endl;
     return boost::none;
 }
 
 #define get_as(table, path, T) get_as__with_typename<T>(table, path, #T)
 
-template <typename T>
-T get_as_or__with_typename(
-    toml::table &table, const char *path, const char *type_name, T default_value
-) {
-    if (auto value = get_as__with_typename<T>(table, path, type_name); value) {
+#define STR(x) #x
+
+template <typename P>
+boost::optional<toml::array &> get_as_array(P &parent, const char *path) {
+    toml::node_view<toml::node> el = parent.at_path(path);
+    if (!el) return boost::none;
+
+    toml::array *value = el.as_array();
+    if (value) {
+        return *value;
+    }
+
+    std::cerr << "TypeError: expected " << path << " to be of type " << STR(toml::array) << ", got "
+              << el.type() << std::endl;
+    return boost::none;
+}
+
+template <typename T, typename P>
+T get_as_or__with_typename(P &parent, const char *path, const char *type_name, T default_value) {
+    if (auto value = get_as__with_typename<T, P>(parent, path, type_name); value) {
         return *value;
     }
     return default_value;
 }
 
-#define get_as_or(table, path, T, default_value) get_as_or__with_typename<T>(table, path, #T, default_value)
+#define get_as_or(table, path, T, default_value) \
+    get_as_or__with_typename<T>(table, path, #T, default_value)
+
+template <typename P>
+void load_level_from_config(P parent, Dungeon &dungeon) {
+    DungeonLevel level;
+    level.actors_spawned_per_class = get_as_or(parent, "actors_spawned_per_class", size_t, 1000);
+    level.resize_tiles(30, 30);
+    level.regenerate();
+    dungeon.add_level(level);
+}
 
 bool Game::load_config(const std::string &filename) {
     toml::table table;
     try {
         table = toml::parse_file(filename);
     } catch (const toml::parse_error &err) {
-        std::cerr << "Error parsing file '" << * err.source().path << "':\n"
+        std::cerr << "Error parsing file '" << *err.source().path << "':\n"
                   << err.description() << "\n (" << err.source().begin << ")\n";
         return false;
     }
 
-    size_t actors_spawned_per_class = get_as_or(table, "actors_spawned_per_class", size_t, 1000);
-    size_t level_count = get_as_or(table, "level_count", size_t, 2);
-
     setup_default_actors();
     setup_default_items();
 
-    for (size_t i = 0; i < level_count; ++i)        
-    {
-        DungeonLevel level;
-        level.actors_spawned_per_class = actors_spawned_per_class;
-        level.resize_tiles(30, 30);
-        level.regenerate();
-        dungeon.add_level(level);
+    if (auto arr = get_as_array(table, "levels"); arr) {
+        arr->for_each([&](auto &&el) {
+            if constexpr (toml::is_table<decltype(el)>) {
+                load_level_from_config(el, dungeon);
+            } else {
+                std::cerr << "TypeError: all 'levels' items must be arrays, not " << el.type()
+                          << std::endl;
+            }
+        });
     }
 
     return true;
