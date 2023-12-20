@@ -1,5 +1,5 @@
 levels = [
-    { actors_spawned_per_class = 1 },
+    { actors_spawned_per_class = 1, rows = 3, cols = 9},
     { actors_spawned_per_class = 10 },
     { actors_spawned_per_class = 100 },
 ]

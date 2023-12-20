@@ -262,8 +262,13 @@ T get_as_or__with_typename(P &parent, const char *path, const char *type_name, T
 template <typename P>
 void load_level_from_config(P parent, Dungeon &dungeon) {
     DungeonLevel level;
-    level.actors_spawned_per_class = get_as_or(parent, "actors_spawned_per_class", size_t, 1000);
-    level.resize_tiles(30, 30);
+    if (auto value = get_as(parent, "actors_spawned_per_class", size_t); value) {
+        level.actors_spawned_per_class = *value;
+    }
+    if (auto value = get_as(parent, "laying_items_spawned_per_class", size_t); value) {
+        level.laying_items_spawned_per_class = *value;
+    }
+    level.resize_tiles(get_as_or(parent, "rows", size_t, 30), get_as_or(parent, "cols", size_t, 30));
     level.regenerate();
     dungeon.add_level(level);
 }
