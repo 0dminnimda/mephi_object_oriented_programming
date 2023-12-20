@@ -23,13 +23,13 @@ int sub_main() {
     if (!game.load_config("config.toml")) {
         game.setup_default_actors();
         game.setup_default_items();
-    }
 
-    {
-        DungeonLevel level;
-        level.resize_tiles(30, 30);
-        level.regenerate();
-        game.dungeon.add_level(level);
+        {
+            DungeonLevel level;
+            level.resize_tiles(30, 30);
+            level.regenerate();
+            game.dungeon.add_level(level);
+        }
     }
 
     if (!game.init(800, 600)) return EXIT_FAILURE;
