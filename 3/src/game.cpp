@@ -816,8 +816,7 @@ void DungeonLevel::regenerate() {
 
 void DungeonLevel::regenerate_tiles() {
     RangeOfLong range_chest_spawn(0, 50);
-    size_t max_level = 9;
-    RangeOfLong range_chest_level(0, (max_level + 1) * (max_level + 1) - 1);
+    RangeOfLong range_chest_level(0, (max_chest_level + 1) * (max_chest_level + 1) - 1);
     RangeOfLong range_chest_item(0, Game::get().item_templates.size() - 1);
 
     for (size_t i = 0; i < tiles.row_count(); ++i) {
@@ -828,7 +827,7 @@ void DungeonLevel::regenerate_tiles() {
                 tiles[i][j].kind = Tile::Flor;
 
             if (tiles[i][j].kind == Tile::Flor && range_chest_spawn.get_random() == 0) {
-                size_t level = max_level - (size_t)std::sqrt(range_chest_level.get_random());
+                size_t level = max_chest_level - (size_t)std::sqrt(range_chest_level.get_random());
                 auto chest = std::make_shared<Chest>(level);
                 chest->inventory.add_item(Game::get().make_item(range_chest_item.get_random()));
                 tiles[i][j].set_building(chest);
