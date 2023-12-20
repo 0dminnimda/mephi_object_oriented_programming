@@ -190,9 +190,7 @@ void Game::setup_default_items() {
         std::make_unique<Shield>(golden_shield_id, RangeOfLong(5, 10));
 
     player_template.pick_up_item(make_item(hammer_id));
-    enemy_templates[actor_class_index_by_name("goblin")].pick_up_item(
-        make_item(sword_id)
-    );
+    enemy_templates[actor_class_index_by_name("goblin")].pick_up_item(make_item(sword_id));
 }
 
 void Game::handle_save_load() {
@@ -275,9 +273,7 @@ void Game::handle_events() {
     }
 }
 
-bool Game::is_playing() const {
-    return dungeon.player.alive && !have_won;
-}
+bool Game::is_playing() const { return dungeon.player.alive && !have_won; }
 
 void Game::update(float delta_time) { dungeon.update(delta_time); }
 
@@ -484,20 +480,23 @@ const Tile *LockPick::find_best_choice(Actor &target) const {
 
     auto iter = level->tiles.find([&coords, &level](const Tile &tile) -> bool {
         auto [i, j] = level->tiles.indices_of(tile);
-        float distance = length_squared(sf::Vector2f(i, j) - sf::Vector2f(coords->first, coords->second));
+        float distance =
+            length_squared(sf::Vector2f(i, j) - sf::Vector2f(coords->first, coords->second));
         bool close_enough = distance <= picking_range * picking_range;
         return close_enough && tile.building;
     });
 
     const Tile *closest_tile = nullptr;
-    float min_dist_sqared = length_squared(sf::Vector2f(level->tiles.row_count(), level->tiles.column_count()));
+    float min_dist_sqared =
+        length_squared(sf::Vector2f(level->tiles.row_count(), level->tiles.column_count()));
     for (; iter != level->tiles.end(); ++iter) {
         auto &tile = *iter;
         if (!tile.building) continue;
         auto [i, j] = level->tiles.indices_of(tile);
         std::cout << "iter " << i << " " << j << std::endl;
 
-        float item_dist_sqared = length_squared(sf::Vector2f(i, j) - sf::Vector2f(coords->first, coords->second));
+        float item_dist_sqared =
+            length_squared(sf::Vector2f(i, j) - sf::Vector2f(coords->first, coords->second));
         if (item_dist_sqared < min_dist_sqared) {
             min_dist_sqared = item_dist_sqared;
             closest_tile = &tile;
@@ -721,8 +720,8 @@ float DungeonLevel::tile_coords_to_world_coords_factor() const {
 }
 
 sf::Vector2f DungeonLevel::center() const {
-    return sf::Vector2f(tiles.row_count(), tiles.column_count()) * tile_coords_to_world_coords_factor() /
-           2.0f;
+    return sf::Vector2f(tiles.row_count(), tiles.column_count()) *
+           tile_coords_to_world_coords_factor() / 2.0f;
 }
 
 boost::optional<std::pair<size_t, size_t>> DungeonLevel::get_tile_coordinates(sf::Vector2f position
@@ -990,7 +989,8 @@ bool DungeonLevelView::init() {
     if (!barrier_tile_texture.loadFromFile(path_to_resources + barrier_tile_name)) return false;
     if (!chest_texture.loadFromFile(path_to_resources + chest_name)) return false;
     if (!up_laddor_tile_texture.loadFromFile(path_to_resources + up_laddor_tile_name)) return false;
-    if (!down_laddor_tile_texture.loadFromFile(path_to_resources + down_laddor_tile_name)) return false;
+    if (!down_laddor_tile_texture.loadFromFile(path_to_resources + down_laddor_tile_name))
+        return false;
 
     setup_sprite(flor_tile_texture, flor_tile_sprite);
     flor_tile_sprite.setOrigin({0, 0});
@@ -1441,7 +1441,7 @@ void Player::handle_level_transition() {
     //     if (Game::get().dungeon.current_level_index > 1) {
     //         Game::get().dungeon.load_level(Game::get().dungeon.current_level_index - 1);
     //     }
-    // } else 
+    // } else
     if (tile.kind == Tile::DownLaddor) {
         if (Game::get().dungeon.current_level_index < Game::get().dungeon.all_levels.size() - 1) {
             Game::get().dungeon.load_level(Game::get().dungeon.current_level_index + 1);
@@ -1532,8 +1532,7 @@ void Player::throw_out_item(std::shared_ptr<Item> item) const {
     float angle = RangeOfFloat(0, 2 * PI).get_random();
     float len = pick_up_range * 1.5;
     sf::Vector2f item_position = position + sf::Vector2f(std::cos(angle), std::sin(angle)) * len;
-    Game::get().dungeon.current_level->laying_items.push_back(LayingItem(item, item_position)
-    );
+    Game::get().dungeon.current_level->laying_items.push_back(LayingItem(item, item_position));
 }
 
 bool Player::pick_up_item(std::shared_ptr<Item> item) {
