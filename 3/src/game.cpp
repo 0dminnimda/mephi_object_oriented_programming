@@ -268,7 +268,8 @@ void load_level_from_config(P parent, Dungeon &dungeon) {
     if (auto value = get_as(parent, "laying_items_spawned_per_class", size_t); value) {
         level.laying_items_spawned_per_class = *value;
     }
-    level.resize_tiles(get_as_or(parent, "rows", size_t, 30), get_as_or(parent, "cols", size_t, 30));
+    size_t size = get_as_or(parent, "size", size_t, 30);
+    level.resize_tiles(size, size);
     level.regenerate();
     dungeon.add_level(level);
 }
