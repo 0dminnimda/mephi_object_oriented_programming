@@ -45,6 +45,11 @@ setup_sfml:
 setup_doctest:
 	curl -o tests/doctest.h https://raw.githubusercontent.com/doctest/doctest/master/doctest/doctest.h
 
+.PHONY: setup_toml
+setup_toml:
+	mkdir -p src/toml++
+	curl -o src/toml++/toml.hpp https://raw.githubusercontent.com/marzer/tomlplusplus/master/toml.hpp
+
 .PHONY: compile
 compile: cmake_build
 	cd $(OUT_DIR) && cmake --build .

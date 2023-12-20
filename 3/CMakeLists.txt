@@ -34,12 +34,14 @@ if(NOT WIN32)
     add_link_options(-g)
 endif()
 
+add_compile_definitions(TOML_HEADER_ONLY=0)
+
 if (CMAKE_BUILD_TYPE EQUAL "DEBUG")
     add_compile_definitions(DEBUG)
 endif()
 
 if(NOT PROJ_NOT_BUILD_MAIN)
-    add_executable(main ${PROJ_ROOT}/src/game.cpp ${PROJ_ROOT}/src/main.cpp)
+    add_executable(main ${PROJ_ROOT}/src/toml_impl.cpp ${PROJ_ROOT}/src/game.cpp ${PROJ_ROOT}/src/main.cpp)
     set_target_properties(main PROPERTIES SUFFIX ".out")
     target_link_libraries(main sfml-window sfml-system sfml-graphics sfml-audio ${Boost_LIBRARIES})
 endif()

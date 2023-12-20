@@ -28,6 +28,8 @@
 #include <iostream>
 #include <iterator>
 
+#include "toml++/toml.hpp"
+
 #include "color_operations.hpp"
 #include "game_exports.hpp"
 #include "shared.hpp"
@@ -214,23 +216,62 @@ void Game::save_config(const std::string &filename) {
     })
 }
 
+template <typename T>
+boost::optional<T> get_as__with_typename(
+    toml::table &table, const char *path, const char *type_name
+) {
+    auto el = table.at_path(path);
+    if (!el) return boost::none;
+
+    if (auto value = el.value<T>(); value) {
+        return *value;
+    }
+
+    std::cerr << "TypeError: expected " << path << " to be of type " << type_name << ", got " << el.type()
+              << std::endl;
+    return boost::none;
+}
+
+#define get_as(table, path, T) get_as__with_typename<T>(table, path, #T)
+
+template <typename T>
+T get_as_or__with_typename(
+    toml::table &table, const char *path, const char *type_name, T default_value
+) {
+    if (auto value = get_as__with_typename<T>(table, path, type_name); value) {
+        return *value;
+    }
+    return default_value;
+}
+
+#define get_as_or(table, path, T, default_value) get_as_or__with_typename<T>(table, path, #T, default_value)
+
 bool Game::load_config(const std::string &filename) {
+    toml::table table;
     try {
-        std::ifstream ifs(filename);
-        boost::archive::text_iarchive ia(ifs);
-        ia >> actor_classes;
-        ia >> player_template;
-        ia >> enemy_templates;
-        ia >> item_classes;
-        ia >> item_templates;
-        return true;
-    } catch (const std::exception &e) {
-        std::cout << "Error: " << e.what() << std::endl;
-        return false;
-    } catch (...) {
-        std::cout << "Unknwon error occured" << std::endl;
+        table = toml::parse_file(filename);
+    } catch (const toml::parse_error &err) {
+        std::cerr << "Error parsing file '" << * err.source().path << "':\n"
+                  << err.description() << "\n (" << err.source().begin << ")\n";
         return false;
     }
+
+    size_t actors_spawned_per_class = get_as_or(table, "actors_spawned_per_class", size_t, 1000);
+    size_t level_count = get_as_or(table, "level_count", size_t, 2);
+
+    setup_default_actors();
+    setup_default_items();
+
+    for (size_t i = 0; i < level_count; ++i)        
+    {
+        DungeonLevel level;
+        level.actors_spawned_per_class = actors_spawned_per_class;
+        level.resize_tiles(30, 30);
+        level.regenerate();
+        dungeon.add_level(level);
+    }
+
+    return true;
 }
 
 bool is_pressed(const sf::Event &event, sf::Keyboard::Key key) {
