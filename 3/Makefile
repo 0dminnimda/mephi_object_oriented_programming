@@ -17,7 +17,9 @@ BUILD_TYPE = Release
 call_cmake = cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
 	-DCMAKE_C_COMPILER=$(CC) -DCMAKE_CXX_COMPILER=$(CXX) -DPROJ_ROOT="$(PROJ_ROOT)"
 
+TSAN_OPTIONS = "suppressions=./tsan_suppressions.txt"
 DISPLAY = ":1"
+NO_DISPLAY = ":0"
 
 $(OUT_DIR):
 	mkdir -p $(OUT_DIR)
@@ -66,7 +68,12 @@ setup_termux_gui:
 .PHONY: run
 run:
 	$(call prep_executable, EXEC, ./$(OUT_DIR)/bin/main.out)
-	DISPLAY=$(DISPLAY) $(EXEC)
+	DISPLAY=$(DISPLAY) TSAN_OPTIONS=$(TSAN_OPTIONS) $(EXEC)
+
+.PHONY: run_no_display
+run_no_display:
+	$(call prep_executable, EXEC, ./$(OUT_DIR)/bin/main.out)
+	DISPLAY=$(NO_DISPLAY) TSAN_OPTIONS=$(TSAN_OPTIONS) $(EXEC)
 
 PHONY: com_test
 com_test: $(TEST_DIR) $(COV_DIR)
