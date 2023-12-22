@@ -8,6 +8,7 @@
 #include <SFML/System.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <array>
+#include <atomic>
 // clang-format off
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
@@ -829,13 +830,15 @@ public:
     sf::Vector2f velocity;
     sf::Vector2f acceleration;
 
+    std::shared_ptr<std::mutex> mut;
+
     bool pushable = true;
 
-    RigidBody() = default;
-    RigidBody(float size, float mass) : size(size), mass(mass) {}
-    RigidBody(sf::Vector2f position) : position(position) {}
+    RigidBody() : mut(std::make_shared<std::mutex>()) {}
+    RigidBody(float size, float mass) : mut(std::make_shared<std::mutex>()), size(size), mass(mass) {}
+    RigidBody(sf::Vector2f position) : mut(std::make_shared<std::mutex>()), position(position) {}
     RigidBody(sf::Vector2f position, float size, float mass)
-        : size(size), mass(mass), position(position) {}
+        : mut(std::make_shared<std::mutex>()), size(size), mass(mass), position(position) {}
 
     void apply_force(sf::Vector2f forece);
     void apply_impulse(sf::Vector2f impulse);

@@ -3,6 +3,7 @@
 #ifndef MISSING_SERIALIZERS_H
 #define MISSING_SERIALIZERS_H
 
+#include <atomic>
 #include <SFML/System.hpp>
 #include <boost/serialization/access.hpp>
 
@@ -14,6 +15,27 @@ namespace boost {
             ar &a.y;
         }
 
+    }  // namespace serialization
+}  // namespace boost
+
+namespace boost {
+    namespace serialization {
+        template <class Archive, typename T>
+        void save(Archive &ar, const std::atomic<T> &obj, const unsigned int version) {
+            ar &obj.load();
+        }
+
+        template <class Archive, typename T>
+        void load(Archive &ar, std::atomic<T> &obj, const unsigned int version) {
+            T value;
+            ar &value;
+            obj.store(value);
+        }
+
+        template <class Archive, typename T>
+        void serialize(Archive &ar, std::atomic<T> &t, const unsigned int file_version) {
+            split_free(ar, t, file_version);
+        }
     }  // namespace serialization
 }  // namespace boost
 

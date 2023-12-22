@@ -1,4 +1,5 @@
 #include "game.hpp"
+#include <mutex>
 
 #if 1
 #include <stdlib.h>
@@ -1511,6 +1512,7 @@ void RigidBody::deepcopy_to(RigidBody &other) const {
     other.position = position;
     other.pushable = pushable;
     other.size = size;
+    other.mut = std::make_shared<std::mutex>();
 }
 
 bool RigidBody::is_moving(float epsilon) const {
@@ -1811,6 +1813,9 @@ void WeaponWithCooldown::deepcopy_to(WeaponWithCooldown &other) const {
 }
 
 bool MeleeWeapon::try_to_attack(Actor &source, Actor &target) {
+    std::cout << (size_t)target.mut.get() << std::endl;
+    std::unique_lock<std::mutex> lck(*target.mut);
+
     if (!is_in_range(source, target.position)) return false;
 
     float damage = get_damage(target);
