@@ -23,9 +23,12 @@
 #include <boost/serialization/variant.hpp>
 #include <boost/serialization/vector.hpp>
 // clang-format on
+#include <condition_variable>
 #include <memory>
+#include <mutex>
 #include <random>
 #include <string>
+#include <thread>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -33,6 +36,8 @@
 #include "deepcopy.hpp"
 #include "matrix.hpp"
 #include "missing_serializers.hpp"
+
+static const size_t thread_count = std::thread::hardware_concurrency();
 
 BOOST_CLASS_EXPORT_KEY(sf::Vector2f);
 
@@ -1105,6 +1110,7 @@ public:
     Tile *get_tile(sf::Vector2f position);
     void add_laying_item(std::unique_ptr<LayingItem> item);
     void update(float delta_time);
+    void update_enemies_in_thread(float delta_time, size_t id);
     void fixed_update(float delta_time);
     void handle_collitions();
     void handle_actor_actor_collitions(std::vector<RigidBody *> &bodies);
@@ -1179,6 +1185,7 @@ public:
 
     void init();
     void update(float delta_time);
+    void update_enemies_in_thread(float delta_time, size_t id);
     void fixed_update(float delta_time);
     void add_level(const DungeonLevel &level);
     bool load_level(size_t index);
@@ -1236,6 +1243,24 @@ public:
     void display();
 };
 
+class EnemyThreads {
+public:
+    std::vector<std::thread> threads;
+    std::mutex sync_mutex;
+    std::condition_variable children_cv;
+    std::condition_variable parent_cv;
+    bool can_start_update = false;
+    size_t updates_done = 0;
+    float delta_time;
+
+    ~EnemyThreads();
+
+    void init();
+    void run(size_t id);
+    void start_updates();
+    void join_updates();
+};
+
 class Game {
 public:
     sf::Clock clock;
@@ -1244,6 +1269,8 @@ public:
     GameView game_view;
 
     Dungeon dungeon;
+
+    EnemyThreads enemy_threads;
 
     bool have_won = false;
     bool is_in_game = false;
@@ -1274,6 +1301,7 @@ public:
 
     bool init(unsigned int width, unsigned int height);
     void update(float delta_time);
+    void update_enemies_in_thread(float delta_time, size_t id);
     void handle_fixed_update(float delta_time);
     bool run();
     void handle_events();

@@ -27,6 +27,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <barrier>
 
 #include "color_operations.hpp"
 #include "game_exports.hpp"
@@ -74,6 +75,59 @@ Tile &Tile::set_building(std::shared_ptr<Chest> building) {
     return *this;
 }
 
+EnemyThreads::~EnemyThreads() {
+    for (auto &thread : threads) {
+        thread.join();
+    }
+}
+
+void EnemyThreads::init() {
+    threads.reserve(thread_count);
+    for (size_t i = 0; i < thread_count; ++i) {
+        threads.emplace_back(std::thread(&EnemyThreads::run, this, i));
+    }
+}
+
+void EnemyThreads::run(size_t id) {
+    static std::barrier sync_point(thread_count);
+
+    while (1) {
+        {
+            std::unique_lock<std::mutex> lck(sync_mutex);
+            children_cv.wait(lck, [&] { return can_start_update; });
+        }
+
+        // sync_point.arrive_and_wait();
+
+        Game::get().update_enemies_in_thread(delta_time, id);
+
+        sync_point.arrive_and_wait();
+
+        bool is_last;
+        {
+            std::unique_lock<std::mutex> lck(sync_mutex);
+            can_start_update = false;
+            updates_done += 1;
+            is_last = updates_done == thread_count;
+        }
+        if (is_last) parent_cv.notify_one();
+    }
+}
+
+void EnemyThreads::start_updates() {
+    {
+        std::unique_lock<std::mutex> lck(sync_mutex);
+        can_start_update = true;
+        updates_done = 0;
+    }
+    children_cv.notify_all();
+}
+
+void EnemyThreads::join_updates() {
+    std::unique_lock<std::mutex> lck(sync_mutex);
+    parent_cv.wait(lck, [&] { return updates_done == thread_count; });
+}
+
 Game &Game::get(bool brand_new) {
     static std::shared_ptr<Game> game = nullptr;
 
@@ -101,6 +155,7 @@ bool Game::init(unsigned int width, unsigned int height) {
         if (!it.init()) return false;
     }
     dungeon.init();
+    enemy_threads.init();
     return game_view.init(width, height);
 }
 
@@ -344,6 +399,10 @@ void Game::handle_events() {
 bool Game::is_playing() const { return dungeon.player.alive && !have_won; }
 
 void Game::update(float delta_time) { dungeon.update(delta_time); }
+
+void Game::update_enemies_in_thread(float delta_time, size_t id) {
+    dungeon.update_enemies_in_thread(delta_time, id);
+}
 
 void Game::handle_fixed_update(float delta_time) {
     fixed_delta_time_leftover += delta_time;
@@ -771,6 +830,12 @@ void Dungeon::update(float delta_time) {
     }
 }
 
+void Dungeon::update_enemies_in_thread(float delta_time, size_t id) {
+    if (current_level) {
+        current_level->update_enemies_in_thread(delta_time, id);
+    }
+}
+
 void Dungeon::fixed_update(float delta_time) {
     if (current_level) {
         current_level->fixed_update(delta_time);
@@ -898,9 +963,10 @@ void DungeonLevel::regenerate_laying_items() {
 }
 
 void DungeonLevel::update(float delta_time) {
-    for (auto &enemy : enemies) {
-        enemy.update(delta_time);
-    }
+    Game::get().enemy_threads.delta_time = delta_time;
+    Game::get().enemy_threads.start_updates();
+    Game::get().enemy_threads.join_updates();
+
     Game::get().dungeon.player.update(delta_time);
 
     for (auto &enemy : enemies) {
@@ -910,6 +976,15 @@ void DungeonLevel::update(float delta_time) {
 
     delete_dead_actors();
     delete_picked_up_items();
+}
+
+void DungeonLevel::update_enemies_in_thread(float delta_time, size_t id) {
+    size_t start = id * enemies.size() / thread_count;
+    size_t end = (id + 1) * enemies.size() / thread_count;
+
+    for (size_t i = start; i < end; ++i) {
+        enemies[i].update(delta_time);
+    }
 }
 
 void DungeonLevel::fixed_update(float delta_time) {
