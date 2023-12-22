@@ -1813,7 +1813,6 @@ void WeaponWithCooldown::deepcopy_to(WeaponWithCooldown &other) const {
 }
 
 bool MeleeWeapon::try_to_attack(Actor &source, Actor &target) {
-    std::cout << (size_t)target.mut.get() << std::endl;
     std::unique_lock<std::mutex> lck(*target.mut);
 
     if (!is_in_range(source, target.position)) return false;
