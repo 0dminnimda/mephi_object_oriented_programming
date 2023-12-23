@@ -41,6 +41,7 @@ cmake_build: $(OUT_DIR)
 setup_sfml:
 	git submodule init
 	git submodule update
+	cd .. && git clone https://github.com/SFML/SFML.git
 	cd ../SFML && git checkout 2.6.x
 
 .PHONY: setup_doctest
