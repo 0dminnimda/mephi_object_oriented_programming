@@ -1166,6 +1166,8 @@ private:
     sf::Texture chest_texture;
     sf::Sprite chest_sprite;
 
+    float tile_border_size = 1;
+
 public:
     ActorsView actors_view;
 

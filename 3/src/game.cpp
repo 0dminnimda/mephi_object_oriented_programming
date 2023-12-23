@@ -1,5 +1,4 @@
 #include "game.hpp"
-#include <mutex>
 
 #if 1
 #include <stdlib.h>
@@ -22,13 +21,13 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <algorithm>
+#include <barrier>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <cmath>
 #include <fstream>
 #include <iostream>
 #include <iterator>
-#include <barrier>
 
 #include "color_operations.hpp"
 #include "game_exports.hpp"
@@ -1178,9 +1177,23 @@ bool DungeonLevelView::init() {
 }
 
 void DungeonLevelView::draw(const DungeonLevel &level) {
-    for (size_t i = 0; i < level.tiles.row_count(); ++i) {
+    sf::FloatRect view_rect = Game::get().game_view.get_display_rect();
+
+    sf::Vector2f start_of_view_f =
+        (view_rect.getPosition() - tile_border_size) / level.tile_coords_to_world_coords_factor();
+    sf::Vector2f end_of_view_f = start_of_view_f + (view_rect.getSize() + 2 * tile_border_size) /
+                                                       level.tile_coords_to_world_coords_factor();
+
+    start_of_view_f = max({0, 0}, start_of_view_f);
+    end_of_view_f =
+        min(sf::Vector2f(level.tiles.row_count(), level.tiles.column_count()), end_of_view_f);
+
+    sf::Vector2f start_of_view(start_of_view_f);
+    sf::Vector2f end_of_view(end_of_view_f);
+
+    for (size_t i = start_of_view.x; i < end_of_view.x; ++i) {
         auto &row = level.tiles[i];
-        for (size_t j = 0; j < level.tiles.column_count(); ++j) {
+        for (size_t j = start_of_view.y; j < end_of_view.y; ++j) {
             draw_tile(
                 row[j], sf::Vector2f(i, j), level.tile_coords_to_world_coords_factor(),
                 level.chest_size_factor
