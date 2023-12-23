@@ -587,14 +587,6 @@ void GameView::draw() {
     }
     experience_view.draw(Game::get().dungeon.player.experience);
 
-    sf::FloatRect view_rect = get_display_rect();
-    sf::RectangleShape view_rect_shape(view_rect.getSize());
-    view_rect_shape.setFillColor(sf::Color::Transparent);
-    view_rect_shape.setOutlineColor(sf::Color::Red);
-    view_rect_shape.setOutlineThickness(0.05f);
-    view_rect_shape.setPosition(view_rect.getPosition());
-    window.draw(view_rect_shape);
-
     if (!Game::get().dungeon.player.alive) {
         important_message.setString("YOU DIED");
         center_text_origin(important_message);
