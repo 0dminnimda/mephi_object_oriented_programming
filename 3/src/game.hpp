@@ -835,7 +835,8 @@ public:
     bool pushable = true;
 
     RigidBody() : mut(std::make_shared<std::mutex>()) {}
-    RigidBody(float size, float mass) : mut(std::make_shared<std::mutex>()), size(size), mass(mass) {}
+    RigidBody(float size, float mass)
+        : mut(std::make_shared<std::mutex>()), size(size), mass(mass) {}
     RigidBody(sf::Vector2f position) : mut(std::make_shared<std::mutex>()), position(position) {}
     RigidBody(sf::Vector2f position, float size, float mass)
         : mut(std::make_shared<std::mutex>()), size(size), mass(mass), position(position) {}
@@ -1247,7 +1248,10 @@ public:
     void clear();
     void display();
     sf::FloatRect get_display_rect(float scale = 1.0f) const;
-    void draw_sprite(sf::Sprite &sprite);
+    template <typename T>
+    void draw_culled(T &thing) {
+        if (get_display_rect().intersects(thing.getGlobalBounds())) window.draw(thing);
+    }
 };
 
 class EnemyThreads {

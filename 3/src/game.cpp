@@ -543,10 +543,6 @@ sf::FloatRect GameView::get_display_rect(float scale) const {
     return sf::FloatRect(pos.x - size.x / 2.0f, pos.y - size.y / 2.0f, size.x, size.y);
 }
 
-void GameView::draw_sprite(sf::Sprite &sprite) {
-    if (get_display_rect().intersects(sprite.getGlobalBounds())) window.draw(sprite);
-}
-
 void GameView::draw() {
     if (!Game::get().is_in_game) {
         window.draw(logo);
@@ -1230,14 +1226,14 @@ void DungeonLevelView::draw_tile(
     sf::Vector2f saved = sprite.getScale();
     sprite.setScale(saved * factor);
     sprite.setPosition(position * factor);
-    Game::get().game_view.draw_sprite(sprite);
+    Game::get().game_view.draw_culled(sprite);
     sprite.setScale(saved);
 
     if (tile.building) {
         saved = chest_sprite.getScale();
         chest_sprite.setScale(saved * factor * chest_size_factor);
         chest_sprite.setPosition(position * factor);
-        Game::get().game_view.draw_sprite(chest_sprite);
+        Game::get().game_view.draw_culled(chest_sprite);
         chest_sprite.setScale(saved);
     }
 }
@@ -1270,7 +1266,7 @@ void ActorsView::draw(const Actor &actor) {
     if (!actor.alive) {
         sprite.setColor(sprite.getColor() * death_color_multiplier);
     }
-    Game::get().game_view.draw_sprite(sprite);
+    Game::get().game_view.draw_culled(sprite);
     sprite.setScale(saved);
 
     if (actor.equipment.weapon()) items_view.draw(*(actor.equipment.weapon().item), actor.position);
@@ -1288,12 +1284,12 @@ void ProgressBarView::draw(sf::Vector2f position, float bar_width, float ratio) 
     max_bar.setSize(sf::Vector2f(1.0f, height_factor) * bar_width);
     max_bar.setPosition(position);
     max_bar.setFillColor(max_bar_color);
-    window.draw(max_bar);
+    Game::get().game_view.draw_culled(max_bar);
 
     cur_bar.setSize({max_bar.getSize().x * ratio, max_bar.getSize().y});
     cur_bar.setPosition(max_bar.getPosition());
     cur_bar.setFillColor(cur_bar_color);
-    window.draw(cur_bar);
+    Game::get().game_view.draw_culled(cur_bar);
 }
 
 void ItemsView::draw(const Item &item, sf::Vector2f position) {
@@ -1302,7 +1298,7 @@ void ItemsView::draw(const Item &item, sf::Vector2f position) {
     sf::Vector2f saved = sprite.getScale();
     sprite.setScale(saved * cls.size / Game::world_size);
     sprite.setPosition(position);
-    Game::get().game_view.draw_sprite(sprite);
+    Game::get().game_view.draw_culled(sprite);
     sprite.setScale(saved);
 }
 
