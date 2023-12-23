@@ -1244,6 +1244,8 @@ public:
     bool is_open() const;
     void clear();
     void display();
+    sf::FloatRect get_display_rect(float scale = 1.0f) const;
+    void draw_sprite(sf::Sprite &sprite);
 };
 
 class EnemyThreads {

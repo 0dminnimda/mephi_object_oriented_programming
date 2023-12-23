@@ -538,6 +538,16 @@ void GameView::clear() { window.clear(sf::Color(50, 50, 50)); }
 
 void GameView::display() { window.display(); }
 
+sf::FloatRect GameView::get_display_rect(float scale) const {
+    auto size = view.getSize() * scale;
+    auto pos = view.getCenter();
+    return sf::FloatRect(pos.x - size.x / 2.0f, pos.y - size.y / 2.0f, size.x, size.y);
+}
+
+void GameView::draw_sprite(sf::Sprite &sprite) {
+    if (get_display_rect().intersects(sprite.getGlobalBounds())) window.draw(sprite);
+}
+
 void GameView::draw() {
     if (!Game::get().is_in_game) {
         window.draw(logo);
@@ -1207,14 +1217,14 @@ void DungeonLevelView::draw_tile(
     sf::Vector2f saved = sprite.getScale();
     sprite.setScale(saved * factor);
     sprite.setPosition(position * factor);
-    window.draw(sprite);
+    Game::get().game_view.draw_sprite(sprite);
     sprite.setScale(saved);
 
     if (tile.building) {
         saved = chest_sprite.getScale();
         chest_sprite.setScale(saved * factor * chest_size_factor);
         chest_sprite.setPosition(position * factor);
-        window.draw(chest_sprite);
+        Game::get().game_view.draw_sprite(chest_sprite);
         chest_sprite.setScale(saved);
     }
 }
@@ -1247,7 +1257,7 @@ void ActorsView::draw(const Actor &actor) {
     if (!actor.alive) {
         sprite.setColor(sprite.getColor() * death_color_multiplier);
     }
-    window.draw(sprite);
+    Game::get().game_view.draw_sprite(sprite);
     sprite.setScale(saved);
 
     if (actor.equipment.weapon()) items_view.draw(*(actor.equipment.weapon().item), actor.position);
@@ -1279,7 +1289,7 @@ void ItemsView::draw(const Item &item, sf::Vector2f position) {
     sf::Vector2f saved = sprite.getScale();
     sprite.setScale(saved * cls.size / Game::world_size);
     sprite.setPosition(position);
-    window.draw(sprite);
+    Game::get().game_view.draw_sprite(sprite);
     sprite.setScale(saved);
 }
 
