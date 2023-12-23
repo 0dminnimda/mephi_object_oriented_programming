@@ -1,1 +1,3 @@
+# sfml problems
 called_from_lib:swrast_dri.so
+called_from_lib:libnvwgf2umx.so
