@@ -14,8 +14,6 @@
 #include "game.hpp"
 #include "shared.hpp"
 
-using std::min, std::max;
-
 int sub_main() {
     Game &game = Game::get();
 
