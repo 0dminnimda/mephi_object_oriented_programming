@@ -24,7 +24,9 @@
 #include <barrier>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
+#include <boost/dll/import.hpp>
 #include <cmath>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -33,6 +35,8 @@
 #include "shared.hpp"
 #include "toml++/toml.hpp"
 #include "vector_operations.hpp"
+
+namespace fs = std::filesystem;
 
 constexpr float PI = 3.14159265358979323846f;
 
@@ -237,19 +241,47 @@ void Game::import_item_plugin(const ItemPlugin &plugin) {
     }
 }
 
-extern ItemPlugin lock_pick_plugin;
-extern ItemPlugin hammer_plugin;
-extern ItemPlugin sword_plugin;
-extern ItemPlugin shield_plugin;
+void Game::import_item_plugin_from_file(const std::string &filename) {
+    boost::dll::fs::path lib_path(filename);
+    std::cout << "loading plugin " << filename << std::endl;
+    boost::shared_ptr<ItemPlugin> plugin = boost::dll::import<ItemPlugin>(
+        lib_path, "item_plugin", boost::dll::load_mode::append_decorations
+    );
+    std::cout << "after loading plugin " << plugin.get() << std::endl;
+    std::cout << "importing plugin " << filename << std::endl;
+    import_item_plugin(*plugin);
+    std::cout << "after importing plugin" << std::endl;
+}
+
+void Game::load_item_plugins(const std::string &directory) {
+    fs::path dir = directory;
+    for (const auto &entry : fs::directory_iterator(dir)) {
+        if (entry.is_regular_file()) {
+            import_item_plugin_from_file(entry.path());
+            // std::ofstream out(dir / "merged.txt");
+            // std::ifstream file(entry.path());
+            // std::stringstream buffer;
+            // buffer << file.rdbuf();
+            // buffer.str();
+        }
+    }
+}
+
+// extern ItemPlugin lock_pick_plugin;
+// extern ItemPlugin hammer_plugin;
+// extern ItemPlugin sword_plugin;
+// extern ItemPlugin shield_plugin;
 
 void Game::setup_default_items() {
-    import_item_plugin(lock_pick_plugin);
-    import_item_plugin(hammer_plugin);
-    import_item_plugin(sword_plugin);
-    import_item_plugin(shield_plugin);
+    // import_item_plugin(lock_pick_plugin);
+    // import_item_plugin(hammer_plugin);
+    // import_item_plugin(sword_plugin);
+    // import_item_plugin(shield_plugin);
 
     player_template.pick_up_item(make_item(item_class_index_by_name("hammer")));
-    enemy_templates[actor_class_index_by_name("goblin")].pick_up_item(make_item(item_class_index_by_name("sword")));
+    enemy_templates[actor_class_index_by_name("goblin")].pick_up_item(
+        make_item(item_class_index_by_name("sword"))
+    );
 }
 
 void Game::handle_save_load() {
@@ -330,7 +362,11 @@ bool Game::load_config(const std::string &filename) {
         return false;
     }
 
+    std::string item_plugins_directory =
+        get_as_or(table, "item_plugins_directory", std::string, "item_plugins");
+
     setup_default_actors();
+    load_item_plugins(item_plugins_directory);
     setup_default_items();
 
     if (auto arr = get_as_array(table, "levels"); arr) {

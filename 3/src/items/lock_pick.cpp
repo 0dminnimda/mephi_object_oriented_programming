@@ -99,5 +99,5 @@ public:
     }
 };
 
-// extern "C" BOOST_SYMBOL_EXPORT LockPickPlugin lock_pick_plugin;
-LockPickPlugin lock_pick_plugin;
+extern "C" BOOST_SYMBOL_EXPORT LockPickPlugin item_plugin;
+LockPickPlugin item_plugin;

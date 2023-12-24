@@ -41,5 +41,5 @@ public:
     }
 };
 
-// extern "C" BOOST_SYMBOL_EXPORT ShieldPlugin shield_plugin;
-ShieldPlugin shield_plugin;
+extern "C" BOOST_SYMBOL_EXPORT ShieldPlugin item_plugin;
+ShieldPlugin item_plugin;
