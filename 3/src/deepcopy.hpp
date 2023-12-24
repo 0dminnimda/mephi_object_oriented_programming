@@ -19,6 +19,7 @@ T deepcopy(const T &self) {
     return value;
 }
 
-#define DeepCopy(T) void deepcopy_to(T &other) const;
+#define DeepCopy(T) void deepcopy_to(T &other) const
+#define DeepCopyCls(T) void T::deepcopy_to(T &other) const
 
 #endif  // DEEPCOPY_H

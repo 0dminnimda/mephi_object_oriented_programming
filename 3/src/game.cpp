@@ -660,7 +660,7 @@ ItemUseResult LockPick::use(Actor &target) {
     return ItemUseResult(result.pick_broken);
 }
 
-void LockPick::deepcopy_to(LockPick &other) const { Item::deepcopy_to(other); }
+DeepCopyCls(LockPick) { Item::deepcopy_to(other); }
 
 std::shared_ptr<Item> LockPick::deepcopy_item() const { return deepcopy_shared(*this); }
 
@@ -699,7 +699,7 @@ void StackOfItems::use(Actor &target) {
     }
 }
 
-void StackOfItems::deepcopy_to(StackOfItems &other) const {
+DeepCopyCls(StackOfItems) {
     if (item) {
         assert(size != 0 && "Welp, ur fuct. StackOfItems is not nullptr item when size = 0");
         other.item = item->deepcopy_item();
@@ -761,7 +761,7 @@ bool Inventory::add_item(std::shared_ptr<Item> item) {
     return false;
 }
 
-void Inventory::deepcopy_to(Inventory &other) const {
+DeepCopyCls(Inventory) {
     other.max_size = max_size;
     other.slots.resize(slots.size());
     for (size_t i = 0; i < slots.size(); ++i) {
@@ -1452,7 +1452,7 @@ StackOfItems *Equipment::get_slot(size_t index) {
     return nullptr;
 }
 
-void Equipment::deepcopy_to(Equipment &other) const {
+DeepCopyCls(Equipment) {
     for (size_t i = 0; i < slots.size(); ++i) {
         slots[i].deepcopy_to(other.slots[i]);
     }
@@ -1472,7 +1472,7 @@ void Actor::recalculate_characteristics() {
     }
 }
 
-void Actor::deepcopy_to(Actor &other) const {
+DeepCopyCls(Actor) {
     RigidBody::deepcopy_to(other);
     other.actor_class_index = actor_class_index;
     other.health = health;
@@ -1523,7 +1523,7 @@ size_t Experience::needs_exp_for_level(size_t level) { return 4 * level * level 
 
 void Experience::level_up() { level += 1; }
 
-void RigidBody::deepcopy_to(RigidBody &other) const {
+DeepCopyCls(RigidBody) {
     other.position = position;
     other.pushable = pushable;
     other.size = size;
@@ -1561,7 +1561,7 @@ sf::Vector2f center(const sf::FloatRect &a) {
 
 void Player::init() {}
 
-void Player::deepcopy_to(Player &other) const {
+DeepCopyCls(Player) {
     Actor::deepcopy_to(other);
     inventory.deepcopy_to(other.inventory);
 }
@@ -1793,7 +1793,7 @@ void Enemy::on_deletion() {
     level->laying_items.push_back(laying_item);
 }
 
-void Enemy::deepcopy_to(Enemy &other) const { Actor::deepcopy_to(other); }
+DeepCopyCls(Enemy) { Actor::deepcopy_to(other); }
 
 void Item::update_owner_characteristics(Characteristics &characteristics) {
     auto &artefact = get_class().artefact;
@@ -1801,7 +1801,7 @@ void Item::update_owner_characteristics(Characteristics &characteristics) {
     artefact->apply(characteristics);
 }
 
-void Item::deepcopy_to(Item &other) const { other.item_class_index = item_class_index; }
+DeepCopyCls(Item) { other.item_class_index = item_class_index; }
 
 ItemClass &Item::get_class() const { return Game::get().item_classes[item_class_index]; }
 
@@ -1812,7 +1812,7 @@ ItemUseResult Potion::use(Actor &target) {
     return ItemUseResult();
 }
 
-void Weapon::deepcopy_to(Weapon &other) const {
+DeepCopyCls(Weapon) {
     Item::deepcopy_to(other);
     other.enchantment = enchantment;
     other.damage_range = damage_range;
@@ -1820,7 +1820,7 @@ void Weapon::deepcopy_to(Weapon &other) const {
 
 float Weapon::get_damage(Actor &target) { return damage_range.get_random(); }
 
-void WeaponWithCooldown::deepcopy_to(WeaponWithCooldown &other) const {
+DeepCopyCls(WeaponWithCooldown) {
     Weapon::deepcopy_to(other);
     other.since_last_use = since_last_use;
     other.cooldown_time = cooldown_time;
@@ -1872,7 +1872,7 @@ ItemUseResult MeleeWeapon::use(Actor &source) {
     return ItemUseResult();
 }
 
-void MeleeWeapon::deepcopy_to(MeleeWeapon &other) const {
+DeepCopyCls(MeleeWeapon) {
     WeaponWithCooldown::deepcopy_to(other);
     other.push_back_force_multiplier = push_back_force_multiplier;
 }
@@ -1881,7 +1881,7 @@ bool Hammer::is_in_range(const Actor &source, sf::Vector2f target) const {
     return length_squared(source.position - target) <= hit_range * hit_range;
 }
 
-void Hammer::deepcopy_to(Hammer &other) const {
+DeepCopyCls(Hammer) {
     MeleeWeapon::deepcopy_to(other);
     other.hit_range = hit_range;
 }
@@ -1890,7 +1890,7 @@ std::shared_ptr<Item> Hammer::deepcopy_item() const { return deepcopy_shared(*th
 
 float Wearable::generate_defence() { return defence_range.get_random(); }
 
-void Wearable::deepcopy_to(Wearable &other) const {
+DeepCopyCls(Wearable) {
     Item::deepcopy_to(other);
     other.kind = kind;
     other.defence_range = defence_range;

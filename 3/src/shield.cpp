@@ -23,7 +23,7 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(Shield);
 
-void Shield::deepcopy_to(Shield &other) const { Wearable::deepcopy_to(other); }
+DeepCopyCls(Shield) { Wearable::deepcopy_to(other); }
 
 std::shared_ptr<Item> Shield::deepcopy_item() const { return deepcopy_shared(*this); }
 
