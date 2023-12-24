@@ -34,6 +34,7 @@
 #include "shared.hpp"
 #include "toml++/toml.hpp"
 #include "vector_operations.hpp"
+#include "sword.cpp"
 
 constexpr float PI = 3.14159265358979323846f;
 
@@ -1891,17 +1892,6 @@ void Hammer::deepcopy_to(Hammer &other) const {
 }
 
 std::shared_ptr<Item> Hammer::deepcopy_item() const { return deepcopy_shared(*this); }
-
-bool Sword::is_in_range(const Actor &source, sf::Vector2f target) const {
-    return length_squared(source.position - target) <= hit_range * hit_range;
-}
-
-void Sword::deepcopy_to(Sword &other) const {
-    MeleeWeapon::deepcopy_to(other);
-    other.hit_range = hit_range;
-}
-
-std::shared_ptr<Item> Sword::deepcopy_item() const { return deepcopy_shared(*this); }
 
 float Wearable::generate_defence() { return defence_range.get_random(); }
 
