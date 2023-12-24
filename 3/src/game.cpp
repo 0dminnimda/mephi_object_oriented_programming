@@ -1899,7 +1899,3 @@ void Wearable::deepcopy_to(Wearable &other) const {
     other.kind = kind;
     other.defence_range = defence_range;
 }
-
-void Shield::deepcopy_to(Shield &other) const { Wearable::deepcopy_to(other); }
-
-std::shared_ptr<Item> Shield::deepcopy_item() const { return deepcopy_shared(*this); }

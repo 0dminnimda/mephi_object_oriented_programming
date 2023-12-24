@@ -1,3 +1,4 @@
+#include "game.hpp"
 
 class Sword : public MeleeWeapon {
 public:
