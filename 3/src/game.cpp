@@ -31,8 +31,6 @@
 
 #include "color_operations.hpp"
 #include "shared.hpp"
-#include "shield.cpp"
-#include "sword.cpp"
 #include "toml++/toml.hpp"
 #include "vector_operations.hpp"
 
@@ -238,6 +236,9 @@ void Game::import_item_plugin(const ItemPlugin &plugin) {
         ++index;
     }
 }
+
+extern ItemPlugin sword_plugin;
+extern ItemPlugin shield_plugin;
 
 void Game::setup_default_items() {
     size_t hammer_id = add_item_class(

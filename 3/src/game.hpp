@@ -37,6 +37,7 @@
 
 #include "deepcopy.hpp"
 #include "matrix.hpp"
+#include "shared.hpp"
 #include "missing_serializers.hpp"
 
 static const size_t thread_count = std::thread::hardware_concurrency();

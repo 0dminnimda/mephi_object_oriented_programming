@@ -1,5 +1,7 @@
-#include "game.hpp"
-#include "vector_operations.hpp"
+#include <boost/config.hpp>  // BOOST_SYMBOL_EXPORT
+
+#include "../game.hpp"
+#include "../vector_operations.hpp"
 
 class Sword : public MeleeWeapon {
 public:

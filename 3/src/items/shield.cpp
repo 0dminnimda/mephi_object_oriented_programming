@@ -1,6 +1,6 @@
 #include <boost/config.hpp>  // BOOST_SYMBOL_EXPORT
 
-#include "game.hpp"
+#include "../game.hpp"
 
 class Shield : public Wearable {
 public:

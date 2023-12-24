@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef SHARED_HPP
+#define SHARED_HPP
+
 #include <exception>
 #include <iostream>
 #include <memory>
@@ -18,3 +23,5 @@ std::unique_ptr<TO> static_unique_pointer_cast(std::unique_ptr<FROM> &&old) {
     return std::unique_ptr<TO>{static_cast<TO *>(old.release())};
     // conversion: unique_ptr<FROM>->FROM*->TO*->unique_ptr<TO>
 }
+
+#endif  // SHARED_HPP
