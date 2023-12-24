@@ -228,10 +228,6 @@ void Game::setup_default_items() {
     size_t hammer_id = add_item_class(
         ItemClass("hammer", "smashes in the face", "hammer.png", 13.0f, Item::Kind::Weapon)
     );
-    size_t sword_id = add_item_class(ItemClass(
-        "sword", "you can cut yourself just by looking at it", "sword_silver.png", 8.0f,
-        Item::Kind::Weapon
-    ));
     size_t lock_pick_id = add_item_class(ItemClass(
         "lock pick", "you sneaky pick", "lock_pick_with_fabric.png", 7.0f, Item::Kind::Custom
     ));
@@ -240,15 +236,13 @@ void Game::setup_default_items() {
     item_templates.resize(item_classes.size());
     item_templates[hammer_id] =
         std::make_unique<Hammer>(hammer_id, RangeOfLong(20, 40), 6.0f, 10000.0f, sf::seconds(1.0f));
-    item_templates[sword_id] =
-        std::make_unique<Sword>(sword_id, RangeOfLong(3, 5), 2.0f, 10.0f, sf::seconds(0.3f));
     item_templates[lock_pick_id] = std::make_unique<LockPick>(lock_pick_id);
 
-    ShieldPlugin shield_plugin;
+    import_item_plugin(sword_plugin);
     import_item_plugin(shield_plugin);
 
-    player_template.pick_up_item(make_item(hammer_id));
-    enemy_templates[actor_class_index_by_name("goblin")].pick_up_item(make_item(sword_id));
+    player_template.pick_up_item(make_item(item_class_index_by_name("hammer")));
+    enemy_templates[actor_class_index_by_name("goblin")].pick_up_item(make_item(item_class_index_by_name("sword")));
 }
 
 void Game::handle_save_load() {

@@ -29,10 +29,15 @@ std::shared_ptr<Item> Shield::deepcopy_item() const { return deepcopy_shared(*th
 
 class ShieldPlugin : public ItemPlugin {
 public:
-    std::vector<std::pair<ItemClass, std::unique_ptr<Item>>> get_item_classes_and_templates() const override {
-        ItemClass wooden_shield("wooden shield", "use protection", "shield_wood_metal.png", 8.0f, Item::Kind::Wearable);
+    std::vector<std::pair<ItemClass, std::unique_ptr<Item>>> get_item_classes_and_templates(
+    ) const override {
+        ItemClass wooden_shield(
+            "wooden shield", "use protection", "shield_wood_metal.png", 8.0f, Item::Kind::Wearable
+        );
 
-        ItemClass golden_shield("golden shield", "magic", "shield_gold.png", 8.0f, Item::Kind::Wearable);
+        ItemClass golden_shield(
+            "golden shield", "magic", "shield_gold.png", 8.0f, Item::Kind::Wearable
+        );
         golden_shield.artefact = CharacteristicsModifier();
         golden_shield.artefact->speed = AddToValue<float>(3.0f);
 
@@ -44,4 +49,4 @@ public:
 };
 
 // extern "C" BOOST_SYMBOL_EXPORT ShieldPlugin shield_plugin;
-// ShieldPlugin shield_plugin;
+ShieldPlugin shield_plugin;

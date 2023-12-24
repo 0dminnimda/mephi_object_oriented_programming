@@ -1,4 +1,5 @@
 #include "game.hpp"
+#include "vector_operations.hpp"
 
 class Sword : public MeleeWeapon {
 public:
@@ -41,3 +42,23 @@ void Sword::deepcopy_to(Sword &other) const {
 }
 
 std::shared_ptr<Item> Sword::deepcopy_item() const { return deepcopy_shared(*this); }
+
+class SwordPlugin : public ItemPlugin {
+public:
+    std::vector<std::pair<ItemClass, std::unique_ptr<Item>>> get_item_classes_and_templates(
+    ) const override {
+        ItemClass sword(
+            "sword", "you can cut yourself just by looking at it", "sword_silver.png", 8.0f,
+            Item::Kind::Weapon
+        );
+
+        std::vector<ItemPlugin::item_type> result;
+        result.push_back(std::move(
+            make_item<Sword>(sword, 0, RangeOfLong(3, 5), 2.0f, 10.0f, sf::seconds(0.3f))
+        ));
+        return result;
+    }
+};
+
+// extern "C" BOOST_SYMBOL_EXPORT SwordPlugin sword_plugin;
+SwordPlugin sword_plugin;
