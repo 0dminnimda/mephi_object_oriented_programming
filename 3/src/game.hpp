@@ -497,31 +497,6 @@ BOOST_CLASS_EXPORT_KEY(Wearable);
 
 class Tile;
 
-class LockPick : public Item {
-public:
-    DeepCopy(LockPick);
-
-    static constexpr float picking_range = 1.5f;
-
-    LockPick() = default;
-    LockPick(size_t item_class_index) : Item(item_class_index) {}
-
-    ItemUseResult use(Actor &target) override;
-    std::shared_ptr<Item> deepcopy_item() const override;
-
-private:
-    const Tile *find_best_choice(Actor &target) const;
-
-    friend class boost::serialization::access;
-
-    template <class Archive>
-    void serialize(Archive &ar, const unsigned int version) {
-        ar &BOOST_SERIALIZATION_BASE_OBJECT_NVP(Item);
-    }
-};
-
-BOOST_CLASS_EXPORT_KEY(LockPick);
-
 struct LockPickingResult {
 public:
     bool lock_picked;
