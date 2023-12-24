@@ -19,7 +19,6 @@ using std::min, std::max;
 int sub_main() {
     Game &game = Game::get();
 
-    // game.save_config("template_config.txt");
     if (!game.load_config("config.toml")) {
         game.setup_default_actors();
         game.setup_default_items();

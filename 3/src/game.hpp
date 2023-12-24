@@ -1288,7 +1288,6 @@ public:
     void save(const std::string &filename);
     void load(const std::string &filename);
     void handle_save_load();
-    void save_config(const std::string &filename);
     bool load_config(const std::string &filename);
     void setup_default_actors();
     void setup_default_items();

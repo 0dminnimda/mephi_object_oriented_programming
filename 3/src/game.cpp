@@ -257,18 +257,6 @@ void Game::handle_save_load() {
     }
 }
 
-void Game::save_config(const std::string &filename) {
-    TRY_CATCH_ALL({
-        std::ofstream ofs(filename);
-        boost::archive::text_oarchive oa(ofs);
-        oa << actor_classes;
-        oa << player_template;
-        oa << enemy_templates;
-        oa << item_classes;
-        oa << item_templates;
-    })
-}
-
 template <typename T, typename P>
 boost::optional<T> get_as__with_typename(P &parent, const char *path, const char *type_name) {
     toml::node_view<toml::node> el = parent.at_path(path);
