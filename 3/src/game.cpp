@@ -150,6 +150,8 @@ Game &Game::get(bool brand_new) {
         game = std::make_shared<Game>();
     }
 
+    std::cout << "Game::get: " << game << std::endl;
+
     return *game;
 }
 
@@ -229,6 +231,10 @@ void Game::setup_default_actors() {
 }
 
 void Game::import_item_plugin(const ItemPlugin &plugin) {
+    std::string gg("wazzup");
+    std::cout << plugin.test(gg) << std::endl;
+    std::cout << gg << std::endl;
+
     std::vector<ItemPlugin::item_type> vec;
     plugin.add_classes_and_templates(vec);
 
@@ -278,7 +284,13 @@ void Game::setup_default_items() {
     // import_item_plugin(sword_plugin);
     // import_item_plugin(shield_plugin);
 
-    player_template.pick_up_item(make_item(item_class_index_by_name("hammer")));
+    size_t hammer_id = item_class_index_by_name("hammer");
+    std::cout << hammer_id << std::endl;
+
+    std::shared_ptr<Item> hammer = make_item(hammer_id);
+    std::cout << hammer.get() << std::endl;
+
+    player_template.pick_up_item(hammer);
     enemy_templates[actor_class_index_by_name("goblin")].pick_up_item(
         make_item(item_class_index_by_name("sword"))
     );
@@ -1770,7 +1782,10 @@ void Item::update_owner_characteristics(Characteristics &characteristics) {
 
 DeepCopyCls(Item) { other.item_class_index = item_class_index; }
 
-ItemClass &Item::get_class() const { return Game::get().item_classes[item_class_index]; }
+ItemClass &Item::get_class() const {
+    std::cout << "Item::get_class() called, Game::get() = " << &Game::get() << std::endl;
+    return Game::get().item_classes[item_class_index];
+}
 
 void Potion::apply(Actor &target) { modifier.apply(target.characteristics); }
 
@@ -1778,6 +1793,9 @@ ItemUseResult Potion::use(Actor &target) {
     apply(target);
     return ItemUseResult();
 }
+
+// 0x7b9400000010
+// 0x7b9400000010
 
 DeepCopyCls(Weapon) {
     Item::deepcopy_to(other);

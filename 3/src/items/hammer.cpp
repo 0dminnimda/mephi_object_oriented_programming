@@ -39,6 +39,12 @@ BOOST_CLASS_EXPORT_KEY(Hammer);
 
 class HammerPlugin : public ItemPlugin {
 public:
+    int test(std::string &s) const override {
+        std::cout << s << std::endl;
+        s += "gg bro yes";
+        return s.size();
+    }
+
     void add_classes_and_templates(std::vector<ItemPlugin::item_type> &result) const override {
         ItemClass hammer("hammer", "smashes in the face", "hammer.png", 13.0f, Item::Kind::Weapon);
 

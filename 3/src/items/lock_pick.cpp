@@ -89,6 +89,12 @@ ItemUseResult LockPick::use(Actor &target) {
 
 class LockPickPlugin : public ItemPlugin {
 public:
+    int test(std::string &s) const override {
+        std::cout << s << std::endl;
+        s += "gg bro";
+        return s.size();
+    }
+
     void add_classes_and_templates(std::vector<ItemPlugin::item_type> &result) const override {
         ItemClass lock_pick(
             "lock pick", "you sneaky pick", "lock_pick_with_fabric.png", 7.0f, Item::Kind::Custom

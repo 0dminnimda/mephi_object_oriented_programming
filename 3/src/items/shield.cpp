@@ -25,6 +25,12 @@ BOOST_CLASS_EXPORT_KEY(Shield);
 
 class ShieldPlugin : public ItemPlugin {
 public:
+    int test(std::string &s) const override {
+        std::cout << s << std::endl;
+        s += "gg bro ha";
+        return s.size();
+    }
+
     void add_classes_and_templates(std::vector<ItemPlugin::item_type> &result) const override {
         ItemClass wooden_shield(
             "wooden shield", "use protection", "shield_wood_metal.png", 8.0f, Item::Kind::Wearable

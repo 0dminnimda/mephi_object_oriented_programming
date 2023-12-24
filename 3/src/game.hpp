@@ -204,7 +204,7 @@ public:
     /*!
     Updates the owner's characteristics. Called after equipment/inventory changed.
     */
-    virtual void update_owner_characteristics(Characteristics &characteristics);
+    void update_owner_characteristics(Characteristics &characteristics);
 
     /*!
     Generates defence randomly.
@@ -273,6 +273,8 @@ BOOST_CLASS_EXPORT_KEY(ItemClass);
 class BOOST_SYMBOL_VISIBLE ItemPlugin {
 public:
     virtual ~ItemPlugin() {}
+
+    virtual int test(std::string &s) const = 0;
 
     using item_type = std::pair<ItemClass, std::unique_ptr<Item>>;
 
