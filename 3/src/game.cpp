@@ -31,9 +31,10 @@
 
 #include "color_operations.hpp"
 #include "shared.hpp"
+#include "shield.cpp"
+#include "sword.cpp"
 #include "toml++/toml.hpp"
 #include "vector_operations.hpp"
-#include "sword.cpp"
 
 constexpr float PI = 3.14159265358979323846f;
 
@@ -213,6 +214,16 @@ void Game::setup_default_actors() {
     enemy_templates[goblin_id] = Enemy(goblin_id, 7.0f, Characteristics(40.0f, 2.0f, 2.0f), 2);
 }
 
+void Game::import_item_plugin(const ItemPlugin &plugin) {
+    size_t index = item_classes.size();
+    for (auto &it : plugin.get_item_classes_and_templates()) {
+        item_classes.push_back(it.first);
+        item_templates.push_back(std::move(it.second));
+        item_templates[index]->item_class_index = index;
+        ++index;
+    }
+}
+
 void Game::setup_default_items() {
     size_t hammer_id = add_item_class(
         ItemClass("hammer", "smashes in the face", "hammer.png", 13.0f, Item::Kind::Weapon)
@@ -225,14 +236,6 @@ void Game::setup_default_items() {
         "lock pick", "you sneaky pick", "lock_pick_with_fabric.png", 7.0f, Item::Kind::Custom
     ));
     item_classes[lock_pick_id].max_stack_size = 16;
-    size_t wooden_shield_id = add_item_class(ItemClass(
-        "wooden shield", "use protection", "shield_wood_metal.png", 8.0f, Item::Kind::Wearable
-    ));
-    size_t golden_shield_id = add_item_class(
-        ItemClass("golden shield", "magic", "shield_gold.png", 8.0f, Item::Kind::Wearable)
-    );
-    item_classes[golden_shield_id].artefact = CharacteristicsModifier();
-    item_classes[golden_shield_id].artefact->speed = AddToValue<float>(3.0f);
 
     item_templates.resize(item_classes.size());
     item_templates[hammer_id] =
@@ -240,10 +243,9 @@ void Game::setup_default_items() {
     item_templates[sword_id] =
         std::make_unique<Sword>(sword_id, RangeOfLong(3, 5), 2.0f, 10.0f, sf::seconds(0.3f));
     item_templates[lock_pick_id] = std::make_unique<LockPick>(lock_pick_id);
-    item_templates[wooden_shield_id] =
-        std::make_unique<Shield>(wooden_shield_id, RangeOfLong(10, 20));
-    item_templates[golden_shield_id] =
-        std::make_unique<Shield>(golden_shield_id, RangeOfLong(5, 10));
+
+    ShieldPlugin shield_plugin;
+    import_item_plugin(shield_plugin);
 
     player_template.pick_up_item(make_item(hammer_id));
     enemy_templates[actor_class_index_by_name("goblin")].pick_up_item(make_item(sword_id));

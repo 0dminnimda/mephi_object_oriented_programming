@@ -10,6 +10,7 @@
 #include <array>
 #include <atomic>
 // clang-format off
+#include <boost/config.hpp>
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
 #include <boost/serialization/access.hpp>
@@ -266,6 +267,24 @@ private:
 };
 
 BOOST_CLASS_EXPORT_KEY(ItemClass);
+
+class BOOST_SYMBOL_VISIBLE ItemPlugin {
+public:
+    virtual ~ItemPlugin() {}
+
+    using item_type = std::pair<ItemClass, std::unique_ptr<Item>>;
+
+    virtual std::vector<item_type> get_item_classes_and_templates() const = 0;
+
+    template <typename T, class... Args>
+    static item_type make_item(ItemClass cls, Args &&...args) {
+        return std::make_pair(
+            cls,
+            std::move(static_unique_pointer_cast<Item>(std::make_unique<T>(std::forward<Args>(args
+            )...)))
+        );
+    }
+};
 
 class ItemsView {
 private:
@@ -1281,6 +1300,8 @@ public:
     size_t add_item_class(const ItemClass &cls);
     long item_class_index_by_name(const std::string &name);
     std::shared_ptr<Item> make_item(size_t item_class_index) const;
+
+    void import_item_plugin(const ItemPlugin &plugin);
 
 private:
     friend class boost::serialization::access;
