@@ -4,7 +4,7 @@
 
 class LockPick : public Item {
 public:
-    DeepCopy(LockPick);
+    DeepCopy(LockPick) { Item::deepcopy_to(other); }
 
     static constexpr float picking_range = 1.5f;
 
@@ -12,7 +12,7 @@ public:
     LockPick(size_t item_class_index) : Item(item_class_index) {}
 
     ItemUseResult use(Actor &target) override;
-    std::shared_ptr<Item> deepcopy_item() const override;
+    std::shared_ptr<Item> deepcopy_item() const override { return deepcopy_shared(*this); }
 
 private:
     const Tile *find_best_choice(Actor &target) const;
@@ -86,10 +86,6 @@ ItemUseResult LockPick::use(Actor &target) {
 
     return ItemUseResult(result.pick_broken);
 }
-
-DeepCopyCls(LockPick) { Item::deepcopy_to(other); }
-
-std::shared_ptr<Item> LockPick::deepcopy_item() const { return deepcopy_shared(*this); }
 
 class LockPickPlugin : public ItemPlugin {
 public:
