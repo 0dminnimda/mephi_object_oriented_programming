@@ -237,23 +237,20 @@ void Game::import_item_plugin(const ItemPlugin &plugin) {
     }
 }
 
+extern ItemPlugin hammer_plugin;
 extern ItemPlugin sword_plugin;
 extern ItemPlugin shield_plugin;
 
 void Game::setup_default_items() {
-    size_t hammer_id = add_item_class(
-        ItemClass("hammer", "smashes in the face", "hammer.png", 13.0f, Item::Kind::Weapon)
-    );
     size_t lock_pick_id = add_item_class(ItemClass(
         "lock pick", "you sneaky pick", "lock_pick_with_fabric.png", 7.0f, Item::Kind::Custom
     ));
     item_classes[lock_pick_id].max_stack_size = 16;
 
     item_templates.resize(item_classes.size());
-    item_templates[hammer_id] =
-        std::make_unique<Hammer>(hammer_id, RangeOfLong(20, 40), 6.0f, 10000.0f, sf::seconds(1.0f));
     item_templates[lock_pick_id] = std::make_unique<LockPick>(lock_pick_id);
 
+    import_item_plugin(hammer_plugin);
     import_item_plugin(sword_plugin);
     import_item_plugin(shield_plugin);
 
@@ -1880,17 +1877,6 @@ DeepCopyCls(MeleeWeapon) {
     WeaponWithCooldown::deepcopy_to(other);
     other.push_back_force_multiplier = push_back_force_multiplier;
 }
-
-bool Hammer::is_in_range(const Actor &source, sf::Vector2f target) const {
-    return length_squared(source.position - target) <= hit_range * hit_range;
-}
-
-DeepCopyCls(Hammer) {
-    MeleeWeapon::deepcopy_to(other);
-    other.hit_range = hit_range;
-}
-
-std::shared_ptr<Item> Hammer::deepcopy_item() const { return deepcopy_shared(*this); }
 
 float Wearable::generate_defence() { return defence_range.get_random(); }
 

@@ -2,23 +2,22 @@
 
 #include "../game.hpp"
 
-class Sword : public MeleeWeapon {
+class Hammer : public MeleeWeapon {
 public:
-    DeepCopy(Sword) {
-        MeleeWeapon::deepcopy_to(other);
-        other.hit_range = hit_range;
-    }
-
-    // TODO: add direction dependant range
     float hit_range;
 
-    Sword() = default;
-    Sword(
+    Hammer() = default;
+    Hammer(
         size_t item_class_index, RangeOfLong damage_range, float hit_range,
         float push_back_force_multiplier, sf::Time cooldown_time
     )
         : MeleeWeapon(item_class_index, damage_range, push_back_force_multiplier, cooldown_time),
           hit_range(hit_range) {}
+
+    DeepCopy(Hammer) {
+        MeleeWeapon::deepcopy_to(other);
+        other.hit_range = hit_range;
+    }
 
     std::shared_ptr<Item> deepcopy_item() const override { return deepcopy_shared(*this); }
 
@@ -36,21 +35,18 @@ private:
     }
 };
 
-BOOST_CLASS_EXPORT_KEY(Sword);
+BOOST_CLASS_EXPORT_KEY(Hammer);
 
-class SwordPlugin : public ItemPlugin {
+class HammerPlugin : public ItemPlugin {
 public:
     void add_classes_and_templates(std::vector<ItemPlugin::item_type> &result) const override {
-        ItemClass sword(
-            "sword", "you can cut yourself just by looking at it", "sword_silver.png", 8.0f,
-            Item::Kind::Weapon
-        );
+        ItemClass hammer("hammer", "smashes in the face", "hammer.png", 13.0f, Item::Kind::Weapon);
 
-        result.push_back(
-            std::move(make_item<Sword>(sword, 0, RangeOfLong(3, 5), 2.0f, 10.0f, sf::seconds(0.3f)))
-        );
+        result.push_back(std::move(
+            make_item<Hammer>(hammer, 0, RangeOfLong(20, 40), 6.0f, 10000.0f, sf::seconds(1.0f))
+        ));
     }
 };
 
-// extern "C" BOOST_SYMBOL_EXPORT SwordPlugin sword_plugin;
-SwordPlugin sword_plugin;
+// extern "C" BOOST_SYMBOL_EXPORT HammerPlugin hammer_plugin;
+HammerPlugin hammer_plugin;

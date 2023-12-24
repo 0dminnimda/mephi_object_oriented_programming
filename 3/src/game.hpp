@@ -37,8 +37,9 @@
 
 #include "deepcopy.hpp"
 #include "matrix.hpp"
-#include "shared.hpp"
 #include "missing_serializers.hpp"
+#include "shared.hpp"
+#include "vector_operations.hpp"
 
 static const size_t thread_count = std::thread::hardware_concurrency();
 
@@ -456,36 +457,6 @@ private:
 };
 
 BOOST_CLASS_EXPORT_KEY(MeleeWeapon);
-
-class Hammer : public MeleeWeapon {
-public:
-    DeepCopy(Hammer);
-
-    float hit_range;
-
-    Hammer() = default;
-    Hammer(
-        size_t item_class_index, RangeOfLong damage_range, float hit_range,
-        float push_back_force_multiplier, sf::Time cooldown_time
-    )
-        : MeleeWeapon(item_class_index, damage_range, push_back_force_multiplier, cooldown_time),
-          hit_range(hit_range) {}
-
-    std::shared_ptr<Item> deepcopy_item() const override;
-
-    bool is_in_range(const Actor &source, sf::Vector2f target) const override;
-
-private:
-    friend class boost::serialization::access;
-
-    template <class Archive>
-    void serialize(Archive &ar, const unsigned int version) {
-        ar &BOOST_SERIALIZATION_BASE_OBJECT_NVP(MeleeWeapon);
-        ar &hit_range;
-    }
-};
-
-BOOST_CLASS_EXPORT_KEY(Hammer);
 
 // aka armour or equipment
 class Wearable : public Item {
