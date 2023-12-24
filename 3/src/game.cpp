@@ -30,7 +30,6 @@
 #include <iterator>
 
 #include "color_operations.hpp"
-#include "game_exports.hpp"
 #include "shared.hpp"
 #include "toml++/toml.hpp"
 #include "vector_operations.hpp"
