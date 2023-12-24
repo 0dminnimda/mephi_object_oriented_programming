@@ -3,7 +3,10 @@
 
 class Sword : public MeleeWeapon {
 public:
-    DeepCopy(Sword);
+    DeepCopy(Sword) {
+        MeleeWeapon::deepcopy_to(other);
+        other.hit_range = hit_range;
+    }
 
     // TODO: add direction dependant range
     float hit_range;
@@ -33,11 +36,6 @@ private:
 };
 
 BOOST_CLASS_EXPORT_KEY(Sword);
-
-void Sword::deepcopy_to(Sword &other) const {
-    MeleeWeapon::deepcopy_to(other);
-    other.hit_range = hit_range;
-}
 
 class SwordPlugin : public ItemPlugin {
 public:

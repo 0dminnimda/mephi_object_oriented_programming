@@ -4,13 +4,13 @@
 
 class Shield : public Wearable {
 public:
-    DeepCopy(Shield);
+    DeepCopy(Shield) { Wearable::deepcopy_to(other); }
 
     Shield() = default;
     Shield(size_t item_class_index, RangeOfLong defence_range)
         : Wearable(item_class_index, Wearable::Shield, defence_range) {}
 
-    std::shared_ptr<Item> deepcopy_item() const override;
+    std::shared_ptr<Item> deepcopy_item() const override { return deepcopy_shared(*this); }
 
 private:
     friend class boost::serialization::access;
@@ -22,10 +22,6 @@ private:
 };
 
 BOOST_CLASS_EXPORT_KEY(Shield);
-
-DeepCopyCls(Shield) { Wearable::deepcopy_to(other); }
-
-std::shared_ptr<Item> Shield::deepcopy_item() const { return deepcopy_shared(*this); }
 
 class ShieldPlugin : public ItemPlugin {
 public:
