@@ -36,8 +36,8 @@ public:
         golden_shield.artefact = CharacteristicsModifier();
         golden_shield.artefact->speed = AddToValue<float>(3.0f);
 
-        result.push_back(std::move(make_item<Shield>(wooden_shield, 0, RangeOfLong(10, 20))));
-        result.push_back(std::move(make_item<Shield>(golden_shield, 0, RangeOfLong(5, 10))));
+        result.push_back(std::move(make_item_no_index<Shield>(wooden_shield, RangeOfLong(10, 20))));
+        result.push_back(std::move(make_item_no_index<Shield>(golden_shield, RangeOfLong(5, 10))));
     }
 };
 

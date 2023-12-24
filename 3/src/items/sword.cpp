@@ -46,9 +46,9 @@ public:
             Item::Kind::Weapon
         );
 
-        result.push_back(
-            std::move(make_item<Sword>(sword, 0, RangeOfLong(3, 5), 2.0f, 10.0f, sf::seconds(0.3f)))
-        );
+        result.push_back(std::move(
+            make_item_no_index<Sword>(sword, RangeOfLong(3, 5), 2.0f, 10.0f, sf::seconds(0.3f))
+        ));
     }
 };
 

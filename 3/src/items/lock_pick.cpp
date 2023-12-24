@@ -99,7 +99,7 @@ public:
         );
         lock_pick.max_stack_size = 16;
 
-        result.push_back(std::move(make_item<LockPick>(lock_pick, 0)));
+        result.push_back(std::move(make_item_no_index<LockPick>(lock_pick)));
     }
 };
 

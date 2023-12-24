@@ -42,9 +42,9 @@ public:
     void add_classes_and_templates(std::vector<ItemPlugin::item_type> &result) const override {
         ItemClass hammer("hammer", "smashes in the face", "hammer.png", 13.0f, Item::Kind::Weapon);
 
-        result.push_back(std::move(
-            make_item<Hammer>(hammer, 0, RangeOfLong(20, 40), 6.0f, 10000.0f, sf::seconds(1.0f))
-        ));
+        result.push_back(std::move(make_item_no_index<Hammer>(
+            hammer, RangeOfLong(20, 40), 6.0f, 10000.0f, sf::seconds(1.0f)
+        )));
     }
 };
 

@@ -286,6 +286,11 @@ public:
             )...)))
         );
     }
+
+    template <typename T, class... Args>
+    static item_type make_item_no_index(ItemClass cls, Args &&...args) {
+        return make_item<T>(cls, /*class_index*/ 0, std::forward<Args>(args)...);
+    }
 };
 
 class ItemsView {
