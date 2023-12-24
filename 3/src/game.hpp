@@ -1227,6 +1227,7 @@ public:
     std::mutex sync_mutex;
     std::condition_variable children_cv;
     std::condition_variable parent_cv;
+    bool is_shutting_down = false;
     bool can_start_update = false;
     size_t updates_done = 0;
     float delta_time;
@@ -1237,6 +1238,7 @@ public:
     void run(size_t id);
     void start_updates();
     void join_updates();
+    void shutdown();
 };
 
 class Game {

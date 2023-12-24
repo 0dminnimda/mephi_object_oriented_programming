@@ -77,6 +77,8 @@ Tile &Tile::set_building(std::shared_ptr<Chest> building) {
 }
 
 EnemyThreads::~EnemyThreads() {
+    shutdown();
+
     for (auto &thread : threads) {
         thread.join();
     }
@@ -95,7 +97,8 @@ void EnemyThreads::run(size_t id) {
     while (1) {
         {
             std::unique_lock<std::mutex> lck(sync_mutex);
-            children_cv.wait(lck, [&] { return can_start_update; });
+            children_cv.wait(lck, [&] { return can_start_update || is_shutting_down; });
+            if (is_shutting_down) return;
         }
 
         // sync_point.arrive_and_wait();
@@ -127,6 +130,15 @@ void EnemyThreads::start_updates() {
 void EnemyThreads::join_updates() {
     std::unique_lock<std::mutex> lck(sync_mutex);
     parent_cv.wait(lck, [&] { return updates_done == thread_count; });
+}
+
+void EnemyThreads::shutdown() {
+    {
+        std::unique_lock<std::mutex> lck(sync_mutex);
+        can_start_update = false;
+        is_shutting_down = true;
+    }
+    children_cv.notify_all();
 }
 
 Game &Game::get(bool brand_new) {
