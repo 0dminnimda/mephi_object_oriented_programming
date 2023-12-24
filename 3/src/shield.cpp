@@ -25,8 +25,7 @@ BOOST_CLASS_EXPORT_KEY(Shield);
 
 class ShieldPlugin : public ItemPlugin {
 public:
-    std::vector<std::pair<ItemClass, std::unique_ptr<Item>>> get_item_classes_and_templates(
-    ) const override {
+    void add_classes_and_templates(std::vector<ItemPlugin::item_type> &result) const override {
         ItemClass wooden_shield(
             "wooden shield", "use protection", "shield_wood_metal.png", 8.0f, Item::Kind::Wearable
         );
@@ -37,10 +36,8 @@ public:
         golden_shield.artefact = CharacteristicsModifier();
         golden_shield.artefact->speed = AddToValue<float>(3.0f);
 
-        std::vector<ItemPlugin::item_type> result;
         result.push_back(std::move(make_item<Shield>(wooden_shield, 0, RangeOfLong(10, 20))));
         result.push_back(std::move(make_item<Shield>(golden_shield, 0, RangeOfLong(5, 10))));
-        return result;
     }
 };
 

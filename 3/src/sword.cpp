@@ -39,18 +39,15 @@ BOOST_CLASS_EXPORT_KEY(Sword);
 
 class SwordPlugin : public ItemPlugin {
 public:
-    std::vector<std::pair<ItemClass, std::unique_ptr<Item>>> get_item_classes_and_templates(
-    ) const override {
+    void add_classes_and_templates(std::vector<ItemPlugin::item_type> &result) const override {
         ItemClass sword(
             "sword", "you can cut yourself just by looking at it", "sword_silver.png", 8.0f,
             Item::Kind::Weapon
         );
 
-        std::vector<ItemPlugin::item_type> result;
         result.push_back(
             std::move(make_item<Sword>(sword, 0, RangeOfLong(3, 5), 2.0f, 10.0f, sf::seconds(0.3f)))
         );
-        return result;
     }
 };
 

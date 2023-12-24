@@ -215,8 +215,11 @@ void Game::setup_default_actors() {
 }
 
 void Game::import_item_plugin(const ItemPlugin &plugin) {
+    std::vector<ItemPlugin::item_type> vec;
+    plugin.add_classes_and_templates(vec);
+
     size_t index = item_classes.size();
-    for (auto &it : plugin.get_item_classes_and_templates()) {
+    for (auto &it : vec) {
         item_classes.push_back(it.first);
         item_templates.push_back(std::move(it.second));
         item_templates[index]->item_class_index = index;

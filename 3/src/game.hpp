@@ -274,7 +274,7 @@ public:
 
     using item_type = std::pair<ItemClass, std::unique_ptr<Item>>;
 
-    virtual std::vector<item_type> get_item_classes_and_templates() const = 0;
+    virtual void add_classes_and_templates(std::vector<item_type> &result) const = 0;
 
     template <typename T, class... Args>
     static item_type make_item(ItemClass cls, Args &&...args) {
