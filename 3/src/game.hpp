@@ -168,7 +168,7 @@ public:
     bool was_broken = false;
 };
 
-class Item {
+class BOOST_SYMBOL_VISIBLE Item {
 public:
     DeepCopy(Item);
 
@@ -1220,6 +1220,8 @@ public:
 
     std::vector<ItemClass> item_classes;
     std::vector<std::unique_ptr<Item>> item_templates;  // follows the item_classes
+
+    std::vector<boost::shared_ptr<ItemPlugin>> loaded_item_plugins;
 
     static constexpr float fixed_delta_time = 1.0f / 60.0f;
     float fixed_delta_time_leftover = 0.0f;
