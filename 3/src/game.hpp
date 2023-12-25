@@ -168,7 +168,7 @@ public:
     bool was_broken = false;
 };
 
-class BOOST_SYMBOL_VISIBLE Item {
+class Item {
 public:
     DeepCopy(Item);
 
@@ -204,7 +204,7 @@ public:
     /*!
     Updates the owner's characteristics. Called after equipment/inventory changed.
     */
-    void update_owner_characteristics(Characteristics &characteristics);
+    virtual void update_owner_characteristics(Characteristics &characteristics);
 
     /*!
     Generates defence randomly.

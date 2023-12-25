@@ -229,8 +229,6 @@ void Game::setup_default_actors() {
 }
 
 void Game::import_item_plugin(const ItemPlugin &plugin) {
-    std::string gg("wazzup");
-
     std::vector<ItemPlugin::item_type> vec;
     plugin.add_classes_and_templates(vec);
 
@@ -245,6 +243,7 @@ void Game::import_item_plugin(const ItemPlugin &plugin) {
 
 void Game::import_item_plugin_from_file(const std::string &filename) {
     boost::dll::fs::path lib_path(filename);
+    std::cout << "Loading plugin: " << filename << std::endl;
     boost::shared_ptr<ItemPlugin> plugin = boost::dll::import<ItemPlugin>(
         lib_path, "item_plugin", boost::dll::load_mode::append_decorations
     );
@@ -262,10 +261,21 @@ void Game::load_item_plugins(const std::string &directory) {
 }
 
 void Game::setup_default_items() {
-    player_template.pick_up_item(make_item(item_class_index_by_name("hammer")));
-    enemy_templates[actor_class_index_by_name("goblin")].pick_up_item(
-        make_item(item_class_index_by_name("sword"))
-    );
+    long hammer_id = item_class_index_by_name("hammer");
+    if (hammer_id != -1) {
+        player_template.pick_up_item(make_item(hammer_id));
+    } else {
+        std::cerr << "Could not load hammer" << std::endl;
+    }
+
+    long sword_id = item_class_index_by_name("sword");
+    if (sword_id != -1) {
+        enemy_templates[actor_class_index_by_name("goblin")].pick_up_item(
+            make_item(sword_id)
+        );
+    } else {
+        std::cerr << "Could not load hammer" << std::endl;
+    }
 }
 
 void Game::handle_save_load() {
