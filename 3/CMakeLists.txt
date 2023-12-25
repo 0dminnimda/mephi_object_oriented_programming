@@ -36,7 +36,7 @@ if(NOT WIN32)
     # add_link_options(-fsanitize=address,undefined)
     add_compile_options(-fsanitize=thread)
     add_link_options(-fsanitize=thread)
-    add_compile_options(-g -Wl,--export-dynamic -rdynamic)
+    add_compile_options(-g)
     add_link_options(-g)
 endif()
 
@@ -49,25 +49,19 @@ endif()
 if(NOT PROJ_NOT_BUILD_MAIN)
     set(MY_LIBS sfml-window sfml-system sfml-graphics sfml-audio ${Boost_LIBRARIES})
 
-    add_library(game STATIC ${PROJ_ROOT}/src/toml_impl.cpp ${PROJ_ROOT}/src/game.cpp)
-    target_compile_options(game PUBLIC -Wl,--export-dynamic)
-    target_link_libraries(game ${MY_LIBS})
-
     include(items.cmake)
 
     foreach(SOURCE_FILE ${LIB_FILES})
         # filename without an extension
         get_filename_component(LIB_NAME ${SOURCE_FILE} NAME_WE)
 
-        # add_library(${LIB_NAME} SHARED ${SOURCE_FILE})
-        add_library(${LIB_NAME} SHARED ${SOURCE_FILE} $<TARGET_OBJECTS:game>)
-        # target_compile_options(${LIB_NAME} PUBLIC -fPIC)
-        # target_link_options(${LIB_NAME} PUBLIC -fPIC)
+        add_library(${LIB_NAME} SHARED ${SOURCE_FILE})
+        set_target_properties(${LIB_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
         target_link_libraries(${LIB_NAME} ${MY_LIBS})
     endforeach()
 
-    add_executable(main $<TARGET_OBJECTS:game> ${PROJ_ROOT}/src/main.cpp)
-    target_compile_options(main PUBLIC -Wl,--export-dynamic)
+    add_executable(main ${PROJ_ROOT}/src/toml_impl.cpp ${PROJ_ROOT}/src/game.cpp ${PROJ_ROOT}/src/main.cpp)
+    set_target_properties(main PROPERTIES ENABLE_EXPORTS ON)
     set_target_properties(main PROPERTIES SUFFIX ".out")
     target_link_libraries(main ${MY_LIBS})
 endif()
