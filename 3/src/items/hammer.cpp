@@ -2,7 +2,7 @@
 
 #include "../game.hpp"
 
-class BOOST_SYMBOL_EXPORT Hammer : public MeleeWeapon {
+class Hammer : public MeleeWeapon {
 public:
     float hit_range;
 
@@ -19,10 +19,7 @@ public:
         other.hit_range = hit_range;
     }
 
-    std::shared_ptr<Item> deepcopy_item() const override {
-        std::cout << "Ayo wazzup from Hammer::deepcopy_item" << std::endl;
-        return deepcopy_shared(*this);
-    }
+    std::shared_ptr<Item> deepcopy_item() const override { return deepcopy_shared(*this); }
 
     bool is_in_range(const Actor &source, sf::Vector2f target) const override {
         return length_squared(source.position - target) <= hit_range * hit_range;
@@ -40,23 +37,14 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(Hammer);
 
-class BOOST_SYMBOL_EXPORT HammerPlugin : public ItemPlugin {
+class HammerPlugin : public ItemPlugin {
 public:
-    int test(std::string &s) const override {
-        std::cout << s << std::endl;
-        s += "gg bro yes";
-        return s.size();
-    }
-
     void add_classes_and_templates(std::vector<ItemPlugin::item_type> &result) const override {
         ItemClass hammer("hammer", "smashes in the face", "hammer.png", 13.0f, Item::Kind::Weapon);
 
         result.push_back(std::move(make_item_no_index<Hammer>(
             hammer, RangeOfLong(20, 40), 6.0f, 10000.0f, sf::seconds(1.0f)
         )));
-        std::cout << result[result.size() - 1].second.get() << std::endl;
-        auto gg = result[result.size() - 1].second->deepcopy_item();
-        std::cout << "inside deepcopy_item " << gg.get() << std::endl;
     }
 };
 

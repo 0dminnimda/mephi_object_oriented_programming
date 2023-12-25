@@ -150,8 +150,6 @@ Game &Game::get(bool brand_new) {
         game = std::make_shared<Game>();
     }
 
-    std::cout << "Game::get: " << game << std::endl;
-
     return *game;
 }
 
@@ -232,8 +230,6 @@ void Game::setup_default_actors() {
 
 void Game::import_item_plugin(const ItemPlugin &plugin) {
     std::string gg("wazzup");
-    std::cout << plugin.test(gg) << std::endl;
-    std::cout << gg << std::endl;
 
     std::vector<ItemPlugin::item_type> vec;
     plugin.add_classes_and_templates(vec);
@@ -244,36 +240,16 @@ void Game::import_item_plugin(const ItemPlugin &plugin) {
         item_templates.push_back(std::move(it.second));
         item_templates[index]->item_class_index = index;
         ++index;
-
-        std::cout << item_templates[item_templates.size() - 1].get() << std::endl;
-        auto gg = item_templates[item_templates.size() - 1]->deepcopy_item();
-        std::cout << "inside import_item_plugin " << gg.get() << std::endl;
     }
 }
 
 void Game::import_item_plugin_from_file(const std::string &filename) {
     boost::dll::fs::path lib_path(filename);
-    std::cout << "loading plugin " << filename << std::endl;
     boost::shared_ptr<ItemPlugin> plugin = boost::dll::import<ItemPlugin>(
         lib_path, "item_plugin", boost::dll::load_mode::append_decorations
     );
     loaded_item_plugins.push_back(plugin);
-    std::cout << "after loading plugin " << plugin.get() << std::endl;
-    std::cout << "importing plugin " << filename << std::endl;
     import_item_plugin(*plugin);
-    std::cout << "after importing plugin" << std::endl;
-
-    std::cout << item_templates[item_templates.size() - 1].get() << std::endl;
-    auto gg = item_templates[item_templates.size() - 1]->deepcopy_item();
-    std::cout << "inside import_item_plugin_from_file 2 " << gg.get() << std::endl;
-
-    std::cout << "use_count: " << plugin.use_count() << std::endl;
-    plugin.reset();
-    std::cout << "use_count: " << plugin.use_count() << std::endl;
-
-    std::cout << item_templates[item_templates.size() - 1].get() << std::endl;
-    auto gg2 = item_templates[item_templates.size() - 1]->deepcopy_item();
-    std::cout << "inside import_item_plugin_from_file 2 " << gg2.get() << std::endl;
 }
 
 void Game::load_item_plugins(const std::string &directory) {
@@ -281,45 +257,12 @@ void Game::load_item_plugins(const std::string &directory) {
     for (const auto &entry : fs::directory_iterator(dir)) {
         if (entry.is_regular_file()) {
             import_item_plugin_from_file(entry.path());
-            // std::ofstream out(dir / "merged.txt");
-            // std::ifstream file(entry.path());
-            // std::stringstream buffer;
-            // buffer << file.rdbuf();
-            // buffer.str();
         }
-    }
-
-    for (size_t i = 0; i < item_templates.size(); ++i) {
-        std::cout << item_templates[item_templates.size() - 1].get() << std::endl;
-        auto gg = item_templates[item_templates.size() - 1]->deepcopy_item();
-        std::cout << "inside load_item_plugins " << gg.get() << std::endl;
     }
 }
 
-// extern ItemPlugin lock_pick_plugin;
-// extern ItemPlugin hammer_plugin;
-// extern ItemPlugin sword_plugin;
-// extern ItemPlugin shield_plugin;
-
 void Game::setup_default_items() {
-    // import_item_plugin(lock_pick_plugin);
-    // import_item_plugin(hammer_plugin);
-    // import_item_plugin(sword_plugin);
-    // import_item_plugin(shield_plugin);
-
-    size_t lock_pick_id = item_class_index_by_name("lock pick");
-    std::cout << "lock_pick_id: " << lock_pick_id << std::endl;
-
-    std::shared_ptr<Item> ggggg = make_item(lock_pick_id);
-    std::cout << ggggg.get() << std::endl;
-
-    size_t hammer_id = item_class_index_by_name("hammer");
-    std::cout << "hammer_id: " << hammer_id << std::endl;
-
-    std::shared_ptr<Item> hammer = make_item(hammer_id);
-    std::cout << hammer.get() << std::endl;
-
-    player_template.pick_up_item(hammer);
+    player_template.pick_up_item(make_item(item_class_index_by_name("hammer")));
     enemy_templates[actor_class_index_by_name("goblin")].pick_up_item(
         make_item(item_class_index_by_name("sword"))
     );
@@ -1812,7 +1755,6 @@ void Item::update_owner_characteristics(Characteristics &characteristics) {
 DeepCopyCls(Item) { other.item_class_index = item_class_index; }
 
 ItemClass &Item::get_class() const {
-    std::cout << "Item::get_class() called, Game::get() = " << &Game::get() << std::endl;
     return Game::get().item_classes[item_class_index];
 }
 
@@ -1822,9 +1764,6 @@ ItemUseResult Potion::use(Actor &target) {
     apply(target);
     return ItemUseResult();
 }
-
-// 0x7b9400000010
-// 0x7b9400000010
 
 DeepCopyCls(Weapon) {
     Item::deepcopy_to(other);

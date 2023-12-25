@@ -12,10 +12,11 @@ std::shared_ptr<T> deepcopy_shared(const T &self) {
     return value;
 }
 
-template <typename OutT, typename InT>
-std::shared_ptr<OutT> deepcopy_shared(const InT &self) {
-    return static_pointer_cast<OutT>(deepcopy_shared<InT>(self));
-}
+// seems nice, but doesn't seem to be needed
+// template <typename OutT, typename InT>
+// std::shared_ptr<OutT> deepcopy_shared(const InT &self) {
+//     return static_pointer_cast<OutT>(deepcopy_shared<InT>(self));
+// }
 
 template <typename T>
 T deepcopy(const T &self) {

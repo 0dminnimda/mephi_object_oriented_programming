@@ -274,8 +274,6 @@ class BOOST_SYMBOL_VISIBLE ItemPlugin {
 public:
     virtual ~ItemPlugin() {}
 
-    virtual int test(std::string &s) const = 0;
-
     using item_type = std::pair<ItemClass, std::unique_ptr<Item>>;
 
     virtual void add_classes_and_templates(std::vector<item_type> &result) const = 0;
@@ -1197,6 +1195,10 @@ public:
 
 class Game {
 public:
+    // declare item plugins before the anything that can contain the items,
+    // to make sure plugins are unloaded (destructed) before the items which they created
+    std::vector<boost::shared_ptr<ItemPlugin>> loaded_item_plugins;
+
     sf::Clock clock;
     std::array<bool, sf::Keyboard::KeyCount> keys_pressed_on_this_frame;
 
@@ -1220,8 +1222,6 @@ public:
 
     std::vector<ItemClass> item_classes;
     std::vector<std::unique_ptr<Item>> item_templates;  // follows the item_classes
-
-    std::vector<boost::shared_ptr<ItemPlugin>> loaded_item_plugins;
 
     static constexpr float fixed_delta_time = 1.0f / 60.0f;
     float fixed_delta_time_leftover = 0.0f;
