@@ -244,7 +244,7 @@ void Game::import_item_plugin(const ItemPlugin &plugin) {
 void Game::import_item_plugin_from_file(const std::string &filename) {
     boost::dll::fs::path lib_path(filename);
     std::cout << "Loading plugin: " << filename << std::endl;
-    boost::shared_ptr<ItemPlugin> plugin = boost::dll::import<ItemPlugin>(
+    boost::shared_ptr<ItemPlugin> plugin = boost::dll::import <ItemPlugin>(
         lib_path, "item_plugin", boost::dll::load_mode::append_decorations
     );
     loaded_item_plugins.push_back(plugin);
@@ -270,9 +270,7 @@ void Game::setup_default_items() {
 
     long sword_id = item_class_index_by_name("sword");
     if (sword_id != -1) {
-        enemy_templates[actor_class_index_by_name("goblin")].pick_up_item(
-            make_item(sword_id)
-        );
+        enemy_templates[actor_class_index_by_name("goblin")].pick_up_item(make_item(sword_id));
     } else {
         std::cerr << "Could not load hammer" << std::endl;
     }
@@ -1764,9 +1762,7 @@ void Item::update_owner_characteristics(Characteristics &characteristics) {
 
 DeepCopyCls(Item) { other.item_class_index = item_class_index; }
 
-ItemClass &Item::get_class() const {
-    return Game::get().item_classes[item_class_index];
-}
+ItemClass &Item::get_class() const { return Game::get().item_classes[item_class_index]; }
 
 void Potion::apply(Actor &target) { modifier.apply(target.characteristics); }
 
