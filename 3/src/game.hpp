@@ -1195,6 +1195,10 @@ public:
 
 class Game {
 public:
+    // declare item plugins before the anything that can contain the items,
+    // to make sure plugins are unloaded (destructed) before the items which they created
+    std::vector<boost::shared_ptr<ItemPlugin>> loaded_item_plugins;
+
     sf::Clock clock;
     std::array<bool, sf::Keyboard::KeyCount> keys_pressed_on_this_frame;
 
@@ -1244,6 +1248,7 @@ public:
     void handle_save_load();
     bool load_config(const std::string &filename);
     void setup_default_actors();
+    void load_item_plugins(const std::string &directory);
     void setup_default_items();
 
     size_t add_actor_class(const ActorClass &cls);
@@ -1255,6 +1260,7 @@ public:
     std::shared_ptr<Item> make_item(size_t item_class_index) const;
 
     void import_item_plugin(const ItemPlugin &plugin);
+    void import_item_plugin_from_file(const std::string &filename);
 
 private:
     friend class boost::serialization::access;

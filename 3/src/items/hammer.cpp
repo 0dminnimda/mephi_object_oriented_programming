@@ -48,5 +48,5 @@ public:
     }
 };
 
-// extern "C" BOOST_SYMBOL_EXPORT HammerPlugin hammer_plugin;
-HammerPlugin hammer_plugin;
+extern "C" BOOST_SYMBOL_EXPORT HammerPlugin item_plugin;
+HammerPlugin item_plugin;

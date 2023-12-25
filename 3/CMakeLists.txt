@@ -7,17 +7,21 @@ set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
 set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/libs)
+# option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
 # set(Boost_USE_STATIC_LIBS ON)
 # set(Boost_USE_MULTITHREADED OFF)
 # set(Boost_USE_STATIC_RUNTIME ON)
-find_package(Boost 1.45.0 COMPONENTS serialization)
+find_package(Boost 1.45.0 COMPONENTS serialization filesystem)
 
 if(NOT Boost_FOUND)
     message( SEND_ERROR "You need to have boost to compile this." )
 endif()
 include_directories(${Boost_INCLUDE_DIRS}) 
+
+add_compile_options(-fPIC)
+add_link_options(-fPIC)
 
 if(NOT ANDROID)
     include(FetchContent)
@@ -43,13 +47,23 @@ if (CMAKE_BUILD_TYPE EQUAL "DEBUG")
 endif()
 
 if(NOT PROJ_NOT_BUILD_MAIN)
-    add_executable(main
-        ${PROJ_ROOT}/src/items/lock_pick.cpp ${PROJ_ROOT}/src/items/shield.cpp
-        ${PROJ_ROOT}/src/items/sword.cpp ${PROJ_ROOT}/src/items/hammer.cpp
-        ${PROJ_ROOT}/src/toml_impl.cpp ${PROJ_ROOT}/src/game.cpp ${PROJ_ROOT}/src/main.cpp
-    )
+    set(MY_LIBS sfml-window sfml-system sfml-graphics sfml-audio ${Boost_LIBRARIES})
+
+    include(items.cmake)
+
+    foreach(SOURCE_FILE ${LIB_FILES})
+        # filename without an extension
+        get_filename_component(LIB_NAME ${SOURCE_FILE} NAME_WE)
+
+        add_library(${LIB_NAME} SHARED ${SOURCE_FILE})
+        set_target_properties(${LIB_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+        target_link_libraries(${LIB_NAME} ${MY_LIBS})
+    endforeach()
+
+    add_executable(main ${PROJ_ROOT}/src/toml_impl.cpp ${PROJ_ROOT}/src/game.cpp ${PROJ_ROOT}/src/main.cpp)
+    set_target_properties(main PROPERTIES ENABLE_EXPORTS ON)
     set_target_properties(main PROPERTIES SUFFIX ".out")
-    target_link_libraries(main sfml-window sfml-system sfml-graphics sfml-audio ${Boost_LIBRARIES})
+    target_link_libraries(main ${MY_LIBS})
 endif()
 
 if(WIN32)

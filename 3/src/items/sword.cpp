@@ -52,5 +52,5 @@ public:
     }
 };
 
-// extern "C" BOOST_SYMBOL_EXPORT SwordPlugin sword_plugin;
-SwordPlugin sword_plugin;
+extern "C" BOOST_SYMBOL_EXPORT SwordPlugin item_plugin;
+SwordPlugin item_plugin;
