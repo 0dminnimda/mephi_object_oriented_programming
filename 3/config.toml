@@ -1,4 +1,4 @@
-item_plugins_directory = "build/libs"
+item_plugins_directory = "/data/data/com.termux/files/home/libs"
 
 levels = [
     { actors_spawned_per_class = 1, size = 7 },
