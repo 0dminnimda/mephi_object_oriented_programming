@@ -7,7 +7,7 @@ set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
 set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/libs)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
 # set(Boost_USE_STATIC_LIBS ON)
@@ -16,7 +16,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/libs)
 find_package(Boost 1.88.0 COMPONENTS serialization filesystem)
 
 if(NOT Boost_FOUND)
-    message(SEND_ERROR "You need to have boost to compile this.")
+    message( SEND_ERROR "You need to have boost to compile this." )
 endif()
 include_directories(${Boost_INCLUDE_DIRS})
 
@@ -42,12 +42,18 @@ endif()
 
 add_compile_definitions(TOML_HEADER_ONLY=0)
 
-if(CMAKE_BUILD_TYPE EQUAL "DEBUG")
+if (CMAKE_BUILD_TYPE EQUAL "DEBUG")
     add_compile_definitions(DEBUG)
 endif()
 
 if(NOT PROJ_NOT_BUILD_MAIN)
     set(MY_LIBS sfml-window sfml-system sfml-graphics sfml-audio ${Boost_LIBRARIES})
+
+    # This library will still go into build/bin
+    add_library(game_logic SHARED ${PROJ_ROOT}/src/toml_impl.cpp ${PROJ_ROOT}/src/game.cpp)
+    target_compile_definitions(game_logic PRIVATE GAME_LOGIC_EXPORTS)
+    set_target_properties(game_logic PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    target_link_libraries(game_logic ${MY_LIBS})
 
     include(items.cmake)
 
@@ -57,13 +63,20 @@ if(NOT PROJ_NOT_BUILD_MAIN)
 
         add_library(${LIB_NAME} SHARED ${SOURCE_FILE})
         set_target_properties(${LIB_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
-        target_link_libraries(${LIB_NAME} ${MY_LIBS})
+        set_target_properties(${LIB_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/plugins")
+        set_target_properties(${LIB_NAME} PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/plugins"
+            LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/plugins"
+            ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/plugins"
+        )
+        target_link_libraries(${LIB_NAME} ${MY_LIBS} game_logic)
     endforeach()
 
-    add_executable(main ${PROJ_ROOT}/src/toml_impl.cpp ${PROJ_ROOT}/src/game.cpp ${PROJ_ROOT}/src/main.cpp)
+    # The executable still goes into build/bin
+    add_executable(main ${PROJ_ROOT}/src/main.cpp)
     set_target_properties(main PROPERTIES ENABLE_EXPORTS ON)
     set_target_properties(main PROPERTIES SUFFIX ".out")
-    target_link_libraries(main ${MY_LIBS})
+    target_link_libraries(main ${MY_LIBS} game_logic)
 endif()
 
 if(WIN32)

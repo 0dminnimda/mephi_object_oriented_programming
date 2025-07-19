@@ -1,4 +1,4 @@
-item_plugins_directory = "build/libs"
+item_plugins_directory = "build/bin/plugins"
 
 levels = [
     { actors_spawned_per_class = 1, size = 7 },

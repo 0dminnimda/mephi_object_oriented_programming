@@ -15,7 +15,8 @@ prep_executable = $(eval $(1) := $(shell bash ../prep_exec.sh $(2) --use_dir "re
 BUILD_TYPE = Release
 
 call_cmake = cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
-	-DCMAKE_C_COMPILER=$(CC) -DCMAKE_CXX_COMPILER=$(CXX) -DPROJ_ROOT="$(PROJ_ROOT)"
+	-DPROJ_ROOT="$(PROJ_ROOT)"
+# -DCMAKE_C_COMPILER=$(CC) -DCMAKE_CXX_COMPILER=$(CXX)
 
 TSAN_OPTIONS = "suppressions=./tsan_suppressions.txt"
 DISPLAY = ":1"

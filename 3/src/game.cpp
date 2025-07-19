@@ -261,7 +261,7 @@ void Game::import_item_plugin_from_file(const std::string &filename) {
 void Game::load_item_plugins(const std::string &directory) {
     fs::path dir = directory;
     for (const auto &entry : fs::directory_iterator(dir)) {
-        if (entry.is_regular_file()) {
+        if (entry.is_regular_file() && entry.path().extension() == boost::dll::shared_library::suffix()) {
             import_item_plugin_from_file(entry.path().string());
         }
     }

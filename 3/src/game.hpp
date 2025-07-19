@@ -3,6 +3,8 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "export.hpp"
+
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/System.hpp>
@@ -53,7 +55,7 @@ const std::string path_to_resources = "resources/";
 
 sf::Color set_alpha(sf::Color color, sf::Uint8 transparency);
 
-class ProgressBarView {
+class GAME_API ProgressBarView {
     sf::RenderWindow &window;
 
 public:
@@ -78,7 +80,7 @@ public:
 };
 
 template <typename T>
-class SetAbsoluteValue {
+class GAME_API SetAbsoluteValue {
 public:
     T value;
 
@@ -96,7 +98,7 @@ private:
 BOOST_CLASS_EXPORT_KEY(SetAbsoluteValue<float>);
 
 template <typename T>
-class AddToValue {
+class GAME_API AddToValue {
 public:
     T value;
 
@@ -116,7 +118,7 @@ BOOST_CLASS_EXPORT_KEY(AddToValue<float>);
 template <typename T>
 using ValueModifier = boost::variant<SetAbsoluteValue<T>, AddToValue<T>>;
 
-class Characteristics {
+class GAME_API Characteristics {
 public:
     float max_health;
     float defence;
@@ -137,7 +139,7 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(Characteristics);
 
-class CharacteristicsModifier {
+class GAME_API CharacteristicsModifier {
 public:
     boost::optional<ValueModifier<float>> max_health;
     boost::optional<ValueModifier<float>> defence;
@@ -160,15 +162,15 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(CharacteristicsModifier);
 
-class Actor;
-class ItemClass;
+class GAME_API Actor;
+class GAME_API ItemClass;
 
-class ItemUseResult {
+class GAME_API ItemUseResult {
 public:
     bool was_broken = false;
 };
 
-class Item {
+class GAME_API Item {
 public:
     DeepCopy(Item);
 
@@ -227,7 +229,7 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(Item);
 
-class ItemClass {
+class GAME_API ItemClass {
 public:
     std::string name;
     std::string description;
@@ -293,7 +295,7 @@ public:
     }
 };
 
-class ItemsView {
+class GAME_API ItemsView {
 private:
     sf::RenderWindow &window;
 
@@ -304,7 +306,7 @@ public:
     void draw(const Item &item, sf::Vector2f position);
 };
 
-class Potion : public Item {
+class GAME_API Potion : public Item {
 public:
     CharacteristicsModifier modifier;
 
@@ -317,7 +319,7 @@ public:
 };
 
 template <typename T>
-class RangeOfValues {
+class GAME_API RangeOfValues {
 public:
     T min;
     T max;
@@ -353,7 +355,7 @@ using RangeOfFloat = RangeOfValues<float>;
 BOOST_CLASS_EXPORT_KEY(RangeOfLong);
 BOOST_CLASS_EXPORT_KEY(RangeOfFloat);
 
-class Enchantment {
+class GAME_API Enchantment {
 public:
     size_t target_actor_class_index;
     float damage_multiplier;
@@ -372,7 +374,7 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(Enchantment);
 
-class Weapon : public Item {
+class GAME_API Weapon : public Item {
 protected:
     boost::optional<Enchantment> enchantment;
     RangeOfLong damage_range;
@@ -401,7 +403,7 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(Weapon);
 
-class WeaponWithCooldown : public Weapon {
+class GAME_API WeaponWithCooldown : public Weapon {
 public:
     DeepCopy(WeaponWithCooldown);
 
@@ -432,7 +434,7 @@ private:
 BOOST_CLASS_EXPORT_KEY(sf::Time);
 BOOST_CLASS_EXPORT_KEY(WeaponWithCooldown);
 
-class MeleeWeapon : public WeaponWithCooldown {
+class GAME_API MeleeWeapon : public WeaponWithCooldown {
 public:
     DeepCopy(MeleeWeapon);
 
@@ -464,7 +466,7 @@ private:
 BOOST_CLASS_EXPORT_KEY(MeleeWeapon);
 
 // aka armour or equipment
-class Wearable : public Item {
+class GAME_API Wearable : public Item {
 public:
     DeepCopy(Wearable);
 
@@ -500,7 +502,7 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(Wearable);
 
-class Tile;
+class GAME_API Tile;
 
 struct LockPickingResult {
 public:
@@ -508,7 +510,7 @@ public:
     bool pick_broken;
 };
 
-class StackOfItems {
+class GAME_API StackOfItems {
 public:
     DeepCopy(StackOfItems);
 
@@ -532,7 +534,7 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(StackOfItems);
 
-class Inventory {
+class GAME_API Inventory {
 public:
     DeepCopy(Inventory);
 
@@ -561,7 +563,7 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(Inventory);
 
-class StackOfItemsView {
+class GAME_API StackOfItemsView {
     sf::RenderWindow &window;
 
     float text_ratio = 2.0f;
@@ -578,7 +580,7 @@ public:
     void draw(const StackOfItems &stack, sf::Vector2f position, float size, bool selected);
 };
 
-class HolderOfItemsView {
+class GAME_API HolderOfItemsView {
     sf::RenderWindow &window;
 
     StackOfItemsView stack_of_items_view;
@@ -592,7 +594,7 @@ public:
     void draw(const StackOfItems *slots, size_t count, size_t selection);
 };
 
-class Chest {
+class GAME_API Chest {
 public:
     Inventory inventory;
     size_t level;
@@ -614,7 +616,7 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(Chest);
 
-class Tile {
+class GAME_API Tile {
 public:
     enum Kind {
         Barrier,
@@ -650,7 +652,7 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(Tile);
 
-class Experience {
+class GAME_API Experience {
 public:
     size_t level;
     size_t value;
@@ -675,7 +677,7 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(Experience);
 
-class ExperienceView {
+class GAME_API ExperienceView {
     sf::RenderWindow &window;
 
 public:
@@ -694,7 +696,7 @@ public:
     void draw(const Experience &experience);
 };
 
-class LevelUpCanvas {
+class GAME_API LevelUpCanvas {
     sf::RenderWindow &window;
 
 public:
@@ -704,7 +706,7 @@ public:
     void draw();
 };
 
-class Equipment {
+class GAME_API Equipment {
 public:
     DeepCopy(Equipment);
 
@@ -737,7 +739,7 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(Equipment);
 
-class RigidBody {
+class GAME_API RigidBody {
 public:
     DeepCopy(RigidBody);
 
@@ -789,7 +791,7 @@ BOOST_CLASS_EXPORT_KEY(RigidBody);
 
 sf::Vector2f center(const sf::FloatRect &a);
 
-class ActorClass {
+class GAME_API ActorClass {
 public:
     std::string name;
     std::string description;
@@ -819,7 +821,7 @@ BOOST_CLASS_EXPORT_KEY(ActorClass);
 
 static const sf::Time ready_to_be_deleted_after = sf::seconds(2.0f);
 
-class Actor : public RigidBody {
+class GAME_API Actor : public RigidBody {
 public:
     DeepCopy(Actor);
 
@@ -876,7 +878,7 @@ BOOST_CLASS_EXPORT_KEY(Actor);
 
 float symmetric_linear_easing(float t, float p);
 
-class SpriteColorAnimator {
+class GAME_API SpriteColorAnimator {
 public:
     sf::Color inactive_color;
     sf::Color active_color;
@@ -886,7 +888,7 @@ public:
     void update(sf::Time elapsed_time, sf::Sprite &sprite);
 };
 
-class ActorsView {
+class GAME_API ActorsView {
 private:
     sf::RenderWindow &window;
 
@@ -911,7 +913,7 @@ public:
 
 static const sf::Time pick_up_timeout = sf::seconds(1.0f);
 
-class Player : public Actor {
+class GAME_API Player : public Actor {
 public:
     DeepCopy(Player);
 
@@ -950,7 +952,7 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(Player);
 
-class Enemy : public Actor {
+class GAME_API Enemy : public Actor {
 public:
     DeepCopy(Enemy);
 
@@ -979,7 +981,7 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(Enemy);
 
-class LayingItem : public RigidBody {
+class GAME_API LayingItem : public RigidBody {
 public:
     std::shared_ptr<Item> item;
     bool picked_up = false;
@@ -1008,7 +1010,7 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(LayingItem);
 
-class DungeonLevel {
+class GAME_API DungeonLevel {
 public:
     std::vector<Enemy> enemies;
     std::vector<LayingItem> laying_items;
@@ -1061,7 +1063,7 @@ private:
 BOOST_CLASS_EXPORT_KEY(DungeonLevel);
 BOOST_CLASS_EXPORT_KEY(Matrix<Tile>);
 
-class DungeonLevelView {
+class GAME_API DungeonLevelView {
 private:
     sf::RenderWindow &window;
 
@@ -1101,7 +1103,7 @@ private:
     void draw_tile(const Tile &tile, sf::Vector2f position, float size, float chest_size_factor);
 };
 
-class Dungeon {
+class GAME_API Dungeon {
 public:
     std::vector<DungeonLevel> all_levels;
     boost::optional<DungeonLevel> current_level;
@@ -1131,7 +1133,7 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(Dungeon);
 
-class GameView {
+class GAME_API GameView {
 public:
     sf::RenderWindow window;
     sf::View view;
@@ -1173,7 +1175,7 @@ public:
     }
 };
 
-class EnemyThreads {
+class GAME_API EnemyThreads {
 public:
     std::vector<std::thread> threads;
     std::mutex sync_mutex;
@@ -1193,7 +1195,7 @@ public:
     void shutdown();
 };
 
-class Game {
+class GAME_API Game {
 public:
     // declare item plugins before the anything that can contain the items,
     // to make sure plugins are unloaded (destructed) before the items which they created
