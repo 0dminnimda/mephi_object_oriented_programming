@@ -11,6 +11,8 @@
 #include <SFML/System/Vector2.hpp>
 #include <array>
 #include <atomic>
+#include <barrier>
+#include <functional>
 // clang-format off
 #include <boost/config.hpp>
 #include <boost/optional.hpp>
@@ -1183,8 +1185,9 @@ public:
     std::condition_variable parent_cv;
     bool is_shutting_down = false;
     bool can_start_update = false;
-    size_t updates_done = 0;
     float delta_time;
+
+    std::unique_ptr<std::barrier<std::function<void()>>> sync_point;
 
     ~EnemyThreads();
 

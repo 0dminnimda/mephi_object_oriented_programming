@@ -21,7 +21,6 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <algorithm>
-#include <barrier>
 #include <boost/version.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -89,7 +88,9 @@ EnemyThreads::~EnemyThreads() {
     shutdown();
 
     for (auto &thread : threads) {
-        thread.join();
+        if (thread.joinable()) {
+            thread.join();
+        }
     }
 }
 
@@ -101,8 +102,6 @@ void EnemyThreads::init() {
 }
 
 void EnemyThreads::run(size_t id) {
-    static std::barrier sync_point(thread_count);
-
     while (1) {
         {
             std::unique_lock<std::mutex> lck(sync_mutex);
@@ -110,35 +109,32 @@ void EnemyThreads::run(size_t id) {
             if (is_shutting_down) return;
         }
 
-        // sync_point.arrive_and_wait();
-
         Game::get().update_enemies_in_thread(delta_time, id);
 
-        sync_point.arrive_and_wait();
-
-        bool is_last;
-        {
-            std::unique_lock<std::mutex> lck(sync_mutex);
-            can_start_update = false;
-            updates_done += 1;
-            is_last = updates_done == thread_count;
-        }
-        if (is_last) parent_cv.notify_one();
+        sync_point->arrive_and_wait();
     }
 }
 
 void EnemyThreads::start_updates() {
+    auto on_completion = [this]() noexcept {
+        // The work for this batch is done. Signal the main thread.
+        std::lock_guard<std::mutex> lck(sync_mutex);
+        can_start_update = false;
+        parent_cv.notify_one();
+    };
+
+    sync_point = std::make_unique<std::barrier<std::function<void()>>>(thread_count, on_completion);
+
     {
         std::unique_lock<std::mutex> lck(sync_mutex);
         can_start_update = true;
-        updates_done = 0;
     }
     children_cv.notify_all();
 }
 
 void EnemyThreads::join_updates() {
     std::unique_lock<std::mutex> lck(sync_mutex);
-    parent_cv.wait(lck, [&] { return updates_done == thread_count; });
+    parent_cv.wait(lck, [&] { return !can_start_update; });
 }
 
 void EnemyThreads::shutdown() {
