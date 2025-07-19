@@ -13,12 +13,12 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/libs)
 # set(Boost_USE_STATIC_LIBS ON)
 # set(Boost_USE_MULTITHREADED OFF)
 # set(Boost_USE_STATIC_RUNTIME ON)
-find_package(Boost 1.45.0 COMPONENTS serialization filesystem)
+find_package(Boost 1.88.0 COMPONENTS serialization filesystem)
 
 if(NOT Boost_FOUND)
-    message( SEND_ERROR "You need to have boost to compile this." )
+    message(SEND_ERROR "You need to have boost to compile this.")
 endif()
-include_directories(${Boost_INCLUDE_DIRS}) 
+include_directories(${Boost_INCLUDE_DIRS})
 
 add_compile_options(-fPIC)
 add_link_options(-fPIC)
@@ -42,7 +42,7 @@ endif()
 
 add_compile_definitions(TOML_HEADER_ONLY=0)
 
-if (CMAKE_BUILD_TYPE EQUAL "DEBUG")
+if(CMAKE_BUILD_TYPE EQUAL "DEBUG")
     add_compile_definitions(DEBUG)
 endif()
 

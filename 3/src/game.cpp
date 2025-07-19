@@ -251,7 +251,7 @@ void Game::import_item_plugin(const ItemPlugin &plugin) {
 void Game::import_item_plugin_from_file(const std::string &filename) {
     boost::dll::fs::path lib_path(filename);
     std::cout << "Loading plugin: " << filename << std::endl;
-    boost::shared_ptr<ItemPlugin> plugin = boost_dll_import<ItemPlugin>(
+    std::shared_ptr<ItemPlugin> plugin = boost_dll_import<ItemPlugin>(
         lib_path, "item_plugin", boost::dll::load_mode::append_decorations
     );
     loaded_item_plugins.push_back(plugin);
@@ -262,7 +262,7 @@ void Game::load_item_plugins(const std::string &directory) {
     fs::path dir = directory;
     for (const auto &entry : fs::directory_iterator(dir)) {
         if (entry.is_regular_file()) {
-            import_item_plugin_from_file(entry.path());
+            import_item_plugin_from_file(entry.path().string());
         }
     }
 }

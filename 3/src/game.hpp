@@ -1197,7 +1197,7 @@ class Game {
 public:
     // declare item plugins before the anything that can contain the items,
     // to make sure plugins are unloaded (destructed) before the items which they created
-    std::vector<boost::shared_ptr<ItemPlugin>> loaded_item_plugins;
+    std::vector<std::shared_ptr<ItemPlugin>> loaded_item_plugins;
 
     sf::Clock clock;
     std::array<bool, sf::Keyboard::KeyCount> keys_pressed_on_this_frame;
