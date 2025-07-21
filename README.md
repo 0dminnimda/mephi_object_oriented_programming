@@ -10,7 +10,9 @@ In folder `3` I've implemented a simple rouge-like/rpg game with dynamically loa
 
 In folder `external_code` I've extended a work of another student.
 
-Game screenshots:
+Game:
+
+https://github.com/user-attachments/assets/938fae7d-9eb6-4169-a9e8-38740ae5f16c
 
 ![game_start](preview/game_start.png)
 
