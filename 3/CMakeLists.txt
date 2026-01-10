@@ -13,7 +13,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # set(Boost_USE_STATIC_LIBS ON)
 # set(Boost_USE_MULTITHREADED OFF)
 # set(Boost_USE_STATIC_RUNTIME ON)
-find_package(Boost 1.88.0 COMPONENTS serialization filesystem)
+find_package(Boost 1.86.0 COMPONENTS serialization filesystem)
 
 if(NOT Boost_FOUND)
     message( SEND_ERROR "You need to have boost to compile this." )
